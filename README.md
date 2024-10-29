@@ -1,4 +1,4 @@
-# web26-boostproject
+# web26-LICO
 
 ## 프로젝트 소개
 
