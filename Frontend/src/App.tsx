@@ -1,3 +1,10 @@
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRoutes from '@routes/index';
+
 export default function App() {
-  return <div className="p-5 font-bold text-3xl">LICO</div>;
+  return (
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
 }
