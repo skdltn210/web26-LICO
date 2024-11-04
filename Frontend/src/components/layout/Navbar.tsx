@@ -20,7 +20,7 @@ export default function Navbar(): JSX.Element {
           </NavLink>
         </div>
         <div className="flex flex-col text-lico-gray-1">
-          <NavLink to="/live" className={linkClass}>
+          <NavLink to="/lives" className={linkClass}>
             <div className="flex items-center">
               <LuMonitor className="-mt-0.5 h-5 w-5" />
               <span className="ml-4 font-bold text-base">전체 방송</span>
