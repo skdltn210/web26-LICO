@@ -15,3 +15,26 @@
   font-weight: 500;
   font-style: normal;
 }
+
+@layer base {
+  body {
+    @apply bg-lico-gray-5;
+  }
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+}
+input[type='range']::-moz-range-thumb {
+  width: 0;
+  height: 0;
+  border: none;
+}
+input[type='range']::-ms-thumb {
+  appearance: none;
+  width: 0;
+  height: 0;
+}
