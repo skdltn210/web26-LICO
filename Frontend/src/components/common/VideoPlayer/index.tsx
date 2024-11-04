@@ -139,12 +139,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video
-        ref={videoRef}
-        className="aspect-video w-full rounded-lg bg-black ring-1 ring-lico-gray-3"
-        autoPlay
-        playsInline
-      >
+      <video ref={videoRef} className="aspect-video w-full bg-black" autoPlay playsInline>
         <source src={streamUrl} type="application/x-mpegURL" />
         브라우저가 비디오 재생을 지원하지 않습니다.
       </video>
