@@ -21,31 +21,31 @@ export default function Navbar(): JSX.Element {
         </div>
         <div className="flex flex-col text-lico-gray-1">
           <NavLink to="/live" className={linkClass}>
-            <div className="flex w-5 items-center justify-center">
-              <FaDisplay className="h-5 w-5" />
+            <div className="flex items-center">
+              <FaDisplay className="-mt-0.5 h-5 w-5" />
+              <span className="ml-4 font-bold text-base">전체 방송</span>
             </div>
-            <div className="ml-4 font-bold text-base">전체 방송</div>
           </NavLink>
           <NavLink to="/category" className={linkClass}>
-            <div className="flex w-5 items-center justify-center">
-              <FaTableCellsLarge className="h-5 w-5" />
+            <div className="flex items-center">
+              <FaTableCellsLarge className="-mt-0.5 h-5 w-5" />
+              <span className="ml-4 font-bold text-base">카테고리</span>
             </div>
-            <div className="ml-4 font-bold text-base">카테고리</div>
           </NavLink>
           <NavLink to="/following" className={linkClass}>
-            <div className="flex w-5 items-center justify-center">
-              <FaHeart className="h-5 w-5" />
+            <div className="flex items-center">
+              <FaHeart className="-mt-0.5 h-5 w-5" />
+              <span className="ml-4 font-bold text-base">팔로잉</span>
             </div>
-            <div className="ml-4 font-bold text-base">팔로잉</div>
           </NavLink>
 
           <div className="my-2 h-px bg-lico-gray-3"></div>
 
           <NavLink to="/studio" className={linkClass}>
-            <div className="flex w-5 items-center justify-center">
-              <FaVideo className="h-5 w-5" />
+            <div className="flex items-center">
+              <FaVideo className="-mt-0.5 h-5 w-5" />
+              <span className="ml-4 font-bold text-base">스튜디오</span>
             </div>
-            <div className="ml-4 font-bold text-base">스튜디오</div>
           </NavLink>
         </div>
       </div>
