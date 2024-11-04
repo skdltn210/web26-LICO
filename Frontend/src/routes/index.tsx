@@ -4,13 +4,15 @@ import HomePage from '@pages/HomePage';
 import FollowingPage from '@pages/FollowingPage';
 import CategoryPage from '@pages/CategoryPage';
 import LivePage from '@pages/LivePage';
+import LivesPage from '@pages/LivesPage';
 import StudioPage from '@pages/StudioPage';
 
 const routes = [
   { path: '/', element: <HomePage /> },
   { path: '/following', element: <FollowingPage /> },
   { path: '/category', element: <CategoryPage /> },
-  { path: '/live', element: <LivePage /> },
+  { path: '/live/:id', element: <LivePage /> },
+  { path: '/lives', element: <LivesPage /> },
   { path: '/studio', element: <StudioPage /> },
 ];
 
