@@ -11,16 +11,16 @@ export default function LiveInfo() {
             <LuUser size={24} className="text-lico-gray-2" />
           </div>
           <div>
-            <div className="font-bold text-base text-lico-orange-2">StreamerName</div>
-            <div className="font-medium text-sm text-lico-gray-2">Game Name</div>
+            <div className="font-bold text-base text-lico-orange-2">철수게임TV</div>
+            <div className="font-medium text-sm text-lico-gray-2">발로란트</div>
           </div>
         </div>
         <FollowButton />
       </div>
-      <div className="mt-2 font-medium text-lico-gray-1">Stream Title: Exciting Gameplay Session!</div>
+      <div className="mt-2 font-medium text-lico-gray-1">[발로란트] 오늘은 레디언트 가즈아!! 🎮 솔랭 방송</div>
       <div className="mt-2 flex items-center gap-2">
         <CategoryBadge category="FPS" />
-        <CategoryBadge category="Multiplayer" />
+        <CategoryBadge category="실시간 방송" />
       </div>
     </div>
   );
