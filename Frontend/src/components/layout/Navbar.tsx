@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { FaDisplay, FaTableCellsLarge, FaHeart, FaVideo } from 'react-icons/fa6';
+import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo } from 'react-icons/lu';
 
 interface NavLinkProps {
   isActive: boolean;
@@ -22,19 +22,19 @@ export default function Navbar(): JSX.Element {
         <div className="flex flex-col text-lico-gray-1">
           <NavLink to="/lives" className={linkClass}>
             <div className="flex items-center">
-              <FaDisplay className="-mt-0.5 h-5 w-5" />
+              <LuMonitor className="-mt-0.5 h-5 w-5" />
               <span className="ml-4 font-bold text-base">전체 방송</span>
             </div>
           </NavLink>
           <NavLink to="/category" className={linkClass}>
             <div className="flex items-center">
-              <FaTableCellsLarge className="-mt-0.5 h-5 w-5" />
+              <LuLayoutGrid className="-mt-0.5 h-5 w-5" />
               <span className="ml-4 font-bold text-base">카테고리</span>
             </div>
           </NavLink>
           <NavLink to="/following" className={linkClass}>
             <div className="flex items-center">
-              <FaHeart className="-mt-0.5 h-5 w-5" />
+              <LuHeart className="-mt-0.5 h-5 w-5" />
               <span className="ml-4 font-bold text-base">팔로잉</span>
             </div>
           </NavLink>
@@ -43,7 +43,7 @@ export default function Navbar(): JSX.Element {
 
           <NavLink to="/studio" className={linkClass}>
             <div className="flex items-center">
-              <FaVideo className="-mt-0.5 h-5 w-5" />
+              <LuVideo className="-mt-0.5 h-5 w-5" />
               <span className="ml-4 font-bold text-base">스튜디오</span>
             </div>
           </NavLink>
