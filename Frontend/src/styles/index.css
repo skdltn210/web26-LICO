@@ -16,6 +16,12 @@
   font-style: normal;
 }
 
+@layer base {
+  body {
+    @apply bg-lico-gray-5;
+  }
+}
+
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
