@@ -6,7 +6,7 @@ export interface ChannelCardProps {
   id: string;
   title: string;
   streamerName: string;
-  viewers: string;
+  viewers: number;
   category: string;
   categoryId?: string;
   profileImgUrl: string;

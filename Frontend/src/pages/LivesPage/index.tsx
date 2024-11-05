@@ -7,7 +7,7 @@ import { LuClock, LuThumbsUp } from 'react-icons/lu';
 
 type SortType = 'popular' | 'recent' | 'recommended';
 
-function LivePage() {
+export default function LivesPage() {
   const [activeSort, setActiveSort] = useState<SortType>('popular');
 
   const sortedChannels = useMemo(() => {
@@ -15,11 +15,7 @@ function LivePage() {
 
     switch (activeSort) {
       case 'popular':
-        return channels.sort((a, b) => {
-          const viewersA = parseInt(a.viewers.replace(/,/g, ''));
-          const viewersB = parseInt(b.viewers.replace(/,/g, ''));
-          return viewersB - viewersA;
-        });
+        return channels.sort((a, b) => b.viewers - a.viewers);
       case 'recent':
         return channels.sort((a, b) => {
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -58,5 +54,3 @@ function LivePage() {
     </div>
   );
 }
-
-export default LivePage;
