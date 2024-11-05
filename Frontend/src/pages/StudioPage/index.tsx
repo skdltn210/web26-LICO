@@ -1,4 +1,4 @@
-import VideoPlayer from '@/components/common/VideoPlayer';
+import VideoPlayer from '@/components/VideoPlayer';
 import CategoryBadge from '@/components/common/Badges/CategoryBadge';
 import { LuPlay, LuSettings, LuGlobe } from 'react-icons/lu';
 
