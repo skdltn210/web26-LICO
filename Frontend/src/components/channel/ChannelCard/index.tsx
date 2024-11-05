@@ -8,6 +8,7 @@ export interface ChannelCardProps {
   streamerName: string;
   viewers: string;
   category: string;
+  categoryId?: string;
   profileImgUrl: string;
   thumbnailUrl: string;
 }
@@ -20,7 +21,7 @@ function ChannelCard({ id, title, streamerName, viewers, category, profileImgUrl
   };
 
   return (
-    <div className="mb-4 min-w-60 p-1" onClick={handleClick}>
+    <div className="mb-4 min-w-60" onClick={handleClick}>
       <ChannelThumbnail title={title} thumbnailUrl={thumbnailUrl} viewers={viewers} />
       <ChannelInfo title={title} streamerName={streamerName} category={category} profileImgUrl={profileImgUrl} />
     </div>

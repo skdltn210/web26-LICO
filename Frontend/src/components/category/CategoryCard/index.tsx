@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { FaCircle } from 'react-icons/fa6';
 import { formatUnit } from '@/utils/format';
 
@@ -9,9 +10,15 @@ export interface CategoryCardProps {
   thumbnailUrl: string;
 }
 
-export default function CategoryCard({ name, totalViewers, totalLives, thumbnailUrl }: CategoryCardProps) {
+export default function CategoryCard({ id, name, totalViewers, totalLives, thumbnailUrl }: CategoryCardProps) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/category/${id}`);
+  };
+
   return (
-    <div className="mb-3">
+    <div className="mb-3 cursor-pointer" onClick={handleClick}>
       <div className="relative inline-block w-full">
         <img src={thumbnailUrl} alt={name} className="aspect-[3/4] w-[calc(20vw-12px)] rounded-xl object-cover" />
         <div className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-[4px] bg-black bg-opacity-60 px-1">
