@@ -11,6 +11,7 @@ export interface ChannelCardProps {
   categoryId?: string;
   profileImgUrl: string;
   thumbnailUrl: string;
+  createdAt: string;
 }
 
 function ChannelCard({ id, title, streamerName, viewers, category, profileImgUrl, thumbnailUrl }: ChannelCardProps) {

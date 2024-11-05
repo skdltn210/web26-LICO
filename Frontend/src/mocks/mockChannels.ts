@@ -1,6 +1,6 @@
 import { ChannelCardProps } from '@components/channel/ChannelCard';
 
-const mockChannels: ChannelCardProps[] = [
+const mockChannels: (ChannelCardProps & { createdAt: string })[] = [
   {
     id: 'stream_1',
     title: '이번주 마스터 달성 가능?!',
@@ -10,6 +10,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'leagueoflegends',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream1',
     thumbnailUrl: 'https://picsum.photos/seed/stream1/1920/1080',
+    createdAt: '2024-11-05T10:30:00Z',
   },
   {
     id: 'stream_2',
@@ -20,6 +21,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'justchatting',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream2',
     thumbnailUrl: 'https://picsum.photos/seed/stream2/1920/1080',
+    createdAt: '2024-11-05T11:15:00Z',
   },
   {
     id: 'stream_3',
@@ -30,6 +32,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'valorant',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream3',
     thumbnailUrl: 'https://picsum.photos/seed/stream3/1920/1080',
+    createdAt: '2024-11-05T09:45:00Z',
   },
   {
     id: 'stream_4',
@@ -40,6 +43,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'battlegrounds',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream4',
     thumbnailUrl: 'https://picsum.photos/seed/stream4/1920/1080',
+    createdAt: '2024-11-05T12:00:00Z',
   },
   {
     id: 'stream_5',
@@ -50,6 +54,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'maplestory',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream5',
     thumbnailUrl: 'https://picsum.photos/seed/stream5/1920/1080',
+    createdAt: '2024-11-05T08:30:00Z',
   },
   {
     id: 'stream_6',
@@ -60,6 +65,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'eafc24',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream6',
     thumbnailUrl: 'https://picsum.photos/seed/stream6/1920/1080',
+    createdAt: '2024-11-05T13:20:00Z',
   },
   {
     id: 'stream_7',
@@ -70,6 +76,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'dungeonfighter',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream7',
     thumbnailUrl: 'https://picsum.photos/seed/stream7/1920/1080',
+    createdAt: '2024-11-05T14:45:00Z',
   },
   {
     id: 'stream_8',
@@ -80,6 +87,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'starcraft',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream8',
     thumbnailUrl: 'https://picsum.photos/seed/stream8/1920/1080',
+    createdAt: '2024-11-05T07:15:00Z',
   },
   {
     id: 'stream_9',
@@ -90,6 +98,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'diablo4',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream9',
     thumbnailUrl: 'https://picsum.photos/seed/stream9/1920/1080',
+    createdAt: '2024-11-05T15:30:00Z',
   },
   {
     id: 'stream_10',
@@ -100,6 +109,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'overwatch2',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream10',
     thumbnailUrl: 'https://picsum.photos/seed/stream10/1920/1080',
+    createdAt: '2024-11-05T06:45:00Z',
   },
   {
     id: 'stream_11',
@@ -110,6 +120,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'cookierunkingdom',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream11',
     thumbnailUrl: 'https://picsum.photos/seed/stream11/1920/1080',
+    createdAt: '2024-11-05T16:10:00Z',
   },
   {
     id: 'stream_12',
@@ -120,6 +131,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'minecraft',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream12',
     thumbnailUrl: 'https://picsum.photos/seed/stream12/1920/1080',
+    createdAt: '2024-11-05T05:30:00Z',
   },
   {
     id: 'stream_13',
@@ -130,6 +142,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'fallguys',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream13',
     thumbnailUrl: 'https://picsum.photos/seed/stream13/1920/1080',
+    createdAt: '2024-11-05T17:00:00Z',
   },
   {
     id: 'stream_14',
@@ -140,6 +153,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'apexlegends',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream14',
     thumbnailUrl: 'https://picsum.photos/seed/stream14/1920/1080',
+    createdAt: '2024-11-05T04:45:00Z',
   },
   {
     id: 'stream_15',
@@ -150,6 +164,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'lostark',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream15',
     thumbnailUrl: 'https://picsum.photos/seed/stream15/1920/1080',
+    createdAt: '2024-11-05T17:45:00Z',
   },
   {
     id: 'stream_16',
@@ -160,6 +175,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'justchatting',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream16',
     thumbnailUrl: 'https://picsum.photos/seed/stream16/1920/1080',
+    createdAt: '2024-11-05T03:15:00Z',
   },
   {
     id: 'stream_17',
@@ -170,6 +186,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'justchatting',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream17',
     thumbnailUrl: 'https://picsum.photos/seed/stream17/1920/1080',
+    createdAt: '2024-11-05T18:30:00Z',
   },
   {
     id: 'stream_18',
@@ -180,6 +197,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'justchatting',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream18',
     thumbnailUrl: 'https://picsum.photos/seed/stream18/1920/1080',
+    createdAt: '2024-11-05T02:00:00Z',
   },
   {
     id: 'stream_19',
@@ -190,6 +208,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'justchatting',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream19',
     thumbnailUrl: 'https://picsum.photos/seed/stream19/1920/1080',
+    createdAt: '2024-11-05T19:15:00Z',
   },
   {
     id: 'stream_20',
@@ -200,6 +219,7 @@ const mockChannels: ChannelCardProps[] = [
     categoryId: 'justchatting',
     profileImgUrl: 'https://api.dicebear.com/7.x/personas/svg?seed=stream20',
     thumbnailUrl: 'https://picsum.photos/seed/stream20/1920/1080',
+    createdAt: '2024-11-05T01:30:00Z',
   },
 ];
 
