@@ -1,5 +1,5 @@
 import mockChannels from '@mocks/mockChannels';
-import ChannelGrid from '@components/channel/ChannelGrid/ChannelGrid';
+import ChannelGrid from '@/components/channel/ChannelGrid';
 import SortButton from '@components/common/Buttons/SortButton';
 import { useState } from 'react';
 import { FaFire } from 'react-icons/fa';
