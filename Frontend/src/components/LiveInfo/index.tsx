@@ -12,7 +12,7 @@ export default function LiveInfo() {
           </div>
           <div>
             <div className="font-bold text-base text-lico-orange-2">철수게임TV</div>
-            <div className="font-medium text-sm text-lico-gray-2">발로란트</div>
+            <div className="font-medium text-sm text-lico-gray-2">7,000명 시청중</div>
           </div>
         </div>
         <FollowButton />
