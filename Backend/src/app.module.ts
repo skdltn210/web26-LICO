@@ -7,8 +7,12 @@ import { CategoriesModule } from './categories/categories.module';
 import { StreamingModule } from './streaming/streaming.module';
 import { VideosModule } from './videos/videos.module';
 
+import { ConfigModule } from '@nestjs/config';
+
 @Module({
-  imports: [AuthModule, UsersModule, CategoriesModule, StreamingModule, VideosModule],
+  imports: [ConfigModule.forRoot({
+    isGlobal: true,
+  }),AuthModule, UsersModule, CategoriesModule, StreamingModule, VideosModule],
   controllers: [AppController],
   providers: [AppService],
 })
