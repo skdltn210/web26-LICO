@@ -37,7 +37,7 @@ export default function LiveInfo({ channelId }: LiveInfoProps) {
             <div className="font-medium text-sm text-lico-gray-2">{channel.viewers}명 시청중</div>
           </div>
         </div>
-        <FollowButton />
+        <FollowButton channelId={channelId} />
       </div>
       <div className="mt-2 font-medium text-lico-gray-1">{channel.title}</div>
       <div className="mt-2 flex items-center gap-2">
