@@ -1,10 +1,13 @@
 import { BrowserRouter as Router } from 'react-router-dom';
+import { ChannelProvider } from '@/contexts/ChannelContext';
 import AppRoutes from '@routes/index';
 
 export default function App() {
   return (
     <Router>
-      <AppRoutes />
+      <ChannelProvider>
+        <AppRoutes />
+      </ChannelProvider>
     </Router>
   );
 }

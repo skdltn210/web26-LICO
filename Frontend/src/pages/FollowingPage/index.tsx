@@ -18,11 +18,12 @@ export default function FollowingPage() {
         id: channel.id,
         title: channel.title,
         streamerName: user.channelName,
-        viewers: channel.viewers.toString(),
+        viewers: channel.viewers,
         category: channel.category,
         categoryId: channel.categoryId,
         profileImgUrl: channel.profileImgUrl,
         thumbnailUrl: channel.thumbnailUrl,
+        createdAt: channel.createdAt,
       };
 
       return channelData;
