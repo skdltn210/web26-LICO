@@ -1,5 +1,6 @@
 import mockCategories from '@mocks/mockCategories';
 import { FaCircle } from 'react-icons/fa6';
+import { formatUnit } from '@/utils/format';
 
 interface CategoryStats {
   id: string;
@@ -14,13 +15,6 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
-  const formatViewerCount = (count: number): string => {
-    if (count >= 10000) {
-      return `${(count / 10000).toFixed(1)}만명`;
-    }
-    return `${count}명`;
-  };
-
   return (
     <div className="mb-3">
       <div className="relative inline-block w-full">
@@ -31,7 +25,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
         />
         <div className="absolute left-1.5 top-1.5 flex items-center gap-1 rounded-[4px] bg-black bg-opacity-60 px-1">
           <FaCircle className="h-[6px] w-[6px] text-[#E02120]" />
-          <span className="mt-0.5 font-bold text-xs text-white">{formatViewerCount(category.totalViewers)}</span>
+          <span className="mt-0.5 font-bold text-xs text-white">{formatUnit(category.totalViewers)}명</span>
         </div>
       </div>
       <div className="mx-0.5 mt-2 px-[3px]">
