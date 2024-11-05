@@ -11,7 +11,7 @@ function HomePage() {
   const [activeSort, setActiveSort] = useState<SortType>('popular');
   return (
     <div className="p-12">
-      <div className="mb-5 flex gap-1 px-4">
+      <div className="mb-3 flex gap-2 px-4">
         <SortButton
           label="인기"
           isActive={activeSort === 'popular'}
