@@ -4,7 +4,7 @@ import { CategoryEntity } from './entity/category.entity';
 import { Repository } from 'typeorm';
 import { CategoriesDto } from './dto/categories.dto';
 import { CategoryDto } from './dto/category.dto';
-import { ErrorMessage } from './error.message.enum';
+import { ErrorMessage } from './error/error.message.enum';
 
 @Injectable()
 export class CategoriesService {

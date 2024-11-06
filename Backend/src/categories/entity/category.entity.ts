@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 
 @Entity('categories')
 export class CategoryEntity {
@@ -15,8 +15,8 @@ export class CategoryEntity {
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', nullable: true })
-  updatedAt: Date | null;
+  updatedAt: Date;
 
-  @Column({ type: 'datetime', name: 'deleted_at', nullable: true })
-  deletedAt: Date | null;
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;
 }

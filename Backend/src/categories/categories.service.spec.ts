@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CategoryEntity } from './entity/category.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
-import { ErrorMessage } from './error.message.enum';
+import { ErrorMessage } from './error/error.message.enum';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
