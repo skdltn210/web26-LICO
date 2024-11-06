@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CategoryEntity } from './entity/category.entity';
 import { Repository } from 'typeorm';
 import { CategoriesDto } from './dto/categories.dto';
+import { CategoryDto } from './dto/category.dto';
+import { ErrorMessage } from './error.message.enum';
 
 @Injectable()
 export class CategoriesService {
@@ -17,5 +19,15 @@ export class CategoriesService {
         image,
       };
     });
+  }
+
+  async readCategory(id: number): Promise<CategoryDto> {
+    const category = await this.categoriesRepository.findOne({ where: { id } });
+
+    if (!category) {
+      throw new NotFoundException(ErrorMessage.READ_CATEGORY_404);
+    }
+
+    return { name: category.name, image: category.image };
   }
 }
