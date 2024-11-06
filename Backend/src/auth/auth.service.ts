@@ -5,9 +5,9 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  createJwt(user: any, provider: string) {
+  createJwt(user: any) {
     const payload = {
-      provider: provider,
+      provider: user.provider,
       userId: user.userId,
       username: user.username,
     };

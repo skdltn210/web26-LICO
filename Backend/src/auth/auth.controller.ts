@@ -14,7 +14,31 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   async githubAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
-    const jwt = this.authService.createJwt(req.user, 'github');
+    const jwt = this.authService.createJwt(req.user);
+
+    res.cookie('jwt', jwt, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 36000000, // 10시간
+      sameSite: 'lax',
+    });
+
+    res.redirect('http://localhost:3000');
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(@Req() req) {
+    // Google OAuth 로그인 페이지로 리디렉션됩니다.
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(
+    @Req() req: Request & { user: any },
+    @Res() res: Response,
+  ) {
+    const jwt = this.authService.createJwt(req.user);
 
     res.cookie('jwt', jwt, {
       httpOnly: true,
