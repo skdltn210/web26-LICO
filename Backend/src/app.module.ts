@@ -7,12 +7,26 @@ import { CategoriesModule } from './categories/categories.module';
 import { StreamingModule } from './streaming/streaming.module';
 import { VideosModule } from './videos/videos.module';
 
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeOrmConfig } from './config/typeorm.config';
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-  }),AuthModule, UsersModule, CategoriesModule, StreamingModule, VideosModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (ConfigService: ConfigService) => typeOrmConfig(ConfigService),
+    }),
+    AuthModule,
+    UsersModule,
+    CategoriesModule,
+    StreamingModule,
+    VideosModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
