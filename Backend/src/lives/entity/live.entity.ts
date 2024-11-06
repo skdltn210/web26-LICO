@@ -12,6 +12,7 @@ import {
   OneToOne,
 } from 'typeorm';
 import { LivesDto } from '../dto/lives.dto';
+import { LiveDto } from '../dto/live.dto';
 
 @Entity('lives')
 export class LiveEntity {
@@ -52,7 +53,7 @@ export class LiveEntity {
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
 
-  @OneToOne(() => UserEntity, user => user.live, { eager: true })
+  @OneToOne(() => UserEntity, user => user.live)
   user: UserEntity;
 
   toLivesDto(): LivesDto {
@@ -61,6 +62,18 @@ export class LiveEntity {
       categoriesName: this.category.name,
       livesName: this.name,
       channelId: this.channelId,
+      usersNickname: this.user.nickname,
+      usersProfileImage: this.user.profileImage,
+    };
+  }
+
+  toLiveDto(): LiveDto {
+    return {
+      categoriesId: this.category.id,
+      categoriesName: this.category.name,
+      livesName: this.name,
+      livesDescription: this.description,
+      startedAt: this.startedAt,
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
     };
