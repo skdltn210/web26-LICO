@@ -1,24 +1,34 @@
 import { useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import VideoPlayer from '@components/VideoPlayer';
 import LiveInfo from '@components/LiveInfo';
 import StreamerInfo from '@components/LiveInfo/StreamerInfo';
 import mockChannels from '@mocks/mockChannels';
 import mockUsers from '@mocks/mockUsers.ts';
-import mockCategories from '@mocks/mockCategories.ts';
+import mockCategories from '@mocks/mockCategories';
 import { useChannel } from '@contexts/ChannelContext';
 import ChatWindow from '@components/chat/ChatWindow';
-import useMediaQuery from '@hooks/useMediaQuery.ts';
+import useMediaQuery from '@hooks/useMediaQuery';
+import useLayoutStore from '@store/useLayoutStore';
+import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();
   const { currentChannel, setCurrentChannel } = useChannel();
-  const isMobile = useMediaQuery('(max-width: 1324px)');
-  const [isChatOpen, setIsChatOpen] = useState(!isMobile);
+  const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
+
+  const isLarge = useMediaQuery('(min-width: 1200px)');
+  const isMedium = useMediaQuery('(min-width: 700px)');
 
   useEffect(() => {
-    setIsChatOpen(!isMobile);
-  }, [isMobile]);
+    if (isLarge) {
+      handleBreakpoint('FULL');
+    } else if (isMedium) {
+      handleBreakpoint('NAV_COLLAPSED');
+    } else {
+      handleBreakpoint('CHAT_HIDDEN');
+    }
+  }, [isLarge, isMedium]);
 
   useEffect(() => {
     if (!currentChannel && id) {
@@ -47,19 +57,45 @@ export default function LivePage() {
   }, [currentChannel, id, setCurrentChannel]);
 
   if (!id) return <div>잘못된 접근입니다.</div>;
-
   if (!currentChannel) return <div>존재하지 않는 채널입니다.</div>;
 
+  const isChatToggleVisible = isMedium && chatState === 'hidden';
+  const isTheaterMode = videoPlayerState === 'theater';
+  const isVerticalMode = !isMedium;
+
+  if (isTheaterMode) {
+    return (
+      <div className={`flex h-screen ${isVerticalMode ? 'flex-col' : ''} `}>
+        <div className="flex-1">
+          <VideoPlayer streamUrl="" />
+        </div>
+        {chatState === 'expanded' && <ChatWindow />}
+        {chatState === 'hidden' && <ChatOpenButton onClick={toggleChat} />}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex">
-      <div className="min-w-96 flex-1">
-        <VideoPlayer streamUrl="" />
-        <LiveInfo channelId={id} />
-        <StreamerInfo />
+    <div className="flex h-screen">
+      <div className="flex-1">
+        <div
+          className="flex h-full flex-col overflow-y-auto"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          <VideoPlayer streamUrl="" />
+          <LiveInfo channelId={id} />
+          <StreamerInfo />
+        </div>
       </div>
-      <div className={`overflow-hidden transition-[width] ease-in-out ${isChatOpen ? 'w-96' : 'w-0'} `}>
-        <ChatWindow />
-      </div>
+      {chatState === 'expanded' && (
+        <div className="w-[360px]">
+          <ChatWindow />
+        </div>
+      )}
+      {isChatToggleVisible && <ChatOpenButton onClick={toggleChat} />}
     </div>
   );
 }

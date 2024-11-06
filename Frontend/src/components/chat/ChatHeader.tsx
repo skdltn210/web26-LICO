@@ -1,5 +1,7 @@
 import { HiDotsVertical } from 'react-icons/hi';
-import { FaArrowRightFromBracket } from 'react-icons/fa6';
+import { LuArrowRightToLine, LuArrowDownToLine } from 'react-icons/lu';
+import useLayoutStore from '@store/useLayoutStore';
+import useMediaQuery from '@hooks/useMediaQuery';
 
 type ChatHeaderProps = {
   onClose: () => void;
@@ -7,6 +9,9 @@ type ChatHeaderProps = {
 };
 
 export default function ChatHeader({ onClose, onSettingsClick }: ChatHeaderProps) {
+  const { videoPlayerState } = useLayoutStore();
+  const isVerticalMode = !useMediaQuery('(min-width: 700px)');
+
   return (
     <div
       role="region"
@@ -19,7 +24,7 @@ export default function ChatHeader({ onClose, onSettingsClick }: ChatHeaderProps
         onClick={onClose}
         className="text-lico-gray-2 hover:text-lico-gray-1"
       >
-        <FaArrowRightFromBracket />
+        {videoPlayerState && isVerticalMode ? <LuArrowDownToLine size={20} /> : <LuArrowRightToLine size={20} />}
       </button>
       <h3 className="font-bold text-base text-lico-orange-2">채팅</h3>
       <button
@@ -28,7 +33,7 @@ export default function ChatHeader({ onClose, onSettingsClick }: ChatHeaderProps
         onClick={onSettingsClick}
         className="rounded-md p-2 text-lico-gray-2 hover:text-lico-gray-1"
       >
-        <HiDotsVertical />
+        <HiDotsVertical size={20} />
       </button>
     </div>
   );
