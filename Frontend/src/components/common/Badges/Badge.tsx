@@ -4,7 +4,9 @@ interface BadgeProps {
 }
 
 function Badge({ text, className }: BadgeProps) {
-  return <div className={`inline-block rounded-full px-2 pb-[1px] font-bold text-xs ${className}`}>{text}</div>;
+  return (
+    <div className={`inline-block rounded-full px-2 pb-[1px] pt-[3px] font-bold text-xs ${className}`}>{text}</div>
+  );
 }
 
 export default Badge;
