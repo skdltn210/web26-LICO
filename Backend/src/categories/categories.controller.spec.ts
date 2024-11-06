@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
 import { NotFoundException } from '@nestjs/common';
-import { ErrorMessage } from './error.message.enum';
+import { ErrorMessage } from './error/error.message.enum';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;
