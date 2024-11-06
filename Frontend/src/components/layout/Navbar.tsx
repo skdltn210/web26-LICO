@@ -41,12 +41,17 @@ export default function Navbar(): JSX.Element {
 
           <div className="my-2 h-px bg-lico-gray-3"></div>
 
-          <NavLink to="/studio" className={linkClass}>
+          <a
+            href="/studio"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center rounded-lg px-4 py-3 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"
+          >
             <div className="flex items-center">
               <LuVideo className="-mt-0.5 h-5 w-5" />
               <span className="ml-4 font-bold text-base">스튜디오</span>
             </div>
-          </NavLink>
+          </a>
         </div>
       </div>
     </nav>
