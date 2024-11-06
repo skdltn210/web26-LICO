@@ -1,5 +1,5 @@
 import VideoPlayer from '@/components/VideoPlayer';
-import CategoryBadge from '@/components/common/Badges/CategoryBadge';
+// import CategoryBadge from '@/components/common/Badges/CategoryBadge';
 import { LuPlay, LuSettings, LuGlobe } from 'react-icons/lu';
 
 export default function StudioPage() {
@@ -23,7 +23,6 @@ export default function StudioPage() {
         <div>
           <label className="mb-1 block font-bold text-lico-gray-1">카테고리</label>
           <div className="flex flex-wrap items-center gap-2">
-            <CategoryBadge category="RPG" />
             <button className="rounded-md bg-lico-gray-3 px-2 py-1 font-medium text-sm text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2">
               추가
             </button>

@@ -55,7 +55,9 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
     }
   };
 
-  const toggleTheaterMode = () => {};
+  const toggleTheaterMode = () => {
+    setIsTheaterMode(!isTheaterMode);
+  };
 
   const toggleFullScreen = () => {
     if (!document.fullscreenElement && containerRef.current) {
