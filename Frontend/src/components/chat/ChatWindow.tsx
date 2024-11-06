@@ -8,7 +8,6 @@ import ChatMessage from './ChatMessage';
 
 export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>(mockMessages);
-  const [isExpanded, setIsExpanded] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -28,7 +27,7 @@ export default function ChatWindow() {
       {
         root: chatRef.current,
         threshold: 1,
-        rootMargin: '-16px',
+        rootMargin: '-14px',
       },
     );
 
@@ -37,11 +36,11 @@ export default function ChatWindow() {
     }
 
     return () => observer.disconnect();
-  }, [isExpanded]);
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, showScrollButton, isExpanded]);
+  }, [messages, showScrollButton]);
 
   const handleNewMessage = (content: string) => {
     // 임시로 입력값을 추가합니다. 서버에 연결 후 삭제합니다.
@@ -49,19 +48,10 @@ export default function ChatWindow() {
     scrollToBottom();
   };
 
-  // 임시 버튼 입니다. livePage에 채팅창 추가 후 삭제합니다.
-  if (!isExpanded) {
-    return (
-      <button type="button" onClick={() => setIsExpanded(true)} className="text-lico-gray-1">
-        열어
-      </button>
-    );
-  }
-
   return (
-    <div className="fixed right-0 top-0 w-80">
-      <div className="flex h-screen flex-col border-l border-lico-gray-3 bg-lico-gray-4">
-        <ChatHeader onClose={() => setIsExpanded(false)} onSettingsClick={() => {}} />
+    <div>
+      <div className="relative flex h-screen flex-col border-l border-lico-gray-3 bg-lico-gray-4">
+        <ChatHeader onClose={() => {}} onSettingsClick={() => {}} />
         <div
           role="log"
           aria-label="채팅 메시지"
@@ -89,7 +79,7 @@ export default function ChatWindow() {
               aria-label="최신 메시지로 이동"
               type="button"
               onClick={scrollToBottom}
-              className="fixed bottom-24 right-8 rounded-full bg-lico-orange-2 p-2 text-sm text-lico-gray-1 opacity-75 shadow-lg hover:bg-lico-orange-1"
+              className="absolute bottom-24 right-4 rounded-full bg-lico-orange-2 p-2 text-sm text-lico-gray-1 opacity-75 shadow-lg hover:bg-lico-orange-1"
             >
               <FaAngleDown />
             </button>

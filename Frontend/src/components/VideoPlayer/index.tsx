@@ -137,11 +137,11 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   return (
     <div
       ref={containerRef}
-      className={`relative ${isTheaterMode ? 'w-screen' : 'w-full max-w-4xl'} ${!showCursor ? 'cursor-none' : ''}`}
+      className={`relative ${isTheaterMode ? 'w-screen' : 'w-full'} ${!showCursor ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video ref={videoRef} className="aspect-video w-full bg-black" autoPlay playsInline>
+      <video ref={videoRef} className="w-full bg-black" autoPlay playsInline>
         <source src={streamUrl} type="application/x-mpegURL" />
         브라우저가 비디오 재생을 지원하지 않습니다.
       </video>
