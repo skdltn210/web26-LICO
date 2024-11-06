@@ -1,0 +1,311 @@
+export type Message = {
+  id: string;
+  userName: string;
+  content: string;
+  timestamp: string;
+};
+
+const initialMessages: Message[] = [
+  {
+    id: '1',
+    userName: 'minseok',
+    content: '채팅 시작 되나요?',
+    timestamp: '1:45',
+  },
+  {
+    id: '2',
+    userName: 'KO',
+    content: '안녕하세요?',
+    timestamp: '1:45',
+  },
+  {
+    id: '3',
+    userName: 'jihye',
+    content: '네, 잘 되는 것 같아요!',
+    timestamp: '1:46',
+  },
+  {
+    id: '4',
+    userName: 'jaewoo',
+    content: '다들 안녕하세요~ 반갑습니다.',
+    timestamp: '1:46',
+  },
+  {
+    id: '5',
+    userName: 'seongyeon',
+    content: '오늘 회의 몇 시에 하나요?',
+    timestamp: '1:47',
+  },
+  {
+    id: '6',
+    userName: 'minseok',
+    content: '3시에 시작하기로 했어요.',
+    timestamp: '1:47',
+  },
+  {
+    id: '7',
+    userName: 'hyunjin',
+    content: '프로젝트 진행상황 공유해주실 수 있나요?',
+    timestamp: '1:48',
+  },
+  {
+    id: '8',
+    userName: 'KO',
+    content: '현재 70% 정도 완료됐습니다.',
+    timestamp: '1:48',
+  },
+  {
+    id: '9',
+    userName: 'eunji',
+    content: '다들 점심 식사는 하셨나요?',
+    timestamp: '1:49',
+  },
+  {
+    id: '10',
+    userName: 'jihye',
+    content: '네, 방금 마쳤어요!',
+    timestamp: '1:49',
+  },
+  {
+    id: '11',
+    userName: 'taewon',
+    content: '새로운 기능 테스트는 언제 시작하나요?',
+    timestamp: '1:50',
+  },
+  {
+    id: '12',
+    userName: 'minseok',
+    content: '내일부터 시작할 예정입니다.',
+    timestamp: '1:50',
+  },
+  {
+    id: '13',
+    userName: 'seongyeon',
+    content: '문서 작업은 제가 맡아서 하겠습니다.',
+    timestamp: '1:51',
+  },
+  {
+    id: '14',
+    userName: 'jaewoo',
+    content: '좋은 아이디어네요!',
+    timestamp: '1:51',
+  },
+  {
+    id: '15',
+    userName: 'hyunjin',
+    content: '버그 수정은 완료되었나요?',
+    timestamp: '1:52',
+  },
+  {
+    id: '16',
+    userName: 'KO',
+    content: '대부분 해결했고, 몇 가지만 더 확인 중입니다.',
+    timestamp: '1:52',
+  },
+  {
+    id: '17',
+    userName: 'eunji',
+    content: '주간 보고서 검토 부탁드립니다.',
+    timestamp: '1:53',
+  },
+  {
+    id: '18',
+    userName: 'taewon',
+    content: '네, 확인해보겠습니다.',
+    timestamp: '1:53',
+  },
+  {
+    id: '19',
+    userName: 'jihye',
+    content: '다음 주 일정 조율이 필요해요.',
+    timestamp: '1:54',
+  },
+  {
+    id: '20',
+    userName: 'minseok',
+    content: '내일 회의때 논의하시죠.',
+    timestamp: '1:54',
+  },
+  {
+    id: '21',
+    userName: 'seongyeon',
+    content: '새로운 디자인 시안이 나왔습니다.',
+    timestamp: '1:55',
+  },
+  {
+    id: '22',
+    userName: 'jaewoo',
+    content: '한번 살펴보겠습니다.',
+    timestamp: '1:55',
+  },
+  {
+    id: '23',
+    userName: 'hyunjin',
+    content: '클라이언트 미팅은 언제인가요?',
+    timestamp: '1:56',
+  },
+  {
+    id: '24',
+    userName: 'KO',
+    content: '금요일 오후 2시입니다.',
+    timestamp: '1:56',
+  },
+  {
+    id: '25',
+    userName: 'eunji',
+    content: '개발 환경 세팅에 문제가 있네요.',
+    timestamp: '1:57',
+  },
+  {
+    id: '26',
+    userName: 'taewon',
+    content: '제가 확인해볼게요.',
+    timestamp: '1:57',
+  },
+  {
+    id: '27',
+    userName: 'jihye',
+    content: '배포는 언제 진행되나요?',
+    timestamp: '1:58',
+  },
+  {
+    id: '28',
+    userName: 'minseok',
+    content: '이번 주 금요일로 예정되어 있습니다.',
+    timestamp: '1:58',
+  },
+  {
+    id: '29',
+    userName: 'seongyeon',
+    content: 'API 문서 업데이트했습니다.',
+    timestamp: '1:59',
+  },
+  {
+    id: '30',
+    userName: 'jaewoo',
+    content: '감사합니다!',
+    timestamp: '1:59',
+  },
+  {
+    id: '31',
+    userName: 'hyunjin',
+    content: '코드 리뷰 요청드립니다.',
+    timestamp: '2:00',
+  },
+  {
+    id: '32',
+    userName: 'KO',
+    content: '잠시 후에 확인하겠습니다.',
+    timestamp: '2:00',
+  },
+  {
+    id: '33',
+    userName: 'eunji',
+    content: '서버 로그 확인해보셨나요?',
+    timestamp: '2:01',
+  },
+  {
+    id: '34',
+    userName: 'taewon',
+    content: '네, 특이사항 없습니다.',
+    timestamp: '2:01',
+  },
+  {
+    id: '35',
+    userName: 'jihye',
+    content: '팀 회식은 언제로 할까요?',
+    timestamp: '2:02',
+  },
+  {
+    id: '36',
+    userName: 'minseok',
+    content: '다음 주 수요일은 어떠신가요?',
+    timestamp: '2:02',
+  },
+  {
+    id: '37',
+    userName: 'seongyeon',
+    content: '단위 테스트 추가했습니다.',
+    timestamp: '2:03',
+  },
+  {
+    id: '38',
+    userName: 'jaewoo',
+    content: '커버리지가 많이 올라갔네요.',
+    timestamp: '2:03',
+  },
+  {
+    id: '39',
+    userName: 'hyunjin',
+    content: '이번 스프린트 목표 달성했나요?',
+    timestamp: '2:04',
+  },
+  {
+    id: '40',
+    userName: 'KO',
+    content: '예상보다 좋은 성과를 냈습니다.',
+    timestamp: '2:04',
+  },
+  {
+    id: '41',
+    userName: 'eunji',
+    content: '새로운 라이브러리 도입을 검토중입니다.',
+    timestamp: '2:05',
+  },
+  {
+    id: '42',
+    userName: 'taewon',
+    content: '장단점 분석해주세요.',
+    timestamp: '2:05',
+  },
+  {
+    id: '43',
+    userName: 'jihye',
+    content: '성능 테스트 결과가 나왔습니다.',
+    timestamp: '2:06',
+  },
+  {
+    id: '44',
+    userName: 'minseok',
+    content: '리포트 공유 부탁드립니다.',
+    timestamp: '2:06',
+  },
+  {
+    id: '45',
+    userName: 'seongyeon',
+    content: '금주 작업 내역 정리했습니다.',
+    timestamp: '2:07',
+  },
+  {
+    id: '46',
+    userName: 'jaewoo',
+    content: '수고하셨습니다!',
+    timestamp: '2:07',
+  },
+  {
+    id: '47',
+    userName: 'hyunjin',
+    content: '다음 기능 개발 일정 잡아볼까요?',
+    timestamp: '2:08',
+  },
+  {
+    id: '48',
+    userName: 'KO',
+    content: '내일 아침에 논의하시죠.',
+    timestamp: '2:08',
+  },
+  {
+    id: '49',
+    userName: 'eunji',
+    content: '모두 고생많으셨습니다.',
+    timestamp: '2:09',
+  },
+  {
+    id: '50',
+    userName: 'taewon',
+    content: '좋은 하루 되세요!',
+    timestamp: '2:09',
+  },
+];
+
+export default initialMessages;
