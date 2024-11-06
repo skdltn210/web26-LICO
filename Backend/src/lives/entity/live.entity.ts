@@ -13,14 +13,15 @@ import {
 } from 'typeorm';
 import { LivesDto } from '../dto/lives.dto';
 import { LiveDto } from '../dto/live.dto';
+import { UpdateLiveDto } from '../dto/update.live.dto';
 
 @Entity('lives')
 export class LiveEntity {
   @PrimaryGeneratedColumn({ name: 'lives_id' })
   id: number;
 
-  @Column({ name: 'categories_id', type: 'int' })
-  categoriesId: number;
+  @Column({ name: 'categories_id', type: 'int', nullable: true })
+  categoriesId: number | null;
 
   @ManyToOne(() => CategoryEntity, category => category.lives)
   @JoinColumn({ name: 'categories_id' })
@@ -29,17 +30,17 @@ export class LiveEntity {
   @Column({ name: 'channel_id', type: 'varchar', length: 16 })
   channelId: string;
 
-  @Column({ name: 'lives_name', type: 'varchar', length: 50 })
-  name: string;
+  @Column({ name: 'lives_name', type: 'varchar', length: 50, nullable: true })
+  name: string | null;
 
-  @Column({ name: 'lives_description', type: 'varchar', length: 50 })
-  description: string;
+  @Column({ name: 'lives_description', type: 'varchar', length: 50, nullable: true })
+  description: string | null;
 
   @Column({ name: 'streaming_key', type: 'varchar', length: 16 })
   streamingKey: string;
 
-  @Column({ name: 'onair', type: 'boolean' })
-  onAir: boolean;
+  @Column({ name: 'onair', type: 'boolean', nullable: true })
+  onAir: boolean | null;
 
   @Column({ name: 'started_at', type: 'datetime', nullable: true })
   startedAt: Date | null;
@@ -76,6 +77,14 @@ export class LiveEntity {
       startedAt: this.startedAt,
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
+    };
+  }
+
+  toUpdateLiveDto(): UpdateLiveDto {
+    return {
+      categoriesId: this.category.id,
+      name: this.name,
+      description: this.description,
     };
   }
 }

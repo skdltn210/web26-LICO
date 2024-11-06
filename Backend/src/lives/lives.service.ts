@@ -19,4 +19,9 @@ export class LivesService {
     const live = await this.livesRepository.findOne({ relations: ['category', 'user'], where: { channelId } });
     return live.toLiveDto();
   }
+
+  async updateLive({ channelId, updateLiveDto }) {
+    // TODO 요청자와 채널 소유자 일치여부 체크(로그인 기능 구현 후)
+    await this.livesRepository.update({ channelId }, updateLiveDto);
+  }
 }
