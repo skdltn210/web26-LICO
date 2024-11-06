@@ -1,4 +1,5 @@
-import { CategoryEntity } from 'src/categories/entity/category.entity';
+import { CategoryEntity } from '../../categories/entity/category.entity';
+import { UserEntity } from '../../users/entity/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -8,7 +9,9 @@ import {
   DeleteDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
+import { LivesDto } from '../dto/lives.dto';
 
 @Entity('lives')
 export class LiveEntity {
@@ -48,4 +51,18 @@ export class LiveEntity {
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
+
+  @OneToOne(() => UserEntity, user => user.live, { eager: true })
+  user: UserEntity;
+
+  toLivesDto(): LivesDto {
+    return {
+      categoriesId: this.category.id,
+      categoriesName: this.category.name,
+      livesName: this.name,
+      channelId: this.channelId,
+      usersNickname: this.user.nickname,
+      usersProfileImage: this.user.profileImage,
+    };
+  }
 }

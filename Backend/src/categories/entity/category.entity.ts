@@ -1,4 +1,4 @@
-import { LiveEntity } from 'src/lives/entity/live.entity';
+import { LiveEntity } from '../../lives/entity/live.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

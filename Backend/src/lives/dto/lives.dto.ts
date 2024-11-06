@@ -1,5 +1,8 @@
-export class CategoriesDto {
+export class LivesDto {
   readonly channelId: string;
+  readonly livesName: string;
   readonly usersNickname: string;
-  readonly image: string;
+  readonly usersProfileImage: string;
+  readonly categoriesId: number;
+  readonly categoriesName: string;
 }
