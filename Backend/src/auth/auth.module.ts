@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { GithubStrategy  } from './strategies/github.strategy';
-import { GoogleStrategy } from './strategies/google.strategy'; 
+import { GoogleStrategy } from './strategies/google.strategy';
+import { NaverStrategy } from './strategies/naver.strategy'; 
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
@@ -20,7 +21,7 @@ import { PassportModule } from '@nestjs/passport';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, GithubStrategy, GoogleStrategy],
+  providers: [AuthService, GithubStrategy, GoogleStrategy, NaverStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

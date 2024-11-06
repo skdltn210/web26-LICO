@@ -14,30 +14,30 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   async githubAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
-    const jwt = this.authService.createJwt(req.user);
-
-    res.cookie('jwt', jwt, {
-      httpOnly: true,
-      secure: false,
-      maxAge: 36000000, // 10시간
-      sameSite: 'lax',
-    });
-
-    res.redirect('http://localhost:3000');
+    this.handleAuthCallback(req, res);
   }
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {
-    // Google OAuth 로그인 페이지로 리디렉션됩니다.
-  }
+  async googleAuth(@Req() req) {}
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(
-    @Req() req: Request & { user: any },
-    @Res() res: Response,
-  ) {
+  async googleAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
+    this.handleAuthCallback(req, res);
+  }
+
+  @Get('naver')
+  @UseGuards(AuthGuard('naver'))
+  async naverAuth(@Req() req) {}
+
+  @Get('naver/callback')
+  @UseGuards(AuthGuard('naver'))
+  async naverAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
+    this.handleAuthCallback(req, res);
+  }
+
+  private handleAuthCallback(req: Request & { user: any }, res: Response) {
     const jwt = this.authService.createJwt(req.user);
 
     res.cookie('jwt', jwt, {
@@ -50,4 +50,3 @@ export class AuthController {
     res.redirect('http://localhost:3000');
   }
 }
-
