@@ -1,6 +1,6 @@
 import { LuHeart, LuHeartOff } from 'react-icons/lu';
 import { FaHeart } from 'react-icons/fa';
-import useStore from '@store/useStore';
+import useFollowStore from '@store/useFollowStore.ts';
 import { useState } from 'react';
 
 interface FollowButtonProps {
@@ -8,7 +8,7 @@ interface FollowButtonProps {
 }
 
 export default function FollowButton({ channelId }: FollowButtonProps) {
-  const { followingChannels, followChannel, unfollowChannel } = useStore();
+  const { followingChannels, followChannel, unfollowChannel } = useFollowStore();
   const isFollowing = followingChannels.includes(channelId);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -28,6 +28,7 @@ export default function FollowButton({ channelId }: FollowButtonProps) {
         </div>
       )}
       <button
+        type="button"
         onClick={handleClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

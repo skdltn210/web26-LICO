@@ -32,9 +32,28 @@ export default function LivePage() {
   }, [isLarge, isMedium, handleBreakpoint]);
 
   useEffect(() => {
-    if (liveDetail && !currentChannel) {
-      const channelData = convertLiveDetailToChannel(liveDetail, id!);
-      setCurrentChannel(channelData);
+    if (!currentChannel && id) {
+      const channel = mockChannels.find(channel => channel.id === id);
+      const user = mockUsers[id];
+      const categoryData = mockCategories.find(cat => cat.id === channel?.categoryId);
+
+      if (channel && user && categoryData) {
+        setCurrentChannel({
+          id: channel.id,
+          title: channel.title,
+          streamerName: channel.streamerName,
+          channelDescription: user.channelDescription,
+          viewers: channel.viewers,
+          followers: user.followers,
+          category: {
+            id: categoryData.id,
+            name: categoryData.name,
+          },
+          profileImgUrl: channel.profileImgUrl,
+          thumbnailUrl: channel.thumbnailUrl,
+          createdAt: channel.createdAt,
+        });
+      }
     }
   }, [liveDetail, currentChannel, id, setCurrentChannel]);
 
@@ -66,14 +85,8 @@ export default function LivePage() {
   return (
     <div className="flex h-screen">
       <div className="flex-1">
-        <div
-          className="flex h-full flex-col overflow-y-auto"
-          style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}
-        >
-          <VideoPlayer streamUrl={`${liveDetail.streamingKey}`} />
+        <div className="scrollbar-hide flex h-full flex-col overflow-y-auto">
+          <VideoPlayer streamUrl="" />
           <LiveInfo channelId={id} />
           <StreamerInfo />
         </div>

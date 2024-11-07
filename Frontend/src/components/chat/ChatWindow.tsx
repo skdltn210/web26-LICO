@@ -4,7 +4,7 @@ import { FaAngleDown } from 'react-icons/fa';
 import ChatHeader from '@components/chat/ChatHeader';
 import ChatInput from '@components/chat/ChatInput';
 import useLayoutStore from '@store/useLayoutStore';
-import { getConsistentTextColor, createTestChatMessage } from './utils';
+import { getConsistentTextColor, createTestChatMessage } from '@utils/chatUtils';
 import ChatMessage from './ChatMessage';
 
 export default function ChatWindow() {
@@ -58,11 +58,7 @@ export default function ChatWindow() {
         aria-label="채팅 메시지"
         aria-live="polite"
         ref={chatRef}
-        className="h-screen overflow-auto p-4"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
+        className="scrollbar-hide h-screen overflow-auto p-4"
       >
         <div className="flex break-after-all flex-col gap-2.5">
           {messages.map(message => (
@@ -75,18 +71,20 @@ export default function ChatWindow() {
           ))}
         </div>
         <div ref={bottomRef} />
+      </div>
+      <div className="relative">
         {showScrollButton && (
           <button
             aria-label="최신 메시지로 이동"
             type="button"
             onClick={scrollToBottom}
-            className="absolute bottom-24 right-4 rounded-full bg-lico-orange-2 p-2 text-sm text-lico-gray-1 opacity-75 shadow-lg hover:bg-lico-orange-1"
+            className="absolute -top-10 right-4 rounded-full bg-lico-orange-2 p-2 text-sm text-lico-gray-1 opacity-75 shadow-lg hover:bg-lico-orange-1"
           >
             <FaAngleDown />
           </button>
         )}
+        <ChatInput onSubmit={handleNewMessage} />
       </div>
-      <ChatInput onSubmit={handleNewMessage} />
     </div>
   );
 }

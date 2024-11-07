@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface State {
+interface FollowState {
   followingChannels: string[];
   followChannel: (channelId: string) => void;
   unfollowChannel: (channelId: string) => void;
 }
 
-const useStore = create<State>()(
+const useFollowStore = create<FollowState>()(
   persist(
     set => ({
       followingChannels: [],
@@ -23,7 +23,7 @@ const useStore = create<State>()(
       },
     }),
     {
-      name: 'app-storage',
+      name: 'follow-storage',
       partialize: state => ({
         followingChannels: state.followingChannels || [],
       }),
@@ -31,4 +31,4 @@ const useStore = create<State>()(
   ),
 );
 
-export default useStore;
+export default useFollowStore;
