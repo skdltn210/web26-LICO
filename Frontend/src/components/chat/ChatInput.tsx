@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { LuSend } from 'react-icons/lu';
-import { CHAT_INPUT_TEXTAREA_CLASSES, CHAT_INPUT_LINE_HEIGHT, CHAT_INPUT_MAX_ROWS } from './constants';
+import { CHAT_INPUT_TEXTAREA_CLASSES, CHAT_INPUT_LINE_HEIGHT, CHAT_INPUT_MAX_ROWS } from '@constants/chat/input';
 
 type ChatInputProps = {
   onSubmit: (message: string) => void;

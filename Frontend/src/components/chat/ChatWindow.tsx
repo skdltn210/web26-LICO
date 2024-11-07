@@ -4,7 +4,7 @@ import { FaAngleDown } from 'react-icons/fa';
 import ChatHeader from '@components/chat/ChatHeader';
 import ChatInput from '@components/chat/ChatInput';
 import useLayoutStore from '@store/useLayoutStore';
-import { getConsistentTextColor, createTestChatMessage } from './utils';
+import { getConsistentTextColor, createTestChatMessage } from '@utils/chatUtils';
 import ChatMessage from './ChatMessage';
 
 export default function ChatWindow() {
