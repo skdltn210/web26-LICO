@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { LiveEntity } from '../../lives/entity/live.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+  OneToMany,
+} from 'typeorm';
 
 @Entity('categories')
 export class CategoryEntity {
@@ -9,7 +18,7 @@ export class CategoryEntity {
   name: string;
 
   @Column({ type: 'text', name: 'categories_image', nullable: true })
-  image: string;
+  image: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
@@ -18,5 +27,8 @@ export class CategoryEntity {
   updatedAt: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
-  deletedAt: Date;
+  deletedAt: Date | null;
+
+  @OneToMany(() => LiveEntity, live => live.category)
+  lives: LiveEntity[];
 }
