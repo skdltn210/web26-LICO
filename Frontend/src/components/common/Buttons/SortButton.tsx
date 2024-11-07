@@ -19,7 +19,7 @@ function SortButton({ label, icon: Icon, isActive = false, onClick, className = 
           : 'bg-lico-gray-3 text-lico-gray-1 hover:bg-lico-orange-1'
       } ${className} `}
     >
-      <span className="mr-1.5">{Icon && <Icon size={16} className="-mt-0.5" />}</span>
+      <span className="mr-1.5">{Icon && <Icon size={16} />}</span>
       {label}
     </button>
   );

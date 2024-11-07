@@ -1,9 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import ChannelThumbnail from '@/components/channel/ChannelCard/ChannelThumbnail';
+import ChannelThumbnail from '@components/channel/ChannelCard/ChannelThumbnail';
 import ChannelInfo from './ChannelInfo';
-import { useChannel } from '@/contexts/ChannelContext';
-import mockCategories from '@/mocks/mockCategories';
-import mockUsers from '@/mocks/mockUsers';
+import { useChannel } from '@contexts/ChannelContext';
 
 export interface ChannelCardProps {
   id: string;
@@ -11,7 +9,7 @@ export interface ChannelCardProps {
   streamerName: string;
   viewers: number;
   category: string;
-  categoryId?: string;
+  categoryId: number;
   profileImgUrl: string;
   thumbnailUrl: string;
   createdAt: string;
@@ -23,7 +21,7 @@ export default function ChannelCard({
   streamerName,
   viewers,
   category,
-  categoryId = category,
+  categoryId,
   profileImgUrl,
   thumbnailUrl,
   createdAt,
@@ -32,27 +30,23 @@ export default function ChannelCard({
   const { setCurrentChannel } = useChannel();
 
   const handleClick = () => {
-    const categoryData = mockCategories.find(cat => cat.id === categoryId);
-    const userData = mockUsers[id];
+    setCurrentChannel({
+      id,
+      title,
+      streamerName,
+      channelDescription: '',
+      viewers,
+      followers: 0,
+      category: {
+        id: categoryId,
+        name: category,
+      },
+      profileImgUrl,
+      thumbnailUrl,
+      createdAt,
+    });
 
-    if (categoryData && userData) {
-      setCurrentChannel({
-        id,
-        title,
-        streamerName,
-        channelDescription: userData.channelDescription,
-        viewers,
-        followers: userData.followers,
-        category: {
-          id: categoryData.id,
-          name: categoryData.name,
-        },
-        profileImgUrl,
-        thumbnailUrl,
-        createdAt,
-      });
-      navigate(`/live/${id}`);
-    }
+    navigate(`/live/${id}`);
   };
 
   return (
@@ -62,7 +56,7 @@ export default function ChannelCard({
         title={title}
         streamerName={streamerName}
         category={category}
-        categoryId={categoryId}
+        categoryId={categoryId.toString()}
         profileImgUrl={profileImgUrl}
       />
     </div>

@@ -1,5 +1,5 @@
 import mockChannels from '@mocks/mockChannels';
-import ChannelGrid from '@/components/channel/ChannelGrid';
+import ChannelGrid from '@components/channel/ChannelGrid';
 
 function HomePage() {
   return (

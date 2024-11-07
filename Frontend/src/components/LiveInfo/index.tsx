@@ -2,8 +2,8 @@ import { LuUser } from 'react-icons/lu';
 import CategoryBadge from '@components/common/Badges/CategoryBadge';
 import FollowButton from '@components/common/Buttons/FollowButton';
 import { useState } from 'react';
-import { useChannel } from '@/contexts/ChannelContext';
-import { formatNumber } from '@/utils/format';
+import { useChannel } from '@contexts/ChannelContext';
+import { formatNumber } from '@utils/format';
 
 interface LiveInfoProps {
   channelId: string;

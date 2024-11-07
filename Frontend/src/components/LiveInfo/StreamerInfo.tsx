@@ -1,5 +1,5 @@
-import { formatNumber } from '@/utils/format';
-import { useChannel } from '@/contexts/ChannelContext';
+import { formatNumber } from '@utils/format';
+import { useChannel } from '@contexts/ChannelContext';
 
 export default function StreamerInfo() {
   const { currentChannel } = useChannel();

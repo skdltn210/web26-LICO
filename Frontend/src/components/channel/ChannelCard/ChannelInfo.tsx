@@ -1,4 +1,4 @@
-import CategoryBadge from '@/components/common/Badges/CategoryBadge';
+import CategoryBadge from '@components/common/Badges/CategoryBadge';
 
 interface ChannelInfoProps {
   title: string;

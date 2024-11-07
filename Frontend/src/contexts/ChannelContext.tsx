@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import type { LiveDetail } from '@/types/live';
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -16,6 +17,7 @@ interface Channel {
   profileImgUrl: string;
   thumbnailUrl: string;
   createdAt: string;
+  streamingKey?: string;
 }
 
 interface ChannelContextType {
@@ -37,4 +39,23 @@ export function useChannel() {
     throw new Error('useChannel must be used within a ChannelProvider');
   }
   return context;
+}
+
+export function convertLiveDetailToChannel(liveDetail: LiveDetail, channelId: string): Channel {
+  return {
+    id: channelId,
+    title: liveDetail.livesName,
+    streamerName: liveDetail.usersNickname,
+    channelDescription: liveDetail.livesDescription,
+    viewers: 0,
+    followers: 0,
+    category: {
+      id: liveDetail.categoriesId,
+      name: liveDetail.categoriesName,
+    },
+    profileImgUrl: liveDetail.usersProfileImage,
+    thumbnailUrl: '',
+    createdAt: liveDetail.startedAt,
+    streamingKey: liveDetail.streamingKey,
+  };
 }

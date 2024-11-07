@@ -27,10 +27,14 @@ export default defineConfig({
       '@routes': path.resolve(__dirname, 'src/routes'),
       '@store': path.resolve(__dirname, 'src/store'),
       '@styles': path.resolve(__dirname, 'src/styles'),
-      '@types': path.resolve(__dirname, 'src/types'),
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@mocks': path.resolve(__dirname, 'src/mocks'),
       '@contexts': path.resolve(__dirname, 'src/contexts'),
+      '@config': path.resolve(__dirname, 'src/config'),
     },
+  },
+  server: {
+    host: true,
+    port: 3000,
   },
 });
