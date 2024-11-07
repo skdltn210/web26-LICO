@@ -19,7 +19,7 @@ export default function StudioPage() {
 
   return (
     <div className="flex h-screen">
-      <main className="min-w-96 flex-1 overflow-y-auto p-6" role="main">
+      <main className="scrollbar-hide min-w-96 flex-1 overflow-y-auto p-6" role="main">
         <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
         <div className="mt-4">
           <VideoPlayer streamUrl="" />
@@ -84,7 +84,7 @@ export default function StudioPage() {
         </div>
       </main>
 
-      <aside className="min-w-96 overflow-y-auto bg-lico-gray-4 p-6" aria-label="방송 정보">
+      <aside className="scrollbar-hide min-w-96 overflow-y-auto bg-lico-gray-4 p-6" aria-label="방송 정보">
         <StreamInfo />
       </aside>
 
