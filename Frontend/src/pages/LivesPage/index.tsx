@@ -1,31 +1,18 @@
-import mockChannels from '@mocks/mockChannels';
-import ChannelGrid from '@/components/channel/ChannelGrid';
-import SortButton from '@components/common/Buttons/SortButton';
-import { useState, useMemo } from 'react';
 import { FaFire } from 'react-icons/fa';
 import { LuClock, LuThumbsUp } from 'react-icons/lu';
-
-type SortType = 'popular' | 'recent' | 'recommended';
+import ChannelGrid from '@/components/channel/ChannelGrid';
+import SortButton from '@components/common/Buttons/SortButton';
+import { useLives } from '@/hooks/useLive';
+import { useSortStore } from '@/store/useSortStore';
 
 export default function LivesPage() {
-  const [activeSort, setActiveSort] = useState<SortType>('popular');
+  const { sortType, setSortType } = useSortStore();
 
-  const sortedChannels = useMemo(() => {
-    let channels = [...mockChannels];
+  const { data: lives, isLoading, error } = useLives(sortType);
 
-    switch (activeSort) {
-      case 'popular':
-        return channels.sort((a, b) => b.viewers - a.viewers);
-      case 'recent':
-        return channels.sort((a, b) => {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-      case 'recommended':
-        return channels.sort(() => Math.random() - 0.5);
-      default:
-        return channels;
-    }
-  }, [activeSort]);
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div>에러가 발생했습니다</div>;
+  if (!lives) return null;
 
   return (
     <div className="p-12">
@@ -33,24 +20,36 @@ export default function LivesPage() {
       <div className="mb-3 flex gap-2 px-4">
         <SortButton
           label="인기"
-          isActive={activeSort === 'popular'}
+          isActive={sortType === 'viewers'}
           icon={FaFire}
-          onClick={() => setActiveSort('popular')}
+          onClick={() => setSortType('viewers')}
         />
         <SortButton
           label="최신"
-          isActive={activeSort === 'recent'}
+          isActive={sortType === 'latest'}
           icon={LuClock}
-          onClick={() => setActiveSort('recent')}
+          onClick={() => setSortType('latest')}
         />
         <SortButton
           label="추천"
-          isActive={activeSort === 'recommended'}
+          isActive={sortType === 'random'}
           icon={LuThumbsUp}
-          onClick={() => setActiveSort('recommended')}
+          onClick={() => setSortType('random')}
         />
       </div>
-      <ChannelGrid channels={sortedChannels} />
+      <ChannelGrid
+        channels={lives.map(live => ({
+          id: live.channelId,
+          title: live.livesName,
+          streamerName: live.usersNickname,
+          profileImgUrl: live.usersProfileImage,
+          viewers: 0,
+          category: live.categoriesName,
+          categoryId: live.categoriesId.toString(),
+          thumbnailUrl: '기본 썸네일 URL 또는 임시 이미지',
+          createdAt: new Date().toISOString(),
+        }))}
+      />
     </div>
   );
 }
