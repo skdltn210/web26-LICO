@@ -31,6 +31,11 @@ export default defineConfig({
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@mocks': path.resolve(__dirname, 'src/mocks'),
       '@contexts': path.resolve(__dirname, 'src/contexts'),
+      '@config': path.resolve(__dirname, 'src/config'),
     },
+  },
+  server: {
+    host: true,
+    port: 5173,
   },
 });
