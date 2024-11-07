@@ -1,13 +1,21 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from '@components/layout/Navbar';
+import NavbarMini from '@components/layout/NavbarMini';
+import useLayoutStore from '@store/useLayoutStore';
 
 export default function Layout() {
+  const { navbarState } = useLayoutStore();
+  const isHidden = navbarState === 'hidden';
+  const isCollapsed = navbarState === 'collapsed';
+
   return (
-    <>
-      <Navbar />
-      <main className="ml-56 p-12">
+    <div className="flex h-screen">
+      {isHidden ? '' : isCollapsed ? <NavbarMini /> : <Navbar />}
+      <main
+        className={`${!isHidden && 'ml-60'} ${isCollapsed && 'ml-[92px]'} scrollbar-hider flex-1 overflow-auto bg-lico-gray-5`}
+      >
         <Outlet />
       </main>
-    </>
+    </div>
   );
 }

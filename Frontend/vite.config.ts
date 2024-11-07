@@ -1,9 +1,18 @@
+/// <reference types="node" />
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vite.dev/config/
 export default defineConfig({
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  },
   plugins: [react()],
   resolve: {
     alias: {
@@ -18,8 +27,14 @@ export default defineConfig({
       '@routes': path.resolve(__dirname, 'src/routes'),
       '@store': path.resolve(__dirname, 'src/store'),
       '@styles': path.resolve(__dirname, 'src/styles'),
-      '@types': path.resolve(__dirname, 'src/types'),
       '@utils': path.resolve(__dirname, 'src/utils'),
+      '@mocks': path.resolve(__dirname, 'src/mocks'),
+      '@contexts': path.resolve(__dirname, 'src/contexts'),
+      '@config': path.resolve(__dirname, 'src/config'),
     },
+  },
+  server: {
+    host: true,
+    port: 3000,
   },
 });

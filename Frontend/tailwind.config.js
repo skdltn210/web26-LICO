@@ -20,7 +20,12 @@ export default {
           'teal-2': '#00332A', // darker teal
         },
       },
+      screens: {
+        'cards-4': '1328px', // 4x320px + 3x16px = 1328px
+        'cards-5': '1664px', // 5x320px + 4x16px = 1664px
+        'cards-6': '2000px', // 6x320px + 5x16px = 2000px
+      },
     },
   },
-  plugins: [],
+  plugins: [require('tailwind-scrollbar-hide')],
 };

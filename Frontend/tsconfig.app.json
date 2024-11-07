@@ -8,8 +8,9 @@
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
@@ -36,9 +37,12 @@
       "@routes/*": ["src/routes/*"],
       "@store/*": ["src/store/*"],
       "@styles/*": ["src/styles/*"],
-      "@types/*": ["src/types/*"],
-      "@utils/*": ["src/utils/*"]
-    }
+      "@utils/*": ["src/utils/*"],
+      "@mocks/*": ["src/mocks/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@config/*": ["src/config/*"]
+    },
+    "types": ["node"]
   },
   "include": ["src"]
 }

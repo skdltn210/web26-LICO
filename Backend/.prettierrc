@@ -7,7 +7,5 @@
   "bracketSpacing": true,
   "arrowParens": "avoid",
   "endOfLine": "auto",
-  "bracketSameLine": false,
-  "jsxSingleQuote": false,
-  "plugins": ["prettier-plugin-tailwindcss"]
+  "bracketSameLine": false
 }
