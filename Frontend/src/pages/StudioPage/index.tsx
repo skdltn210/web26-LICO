@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import useLayoutStore from '@store/useLayoutStore';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
 import WebStreamControls from '@pages/StudioPage/WebStreamControls';
 import StreamInfo from '@pages/StudioPage/StreamInfo';
 import ChatWindow from '@components/chat/ChatWindow';
+import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 
 type StreamType = 'OBS' | 'WebOBS';
 
@@ -16,6 +18,8 @@ export default function StudioPage() {
   const [textEnabled, setTextEnabled] = useState(false);
   const [drawEnabled, setDrawEnabled] = useState(false);
   const [arEnabled, setArEnabled] = useState(false);
+
+  const { chatState, toggleChat } = useLayoutStore();
 
   return (
     <div className="flex h-screen">
@@ -88,9 +92,12 @@ export default function StudioPage() {
         <StreamInfo />
       </aside>
 
-      <aside className="min-w-96 overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
-        <ChatWindow />
-      </aside>
+      {chatState === 'expanded' && (
+        <aside className="min-w-96 overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
+          <ChatWindow />
+        </aside>
+      )}
+      {chatState === 'hidden' && <ChatOpenButton className="text-lico-gray-2" onClick={toggleChat} />}
     </div>
   );
 }
