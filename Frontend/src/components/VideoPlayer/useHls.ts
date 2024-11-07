@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Hls from 'hls.js';
 
 interface HlsOptions {
@@ -11,7 +11,7 @@ interface HlsOptions {
 export const useHls = (
   streamUrl: string | undefined,
   videoRef: React.RefObject<HTMLVideoElement>,
-  options: HlsOptions = {}
+  options: HlsOptions = {},
 ) => {
   useEffect(() => {
     let hls: Hls | null = null;
