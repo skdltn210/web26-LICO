@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { config } from '@/config/env';
 
-export const axiosInstance = axios.create({
+export const api = axios.create({
   baseURL: config.apiBaseUrl,
   timeout: 5000,
   headers: {
@@ -9,7 +9,7 @@ export const axiosInstance = axios.create({
   },
 });
 
-axiosInstance.interceptors.request.use(
+api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -22,7 +22,7 @@ axiosInstance.interceptors.request.use(
   },
 );
 
-axiosInstance.interceptors.response.use(
+api.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
