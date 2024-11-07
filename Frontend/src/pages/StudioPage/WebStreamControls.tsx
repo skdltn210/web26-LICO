@@ -29,7 +29,7 @@ export default function WebStreamControls({
   setDrawEnabled,
   arEnabled,
   setArEnabled,
-}: StreamControlsProps) {
+}: WebStreamControlsProps) {
   return (
     <>
       <div className="mt-4 flex items-center gap-4">
