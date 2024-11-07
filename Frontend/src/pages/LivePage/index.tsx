@@ -1,13 +1,13 @@
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import VideoPlayer from '@components/VideoPlayer';
-import LiveInfo from '@components/LiveInfo';
-import StreamerInfo from '@components/LiveInfo/StreamerInfo';
-import { useChannel, convertLiveDetailToChannel } from '@contexts/ChannelContext';
-import ChatWindow from '@components/chat/ChatWindow';
-import useMediaQuery from '@hooks/useMediaQuery';
-import useLayoutStore from '@store/useLayoutStore';
-import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
+import VideoPlayer from '@/components/VideoPlayer';
+import LiveInfo from '@/components/LiveInfo';
+import StreamerInfo from '@/components/LiveInfo/StreamerInfo';
+import { useChannel, convertLiveDetailToChannel } from '@/contexts/ChannelContext';
+import ChatWindow from '@/components/chat/ChatWindow';
+import useMediaQuery from '@/hooks/useMediaQuery';
+import useLayoutStore from '@/store/useLayoutStore';
+import ChatOpenButton from '@/components/common/Buttons/ChatOpenButton';
 import { useLiveDetail } from '@/hooks/useLive';
 
 export default function LivePage() {
@@ -32,28 +32,9 @@ export default function LivePage() {
   }, [isLarge, isMedium, handleBreakpoint]);
 
   useEffect(() => {
-    if (!currentChannel && id) {
-      const channel = mockChannels.find(channel => channel.id === id);
-      const user = mockUsers[id];
-      const categoryData = mockCategories.find(cat => cat.id === channel?.categoryId);
-
-      if (channel && user && categoryData) {
-        setCurrentChannel({
-          id: channel.id,
-          title: channel.title,
-          streamerName: channel.streamerName,
-          channelDescription: user.channelDescription,
-          viewers: channel.viewers,
-          followers: user.followers,
-          category: {
-            id: categoryData.id,
-            name: categoryData.name,
-          },
-          profileImgUrl: channel.profileImgUrl,
-          thumbnailUrl: channel.thumbnailUrl,
-          createdAt: channel.createdAt,
-        });
-      }
+    if (!currentChannel && id && liveDetail) {
+      const channelData = convertLiveDetailToChannel(liveDetail, id);
+      setCurrentChannel(channelData);
     }
   }, [liveDetail, currentChannel, id, setCurrentChannel]);
 
@@ -86,7 +67,9 @@ export default function LivePage() {
     <div className="flex h-screen">
       <div className="flex-1">
         <div className="scrollbar-hide flex h-full flex-col overflow-y-auto">
+
           <VideoPlayer streamUrl="https://objectstorage.ap-chuncheon-1.oraclecloud.com/n/axroqqceafgq/b/lico/o/SK1234567891.m3u8" />
+
           <LiveInfo channelId={id} />
           <StreamerInfo />
         </div>

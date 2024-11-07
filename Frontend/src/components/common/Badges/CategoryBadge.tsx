@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 interface CategoryBadgeProps {
   category: string;
-  categoryId: string;
+  categoryId: number;
   className?: string;
 }
 

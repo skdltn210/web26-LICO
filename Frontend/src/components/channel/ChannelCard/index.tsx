@@ -7,10 +7,10 @@ export interface ChannelCardProps {
   id: string;
   title: string;
   streamerName: string;
+  profileImgUrl: string;
   viewers: number;
   category: string;
   categoryId: number;
-  profileImgUrl: string;
   thumbnailUrl: string;
   createdAt: string;
 }
