@@ -128,7 +128,7 @@ export default function StudioPage() {
                         : 'bg-lico-gray-4 text-lico-gray-1 hover:text-lico-orange-2'
                     }`}
                   >
-                    <LuMonitor className="-mt-0.5 h-4 w-4" />
+                    <LuMonitor className="h-4 w-4" />
                     화면 공유
                   </button>
                   <button
@@ -140,7 +140,7 @@ export default function StudioPage() {
                         : 'bg-lico-gray-4 text-lico-gray-1 hover:text-lico-orange-2'
                     }`}
                   >
-                    <LuCamera className="-mt-0.5 h-4 w-4" />
+                    <LuCamera className="h-4 w-4" />
                     웹캠
                   </button>
                   <button
@@ -152,7 +152,7 @@ export default function StudioPage() {
                         : 'bg-lico-gray-4 text-lico-gray-1 hover:text-lico-orange-2'
                     }`}
                   >
-                    <LuImage className="-mt-0.5 h-4 w-4" />
+                    <LuImage className="h-4 w-4" />
                     이미지
                   </button>
                   <button
@@ -164,7 +164,7 @@ export default function StudioPage() {
                         : 'bg-lico-gray-4 text-lico-gray-1 hover:text-lico-orange-2'
                     }`}
                   >
-                    <LuType className="-mt-0.5 h-4 w-4" />
+                    <LuType className="h-4 w-4" />
                     텍스트
                   </button>
                   <button
@@ -176,7 +176,7 @@ export default function StudioPage() {
                         : 'bg-lico-gray-4 text-lico-gray-1 hover:text-lico-orange-2'
                     }`}
                   >
-                    <LuPencil className="-mt-0.5 h-4 w-4" />
+                    <LuPencil className="h-4 w-4" />
                     그리기
                   </button>
                   <button
@@ -188,7 +188,7 @@ export default function StudioPage() {
                         : 'bg-lico-gray-4 text-lico-gray-1 hover:text-lico-orange-2'
                     }`}
                   >
-                    <LuSparkles className="-mt-0.5 h-4 w-4" />
+                    <LuSparkles className="h-4 w-4" />
                     AR
                   </button>
                 </div>
@@ -197,7 +197,7 @@ export default function StudioPage() {
                 type="button"
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded bg-lico-orange-2 px-4 py-2.5 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
               >
-                <LuPlay className="-mt-0.5 h-5 w-5" />
+                <LuPlay className="h-5 w-5" />
                 방송 시작하기
               </button>
             </>

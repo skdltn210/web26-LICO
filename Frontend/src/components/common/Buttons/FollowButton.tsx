@@ -39,12 +39,12 @@ export default function FollowButton({ channelId }: FollowButtonProps) {
       >
         {isFollowing ? (
           isHovered ? (
-            <LuHeartOff className="-mt-0.5 h-5 w-5" />
+            <LuHeartOff className="h-5 w-5" />
           ) : (
-            <FaHeart className="-mt-0.5 h-5 w-5" />
+            <FaHeart className="h-5 w-5" />
           )
         ) : (
-          <LuHeart className="-mt-0.5 h-5 w-5" />
+          <LuHeart className="h-5 w-5" />
         )}
         {isFollowing ? '팔로잉' : '팔로우'}
       </button>

@@ -22,7 +22,7 @@ export default function Navbar(): JSX.Element {
             onClick={toggleNavbar}
             className="justify-centerfont-bold flex items-center px-4 pb-4 text-3xl text-lico-orange-2"
           >
-            <LuMenu className="-mt-0.5" size={36} />
+            <LuMenu size={36} />
           </button>
           <NavLink to="/" className="font-bold text-3xl text-lico-orange-2">
             LICO
@@ -31,19 +31,19 @@ export default function Navbar(): JSX.Element {
         <div className="flex flex-col text-lico-gray-1">
           <NavLink to="/lives" className={linkClass}>
             <div className="flex items-center">
-              <LuMonitor className="-mt-0.5 h-5 w-5" />
+              <LuMonitor className="h-5 w-5" />
               <span className="ml-4 font-bold text-base">전체 방송</span>
             </div>
           </NavLink>
           <NavLink to="/category" className={linkClass}>
             <div className="flex items-center">
-              <LuLayoutGrid className="-mt-0.5 h-5 w-5" />
+              <LuLayoutGrid className="h-5 w-5" />
               <span className="ml-4 font-bold text-base">카테고리</span>
             </div>
           </NavLink>
           <NavLink to="/following" className={linkClass}>
             <div className="flex items-center">
-              <LuHeart className="-mt-0.5 h-5 w-5" />
+              <LuHeart className="h-5 w-5" />
               <span className="ml-4 font-bold text-base">팔로잉</span>
             </div>
           </NavLink>
@@ -57,7 +57,7 @@ export default function Navbar(): JSX.Element {
             className="flex items-center rounded-lg px-4 py-3 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"
           >
             <div className="flex items-center">
-              <LuVideo className="-mt-0.5 h-5 w-5" />
+              <LuVideo className="h-5 w-5" />
               <span className="ml-4 font-bold text-base">스튜디오</span>
             </div>
           </NavLink>

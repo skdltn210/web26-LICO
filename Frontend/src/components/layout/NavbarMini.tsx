@@ -27,17 +27,17 @@ export default function NavbarMini(): JSX.Element {
         <div className="flex flex-col text-lico-gray-1">
           <NavLink to="/lives" className={linkClass}>
             <div className="flex items-center">
-              <LuMonitor className="-mt-0.5 h-5 w-5" />
+              <LuMonitor className="h-5 w-5" />
             </div>
           </NavLink>
           <NavLink to="/category" className={linkClass}>
             <div className="flex items-center">
-              <LuLayoutGrid className="-mt-0.5 h-5 w-5" />
+              <LuLayoutGrid className="h-5 w-5" />
             </div>
           </NavLink>
           <NavLink to="/following" className={linkClass}>
             <div className="flex items-center">
-              <LuHeart className="-mt-0.5 h-5 w-5" />
+              <LuHeart className="h-5 w-5" />
             </div>
           </NavLink>
 
@@ -45,7 +45,7 @@ export default function NavbarMini(): JSX.Element {
 
           <NavLink to="/studio" className={linkClass}>
             <div className="flex items-center">
-              <LuVideo className="-mt-0.5 h-5 w-5" />
+              <LuVideo className="h-5 w-5" />
             </div>
           </NavLink>
         </div>
