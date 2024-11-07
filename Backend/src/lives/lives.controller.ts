@@ -19,7 +19,6 @@ export class LivesController {
   }
 
   @Patch('/:channelId')
-  @HttpCode(202)
   async setLive(@Param('channelId') channelId: string, @Body(ValidationPipe) updateLiveDto: UpdateLiveDto) {
     await this.livesService.updateLive({ channelId, updateLiveDto });
   }
