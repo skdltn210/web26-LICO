@@ -1,11 +1,11 @@
-import useStore from '@/store/useStore';
+import useFollowStore from '@store/useFollowStore.ts';
 import mockChannels from '@/mocks/mockChannels';
 import mockUsers from '@/mocks/mockUsers';
 import ChannelGrid from '@/components/channel/ChannelGrid';
 import type { ChannelCardProps } from '@/components/channel/ChannelCard';
 
 export default function FollowingPage() {
-  const { followingChannels } = useStore();
+  const { followingChannels } = useFollowStore();
 
   const followedChannels = followingChannels
     .map(channelId => {
