@@ -3,19 +3,20 @@ import { useEffect } from 'react';
 import VideoPlayer from '@components/VideoPlayer';
 import LiveInfo from '@components/LiveInfo';
 import StreamerInfo from '@components/LiveInfo/StreamerInfo';
-import mockChannels from '@mocks/mockChannels';
-import mockUsers from '@mocks/mockUsers.ts';
-import mockCategories from '@mocks/mockCategories';
-import { useChannel } from '@contexts/ChannelContext';
+import { useChannel, convertLiveDetailToChannel } from '@contexts/ChannelContext';
 import ChatWindow from '@components/chat/ChatWindow';
 import useMediaQuery from '@hooks/useMediaQuery';
 import useLayoutStore from '@store/useLayoutStore';
 import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
+import { useLiveDetail } from '@/hooks/useLive';
 
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();
+
   const { currentChannel, setCurrentChannel } = useChannel();
   const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
+
+  const { data: liveDetail, isLoading, error } = useLiveDetail(id!);
 
   const isLarge = useMediaQuery('(min-width: 1200px)');
   const isMedium = useMediaQuery('(min-width: 700px)');
@@ -28,36 +29,19 @@ export default function LivePage() {
     } else {
       handleBreakpoint('CHAT_HIDDEN');
     }
-  }, [isLarge, isMedium]);
+  }, [isLarge, isMedium, handleBreakpoint]);
 
   useEffect(() => {
-    if (!currentChannel && id) {
-      const channel = mockChannels.find(channel => channel.id === id);
-      const user = mockUsers[id];
-      const categoryData = mockCategories.find(cat => cat.id === channel?.category);
-
-      if (channel && user && categoryData) {
-        setCurrentChannel({
-          id: channel.id,
-          title: channel.title,
-          streamerName: channel.streamerName,
-          channelDescription: user.channelDescription,
-          viewers: channel.viewers,
-          followers: user.followers,
-          category: {
-            id: categoryData.id,
-            name: categoryData.name,
-          },
-          profileImgUrl: channel.profileImgUrl,
-          thumbnailUrl: channel.thumbnailUrl,
-          createdAt: channel.createdAt,
-        });
-      }
+    if (liveDetail && !currentChannel) {
+      const channelData = convertLiveDetailToChannel(liveDetail, id!);
+      setCurrentChannel(channelData);
     }
-  }, [currentChannel, id, setCurrentChannel]);
+  }, [liveDetail, currentChannel, id, setCurrentChannel]);
 
   if (!id) return <div>잘못된 접근입니다.</div>;
-  if (!currentChannel) return <div>존재하지 않는 채널입니다.</div>;
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div>에러가 발생했습니다.</div>;
+  if (!liveDetail) return <div>존재하지 않는 채널입니다.</div>;
 
   const isChatToggleVisible = isMedium && chatState === 'hidden';
   const isTheaterMode = videoPlayerState === 'theater';
@@ -65,11 +49,15 @@ export default function LivePage() {
 
   if (isTheaterMode) {
     return (
-      <div className={`flex h-screen ${isVerticalMode ? 'flex-col' : ''} `}>
+      <div className={`flex h-screen ${isVerticalMode ? 'flex-col' : ''}`}>
         <div className="flex-1">
-          <VideoPlayer streamUrl="" />
+          <VideoPlayer streamUrl={`${liveDetail.streamingKey}`} />
         </div>
-        {chatState === 'expanded' && <ChatWindow />}
+        {chatState === 'expanded' && (
+          <div className={`${isVerticalMode ? 'h-[40vh]' : 'w-[360px]'}`}>
+            <ChatWindow />
+          </div>
+        )}
         {chatState === 'hidden' && <ChatOpenButton onClick={toggleChat} />}
       </div>
     );
@@ -85,7 +73,7 @@ export default function LivePage() {
             msOverflowStyle: 'none',
           }}
         >
-          <VideoPlayer streamUrl="" />
+          <VideoPlayer streamUrl={`${liveDetail.streamingKey}`} />
           <LiveInfo channelId={id} />
           <StreamerInfo />
         </div>
