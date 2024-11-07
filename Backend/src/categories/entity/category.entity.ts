@@ -24,7 +24,7 @@ export class CategoryEntity {
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at', nullable: true })
-  updatedAt: Date | null;
+  updatedAt: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
