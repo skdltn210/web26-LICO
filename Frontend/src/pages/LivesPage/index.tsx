@@ -45,7 +45,7 @@ export default function LivesPage() {
           profileImgUrl: live.usersProfileImage,
           viewers: 0,
           category: live.categoriesName,
-          categoryId: live.categoriesId.toString(),
+          categoryId: live.categoriesId,
           thumbnailUrl: '기본 썸네일 URL 또는 임시 이미지',
           createdAt: new Date().toISOString(),
         }))}
