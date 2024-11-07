@@ -31,7 +31,7 @@ export default function FollowButton({ channelId }: FollowButtonProps) {
         onClick={handleClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`flex h-9 items-center gap-2 rounded px-4 pb-[6px] pt-[7px] font-bold text-base transition-colors ${
+        className={`flex h-9 items-center gap-2 rounded px-4 font-bold text-base transition-colors ${
           isFollowing
             ? 'bg-lico-gray-3 text-lico-gray-1 hover:bg-lico-gray-2'
             : 'bg-lico-orange-2 text-lico-gray-5 hover:bg-lico-orange-1'
