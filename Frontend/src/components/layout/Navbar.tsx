@@ -22,7 +22,7 @@ export default function Navbar(): JSX.Element {
             onClick={toggleNavbar}
             className="justify-centerfont-bold flex items-center px-4 pb-4 text-3xl text-lico-orange-2"
           >
-            <LuMenu size={36} />
+            <LuMenu className="-mt-0.5" size={36} />
           </button>
           <NavLink to="/" className="font-bold text-3xl text-lico-orange-2">
             LICO
@@ -50,8 +50,8 @@ export default function Navbar(): JSX.Element {
 
           <div className="my-2 h-px bg-lico-gray-3" />
 
-          <a
-            href="/studio"
+          <NavLink
+            to="/studio"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center rounded-lg px-4 py-3 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"
@@ -60,7 +60,7 @@ export default function Navbar(): JSX.Element {
               <LuVideo className="-mt-0.5 h-5 w-5" />
               <span className="ml-4 font-bold text-base">스튜디오</span>
             </div>
-          </a>
+          </NavLink>
         </div>
       </div>
     </nav>
