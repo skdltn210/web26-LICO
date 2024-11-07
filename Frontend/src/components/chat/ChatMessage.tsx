@@ -14,8 +14,8 @@ export default function ChatMessage({
   return (
     <div className="flex gap-1.5 px-1">
       {timestamp && <span className="font-medium text-xs text-lico-gray-2">{timestamp}</span>}
-      <span className={`font-bold text-xs ${color}`}>{userName}</span>
-      <p className="break-all font-medium text-xs text-lico-gray-1">{content}</p>
+      <span className={`font-bold text-base ${color}`}>{userName}</span>
+      <p className="break-all font-medium text-sm text-lico-gray-1">{content}</p>
     </div>
   );
 }

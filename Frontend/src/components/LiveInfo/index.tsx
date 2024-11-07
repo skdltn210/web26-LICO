@@ -16,7 +16,7 @@ export default function LiveInfo({ channelId }: LiveInfoProps) {
   if (!currentChannel) return null;
 
   return (
-    <div className="w-full max-w-4xl bg-lico-gray-4 p-3">
+    <div className="w-full bg-lico-gray-4 p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-full bg-white p-2">

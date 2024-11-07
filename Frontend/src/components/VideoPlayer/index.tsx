@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { LuPlay, LuPause, LuVolumeX, LuVolume2, LuSettings, LuMinimize, LuMaximize, LuTv2 } from 'react-icons/lu';
+import useLayoutStore from '@store/useLayoutStore';
 
 interface VideoPlayerProps {
   streamUrl: string;
@@ -9,13 +10,13 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
-  const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [isVolumeHovered, setIsVolumeHovered] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showCursor, setShowCursor] = useState(true);
+  const { toggleVideoPlayer } = useLayoutStore();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -53,10 +54,6 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
         setIsMuted(true);
       }
     }
-  };
-
-  const toggleTheaterMode = () => {
-    setIsTheaterMode(!isTheaterMode);
   };
 
   const toggleFullScreen = () => {
@@ -137,11 +134,11 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   return (
     <div
       ref={containerRef}
-      className={`relative ${isTheaterMode ? 'w-screen' : 'w-full max-w-4xl'} ${!showCursor ? 'cursor-none' : ''}`}
+      className={`relative h-full w-full ${!showCursor ? 'cursor-none' : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video ref={videoRef} className="aspect-video w-full bg-black" autoPlay playsInline>
+      <video ref={videoRef} className="h-full w-full bg-black" autoPlay playsInline>
         <source src={streamUrl} type="application/x-mpegURL" />
         브라우저가 비디오 재생을 지원하지 않습니다.
       </video>
@@ -219,7 +216,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
               )}
             </div>
 
-            <button onClick={toggleTheaterMode} className="hover:text-lico-gray-2">
+            <button onClick={toggleVideoPlayer} className="hover:text-lico-gray-2">
               <LuTv2 size={18} />
             </button>
 
