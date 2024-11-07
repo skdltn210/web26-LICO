@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import ChannelThumbnail from '@/components/channel/ChannelCard/ChannelThumbnail';
+import ChannelThumbnail from '@components/channel/ChannelCard/ChannelThumbnail';
 import ChannelInfo from './ChannelInfo';
-import { useChannel } from '@/contexts/ChannelContext';
-import mockCategories from '@/mocks/mockCategories';
-import mockUsers from '@/mocks/mockUsers';
+import { useChannel } from '@contexts/ChannelContext';
+import mockCategories from '@mocks/mockCategories';
+import mockUsers from '@mocks/mockUsers';
 
 export interface ChannelCardProps {
   id: string;

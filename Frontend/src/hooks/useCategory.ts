@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { categoryApi } from '@/apis/category';
+import { categoryApi } from '@apis/category';
 import type { Category } from '@/types/category';
 
 export const categoryKeys = {

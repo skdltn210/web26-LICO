@@ -1,5 +1,5 @@
-import { useCategories } from '@/hooks/useCategory';
-import CategoryGrid from '@/components/category/CategoryGrid';
+import { useCategories } from '@hooks/useCategory';
+import CategoryGrid from '@components/category/CategoryGrid';
 
 export default function CategoryPage() {
   const { data: categories, isLoading, error } = useCategories();

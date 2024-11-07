@@ -1,4 +1,4 @@
-import VideoPlayer from '@/components/VideoPlayer';
+import VideoPlayer from '@components/VideoPlayer';
 import {
   LuSearch,
   LuPlay,
@@ -13,7 +13,7 @@ import {
   LuSparkles,
 } from 'react-icons/lu';
 import { useState } from 'react';
-import ChatWindow from '@/components/chat/ChatWindow';
+import ChatWindow from '@components/chat/ChatWindow';
 
 type StreamType = 'OBS' | 'WebOBS';
 

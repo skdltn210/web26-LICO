@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom';
-import ChannelGrid from '@/components/channel/ChannelGrid';
-import { useCategoryDetail } from '@/hooks/useCategory';
-import { formatUnit } from '@/utils/format';
-import mockChannels from '@/mocks/mockChannels';
+import ChannelGrid from '@components/channel/ChannelGrid';
+import { useCategoryDetail } from '@hooks/useCategory';
+import { formatUnit } from '@utils/format';
+import mockChannels from '@mocks/mockChannels';
 
 export default function CategoryDetailPage() {
   const { categoryId } = useParams();

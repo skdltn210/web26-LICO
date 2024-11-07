@@ -1,9 +1,9 @@
 import { FaFire } from 'react-icons/fa';
 import { LuClock, LuThumbsUp } from 'react-icons/lu';
-import ChannelGrid from '@/components/channel/ChannelGrid';
+import ChannelGrid from '@components/channel/ChannelGrid';
 import SortButton from '@components/common/Buttons/SortButton';
-import { useLives } from '@/hooks/useLive';
-import { useSortStore } from '@/store/useSortStore';
+import { useLives } from '@hooks/useLive';
+import { useSortStore } from '@store/useSortStore';
 
 export default function LivesPage() {
   const { sortType, setSortType } = useSortStore();

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { liveApi } from '@/apis/live';
+import { liveApi } from '@apis/live';
 import type { Live, SortType } from '@/types/live';
 
 export const liveKeys = {

@@ -1,6 +1,6 @@
 import { LuHeart, LuHeartOff } from 'react-icons/lu';
 import { FaHeart } from 'react-icons/fa';
-import useStore from '@/store/useStore';
+import useStore from '@store/useStore';
 import { useState } from 'react';
 
 interface FollowButtonProps {

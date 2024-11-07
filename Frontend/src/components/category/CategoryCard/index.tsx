@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { FaCircle } from 'react-icons/fa6';
-import { formatUnit } from '@/utils/format';
+import { formatUnit } from '@utils/format';
 
 export interface CategoryCardProps {
   id: number;
