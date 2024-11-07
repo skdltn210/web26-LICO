@@ -28,13 +28,13 @@ export default function LivePage() {
     } else {
       handleBreakpoint('CHAT_HIDDEN');
     }
-  }, [isLarge, isMedium]);
+  }, [isLarge, isMedium, handleBreakpoint]);
 
   useEffect(() => {
     if (!currentChannel && id) {
       const channel = mockChannels.find(channel => channel.id === id);
       const user = mockUsers[id];
-      const categoryData = mockCategories.find(cat => cat.id === channel?.category);
+      const categoryData = mockCategories.find(cat => cat.id === channel?.categoryId);
 
       if (channel && user && categoryData) {
         setCurrentChannel({
@@ -78,13 +78,7 @@ export default function LivePage() {
   return (
     <div className="flex h-screen">
       <div className="flex-1">
-        <div
-          className="flex h-full flex-col overflow-y-auto"
-          style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}
-        >
+        <div className="scrollbar-hide flex h-full flex-col overflow-y-auto">
           <VideoPlayer streamUrl="" />
           <LiveInfo channelId={id} />
           <StreamerInfo />

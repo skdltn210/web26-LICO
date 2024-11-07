@@ -12,11 +12,7 @@ export default function Layout() {
     <div className="flex h-screen">
       {isHidden ? '' : isCollapsed ? <NavbarMini /> : <Navbar />}
       <main
-        className={`${!isHidden && 'ml-60'} ${isCollapsed && 'ml-[92px]'} flex-1 overflow-auto bg-lico-gray-5`}
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
+        className={`${!isHidden && 'ml-60'} ${isCollapsed && 'ml-[92px]'} scrollbar-hider flex-1 overflow-auto bg-lico-gray-5`}
       >
         <Outlet />
       </main>
