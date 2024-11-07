@@ -6,4 +6,9 @@ export const categoryApi = {
     const { data } = await api.get<Category[]>('/categories');
     return data;
   },
+
+  getCategoryById: async (categoryId: string) => {
+    const { data } = await api.get<Category>(`/categories/${categoryId}`);
+    return data;
+  },
 };
