@@ -67,7 +67,9 @@ export default function LivePage() {
     <div className="flex h-screen">
       <div className="flex-1">
         <div className="scrollbar-hide flex h-full flex-col overflow-y-auto">
-          <VideoPlayer streamUrl={liveDetail.streamingKey ? `${liveDetail.streamingKey}` : ''} />
+
+          <VideoPlayer streamUrl="https://objectstorage.ap-chuncheon-1.oraclecloud.com/n/axroqqceafgq/b/lico/o/SK1234567891.m3u8" />
+
           <LiveInfo channelId={id} />
           <StreamerInfo />
         </div>
