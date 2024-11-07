@@ -71,18 +71,20 @@ export default function ChatWindow() {
           ))}
         </div>
         <div ref={bottomRef} />
+      </div>
+      <div className="relative">
         {showScrollButton && (
           <button
             aria-label="최신 메시지로 이동"
             type="button"
             onClick={scrollToBottom}
-            className="absolute bottom-24 right-4 rounded-full bg-lico-orange-2 p-2 text-sm text-lico-gray-1 opacity-75 shadow-lg hover:bg-lico-orange-1"
+            className="absolute -top-10 right-4 rounded-full bg-lico-orange-2 p-2 text-sm text-lico-gray-1 opacity-75 shadow-lg hover:bg-lico-orange-1"
           >
             <FaAngleDown />
           </button>
         )}
+        <ChatInput onSubmit={handleNewMessage} />
       </div>
-      <ChatInput onSubmit={handleNewMessage} />
     </div>
   );
 }

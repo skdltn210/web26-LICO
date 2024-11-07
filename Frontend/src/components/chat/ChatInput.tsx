@@ -54,7 +54,7 @@ export default function ChatInput({ onSubmit }: ChatInputProps) {
           onKeyDown={handleKeyDown}
           placeholder="채팅을 입력해주세요"
           spellCheck={false}
-          className={`${CHAT_INPUT_TEXTAREA_CLASSES.base} ${CHAT_INPUT_TEXTAREA_CLASSES.focus} ${message ? CHAT_INPUT_TEXTAREA_CLASSES.active : 'bg-lico-gray-5'}`}
+          className={`${CHAT_INPUT_TEXTAREA_CLASSES.base} scrollbar-hide ${CHAT_INPUT_TEXTAREA_CLASSES.focus} ${message ? CHAT_INPUT_TEXTAREA_CLASSES.active : 'bg-lico-gray-5'}`}
         />
         <div className="mt-2 flex justify-end">
           <button
