@@ -1,13 +1,4 @@
-interface ImportMetaEnv {
-  readonly VITE_API_BASE_URL: string;
-  readonly VITE_RTMP_URL: string;
-  readonly VITE_STORAGE_URL: string;
-  readonly VITE_NODE_ENV: 'development' | 'production';
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
+/// <reference types="vite/client" />
 
 export const config = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL,

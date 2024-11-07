@@ -8,8 +8,7 @@ export default function CategoryDetailPage() {
   const { categoryId } = useParams();
   const { data: category, isLoading, error } = useCategoryDetail(categoryId!);
 
-  const categoryChannels = mockChannels.filter(channel => channel.categoryId === categoryId);
-
+  const categoryChannels = mockChannels.filter(channel => channel.categoryId === Number(categoryId));
   if (isLoading) return <div>로딩 중...</div>;
   if (error) return <div>에러가 발생했습니다</div>;
   if (!category) return null;
