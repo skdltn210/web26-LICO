@@ -25,9 +25,6 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     done: Function,
   ) {
     try {
-      console.log('Access Token:', accessToken);
-      console.log('Profile:', profile);
-
       const { id: oauthUid, username, displayName, photos } = profile;
       const jwt = await this.authService.validateOAuthLogin(
         oauthUid,
@@ -41,7 +38,6 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       const user = { jwt };
       done(null, user);
     } catch (error) {
-      console.error('Error in GitHub validate:', error);
       done(error, false);
     }
   }
