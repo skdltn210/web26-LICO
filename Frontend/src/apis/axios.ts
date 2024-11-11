@@ -1,5 +1,6 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import axios from 'axios';
 import { config } from '@/config/env';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export const api = axios.create({
   baseURL: config.apiBaseUrl,
@@ -11,9 +12,10 @@ export const api = axios.create({
 });
 
 api.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error: AxiosError) => {
+  response => response,
+  error => {
     if (error.response?.status === 401) {
+      useAuthStore.getState().setUser(null);
       window.location.href = '/login';
     }
     return Promise.reject(error);

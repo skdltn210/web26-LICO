@@ -1,5 +1,5 @@
-import { Naver, Google, Github } from '@assets/icons/socialLoginIcons';
-import { useAuth } from '@hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { Naver, Google, Github } from '@/assets/icons/socialLoginIcons';
 
 export default function LoginPage() {
   const { login, isLoading } = useAuth();

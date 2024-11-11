@@ -1,14 +1,13 @@
 import { Routes, Route } from 'react-router-dom';
-import Layout from '@layouts/Layout';
-import HomePage from '@pages/HomePage';
-import FollowingPage from '@pages/FollowingPage';
-import CategoryPage from '@pages/CategoryPage';
-import CategoryDetailPage from '@pages/CategoryPage/CategoryDetailPage';
-import LivePage from '@pages/LivePage';
-import LivesPage from '@pages/LivesPage';
-import StudioPage from '@pages/StudioPage';
-import LoginPage from '@pages/LoginPage';
-import LoginCallback from '@pages/LoginPage/LoginCallback';
+import Layout from '@/layouts/Layout';
+import HomePage from '@/pages/HomePage';
+import FollowingPage from '@/pages/FollowingPage';
+import CategoryPage from '@/pages/CategoryPage';
+import CategoryDetailPage from '@/pages/CategoryPage/CategoryDetailPage';
+import LivePage from '@/pages/LivePage';
+import LivesPage from '@/pages/LivesPage';
+import StudioPage from '@/pages/StudioPage';
+import LoginPage from '@/pages/LoginPage';
 import ProtectedRoute from './ProtectedRoute';
 
 const publicRoutes = [
@@ -36,8 +35,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      <Route path="/auth/callback/:provider" element={<LoginCallback />} />
 
       <Route element={<Layout />}>
         {publicRoutes.map(route => (
