@@ -8,9 +8,9 @@ interface VideoPlayerProps {
 }
 
 export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showCursor, setShowCursor] = useState(true);
@@ -41,17 +41,19 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   };
 
   const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
     if (videoRef.current) {
+      videoRef.current.muted = false;
       videoRef.current.volume = newVolume;
     }
     setIsMuted(newVolume === 0);
+    setVolume(newVolume || 1);
   };
 
   const toggleMute = () => {
     if (videoRef.current) {
+      videoRef.current.muted = false;
       if (isMuted) {
-        videoRef.current.volume = volume || 1;
+        videoRef.current.volume = volume;
         setIsMuted(false);
       } else {
         videoRef.current.volume = 0;
@@ -134,9 +136,8 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video ref={videoRef} className="h-full w-full bg-black" autoPlay playsInline>
+      <video ref={videoRef} className="h-full w-full bg-black" muted autoPlay playsInline>
         <track kind="captions" src="" />
-        브라우저가 비디오 재생을 지원하지 않습니다.
       </video>
       {isBuffering && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
