@@ -14,7 +14,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       clientID: configService.get<string>('GITHUB_CLIENT_ID'),
       clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET'),
       callbackURL: `${configService.get<string>('SERVER_URL')}/auth/github/callback`,
-      scope: ['user:email'],
+      scope: ['read:user'],
     });
   }
 
@@ -24,17 +24,25 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     profile: Profile,
     done: Function,
   ) {
-    const { id: oauthUid, username, displayName, photos } = profile;
-    const jwt = await this.authService.validateOAuthLogin(
-      oauthUid,
-      'github',
-      {
-        username,
-        displayName,
-        profileImage: photos[0]?.value,
-      },
-    );
-    const user = { jwt };
-    done(null, user);
+    try {
+      console.log('Access Token:', accessToken);
+      console.log('Profile:', profile);
+
+      const { id: oauthUid, username, displayName, photos } = profile;
+      const jwt = await this.authService.validateOAuthLogin(
+        oauthUid,
+        'github',
+        {
+          username,
+          displayName,
+          profileImage: photos[0]?.value,
+        },
+      );
+      const user = { jwt };
+      done(null, user);
+    } catch (error) {
+      console.error('Error in GitHub validate:', error);
+      done(error, false);
+    }
   }
 }
