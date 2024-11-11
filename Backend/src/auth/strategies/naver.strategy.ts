@@ -13,7 +13,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
     super({
       clientID: configService.get<string>('NAVER_CLIENT_ID'),
       clientSecret: configService.get<string>('NAVER_CLIENT_SECRET'),
-      callbackURL: configService.get<string>('CLIENT_URL') + '/auth/naver/callback',
+      callbackURL: `${configService.get<string>('SERVER_URL')}/auth/naver/callback`,
       svcType: 0, // optional, 0 for PC web
     });
   }
