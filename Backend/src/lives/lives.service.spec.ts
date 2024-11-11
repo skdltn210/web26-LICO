@@ -65,6 +65,31 @@ describe('LivesService', () => {
         profileImage: 'https://example.com/jane-profile.jpg',
       },
     }),
+    createMockLiveEntity({
+      id: 3,
+      categoriesId: 3,
+      category: {
+        id: 3,
+        name: 'Talk Show',
+        image: 'https://example.com/talkshow.jpg',
+        createdAt: new Date('2024-11-06T14:00:00Z'),
+        updatedAt: new Date('2024-11-06T14:00:00Z'),
+      },
+      channelId: 'ghi789',
+      name: 'Evening Talk Show',
+      description: 'Discussing trending topics.',
+      streamingKey: 'key789',
+      onAir: false, // `onAir` 값이 false로 설정됨
+      startedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+      user: {
+        id: 3,
+        nickname: 'HostName',
+        profileImage: 'https://example.com/host-profile.jpg',
+      },
+    }),
   ];
 
   const mockLivesRepository = {
@@ -93,14 +118,14 @@ describe('LivesService', () => {
   describe('readLives', () => {
     it('라이브 서비스가 라이브 목록을 반환합니다.', async () => {
       // Given
-      mockLivesRepository.find.mockResolvedValue(mockLives);
+      mockLivesRepository.find.mockResolvedValue(mockLives.filter(entity => entity.onAir));
 
       // When
       const lives = await service.readLives();
 
       // Then
       expect(repository.find).toHaveBeenCalledTimes(1);
-      expect(repository.find).toHaveBeenCalledWith({ relations: ['category'] });
+      expect(repository.find).toHaveBeenCalledWith({ relations: ['category', 'user'], where: { onAir: true } });
       expect(lives).toEqual([
         {
           categoriesId: 1,
