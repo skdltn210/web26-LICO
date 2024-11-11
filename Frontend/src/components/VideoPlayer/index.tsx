@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import useLayoutStore from '@store/useLayoutStore';
-import useHls from '@hooks/useHls.ts';
+import useHls from '@hooks/useHls';
+import LoadingSpinner from '@components/VideoPlayer/LoadingSpinner';
 import Controls from './Control/index';
 
 interface VideoPlayerProps {
@@ -14,20 +15,13 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showCursor, setShowCursor] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
   const { videoPlayerState, toggleVideoPlayer } = useLayoutStore();
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // HLS 초기화
-  useHls(streamUrl, videoRef, {
-    debug: false,
-    enableWorker: true,
-    lowLatencyMode: true,
-    onError: err => setError(err),
-  });
+  const { isBuffering, error } = useHls(streamUrl, videoRef);
 
   const togglePlay = () => {
     if (videoRef.current) {
