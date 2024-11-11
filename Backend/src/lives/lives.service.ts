@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LivesDto } from './dto/lives.dto';
 import { LiveDto } from './dto/live.dto';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class LivesService {
@@ -22,5 +23,10 @@ export class LivesService {
   async updateLive({ channelId, updateLiveDto }) {
     // TODO 요청자와 채널 소유자 일치여부 체크(로그인 기능 구현 후)
     await this.livesRepository.update({ channelId }, updateLiveDto);
+  }
+
+  async readChannelId(streamingKey: UUID) {
+    const live = await this.livesRepository.findOne({ where: { streamingKey } });
+    return live.channelId;
   }
 }
