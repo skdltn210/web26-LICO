@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import useLayoutStore from '@store/useLayoutStore';
+import useHls from '@hooks/useHls.ts';
 import Controls from './Control/index';
-import { useHls } from './useHls';
 
 interface VideoPlayerProps {
   streamUrl: string;
@@ -26,7 +26,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
     debug: false,
     enableWorker: true,
     lowLatencyMode: true,
-    onError: (err) => setError(err),
+    onError: err => setError(err),
   });
 
   const togglePlay = () => {
@@ -134,12 +134,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video
-        ref={videoRef}
-        className="h-full w-full bg-black"
-        autoPlay
-        playsInline
-      >
+      <video ref={videoRef} className="h-full w-full bg-black" autoPlay playsInline>
         <track kind="captions" src="" />
         브라우저가 비디오 재생을 지원하지 않습니다.
       </video>

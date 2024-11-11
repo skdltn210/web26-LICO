@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Hls from 'hls.js';
 
 interface HlsOptions {
@@ -8,16 +8,17 @@ interface HlsOptions {
   onError?: (error: Error) => void;
 }
 
-export const useHls = (
+const useHls = (
   streamUrl: string | undefined,
   videoRef: React.RefObject<HTMLVideoElement>,
   options: HlsOptions = {},
 ) => {
   useEffect(() => {
     let hls: Hls | null = null;
+    const videoElement = videoRef.current;
 
     const initHls = () => {
-      if (!videoRef.current || !streamUrl) return;
+      if (!videoElement || !streamUrl) return;
 
       if (Hls.isSupported()) {
         hls = new Hls({
@@ -27,7 +28,7 @@ export const useHls = (
         });
 
         hls.loadSource(streamUrl);
-        hls.attachMedia(videoRef.current);
+        hls.attachMedia(videoElement);
 
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (data.fatal) {
@@ -47,8 +48,8 @@ export const useHls = (
             }
           }
         });
-      } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-        videoRef.current.src = streamUrl;
+      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+        videoElement.src = streamUrl;
       } else {
         options.onError?.(new Error('HLS is not supported in this browser'));
       }
@@ -61,5 +62,7 @@ export const useHls = (
         hls.destroy();
       }
     };
-  }, [streamUrl, options.debug, options.enableWorker, options.lowLatencyMode]);
+  }, [streamUrl, videoRef, options]);
 };
+
+export default useHls;
