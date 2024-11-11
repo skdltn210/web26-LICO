@@ -46,6 +46,7 @@ export class AuthController {
       secure: true,
       maxAge: 36000000, // 10시간
       sameSite: 'none',
+      domain: '.lico.digital', // 공통 상위 도메인 설정
     });
 
     const clientUrl = this.configService.get<string>('CLIENT_URL');
