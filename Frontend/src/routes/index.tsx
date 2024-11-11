@@ -8,25 +8,13 @@ import LivePage from '@/pages/LivePage';
 import LivesPage from '@/pages/LivesPage';
 import StudioPage from '@/pages/StudioPage';
 import LoginPage from '@/pages/LoginPage';
+import LoginCallback from '@/pages/LoginPage/LoginCallback';
 import ProtectedRoute from './ProtectedRoute';
-
-const publicRoutes = [
-  { path: '/', element: <HomePage /> },
-  { path: '/category', element: <CategoryPage /> },
-  { path: '/category/:categoryId', element: <CategoryDetailPage /> },
-  { path: '/live/:id', element: <LivePage /> },
-  { path: '/lives', element: <LivesPage /> },
-  { path: '/login', element: <LoginPage /> },
-];
-
-const protectedRoutes = [
-  { path: '/following', element: <FollowingPage /> },
-  { path: '/studio', element: <StudioPage /> },
-];
 
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/auth/:provider/callback" element={<LoginCallback />} />
       <Route
         path="/studio"
         element={
@@ -37,13 +25,20 @@ export default function AppRoutes() {
       />
 
       <Route element={<Layout />}>
-        {publicRoutes.map(route => (
-          <Route key={route.path} path={route.path} element={route.element} />
-        ))}
-
-        {protectedRoutes.map(route => (
-          <Route key={route.path} path={route.path} element={<ProtectedRoute>{route.element}</ProtectedRoute>} />
-        ))}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/category" element={<CategoryPage />} />
+        <Route path="/category/:categoryId" element={<CategoryDetailPage />} />
+        <Route path="/live/:id" element={<LivePage />} />
+        <Route path="/lives" element={<LivesPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/following"
+          element={
+            <ProtectedRoute>
+              <FollowingPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
     </Routes>
   );
