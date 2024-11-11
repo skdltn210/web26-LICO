@@ -9,7 +9,7 @@ interface VideoPlayerProps {
 }
 
 export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -119,7 +119,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video ref={videoRef} className="h-full w-full bg-black" muted autoPlay playsInline>
+      <video ref={videoRef} className="h-full w-full bg-black" onPlay={togglePlay} muted autoPlay playsInline>
         <track kind="captions" src="" />
       </video>
       {isBuffering && (
