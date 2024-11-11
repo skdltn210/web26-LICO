@@ -20,7 +20,7 @@ export default function NavbarMini(): JSX.Element {
         <button
           type="button"
           onClick={toggleNavbar}
-          className="justify-centerfont-bold flex items-center px-4 pb-4 text-3xl text-lico-orange-2"
+          className="justify-centerfont-bold flex items-center px-2 pb-4 text-3xl text-lico-orange-2"
         >
           <LuMenu size={36} />
         </button>
@@ -43,7 +43,7 @@ export default function NavbarMini(): JSX.Element {
 
           <div className="my-2 h-px bg-lico-gray-3" />
 
-          <NavLink to="/studio" className={linkClass}>
+          <NavLink to="/studio" target="_blank" rel="noopener noreferrer" className={linkClass}>
             <div className="flex items-center">
               <LuVideo className="h-5 w-5" />
             </div>
