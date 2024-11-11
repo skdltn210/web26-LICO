@@ -28,7 +28,7 @@ export class LivesService {
 
   async readChannelId(streamingKey: UUID) {
     const live = await this.livesRepository.findOne({ where: { streamingKey } });
-    return live.channelId;
+    return { channelId: live.channelId };
   }
 
   async startLive(streamingKey: UUID) {
