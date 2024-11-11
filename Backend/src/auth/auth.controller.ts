@@ -38,7 +38,7 @@ export class AuthController {
   }
 
   private handleAuthCallback(req: Request & { user: any }, res: Response) {
-    const jwt = this.authService.createJwt(req.user);
+    const jwt = req.user.jwt;
 
     res.cookie('jwt', jwt, {
       httpOnly: true,
