@@ -7,11 +7,14 @@ import { NaverStrategy } from './strategies/naver.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { UsersModule } from '../users/users.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule,
+    UsersModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -21,7 +24,7 @@ import { PassportModule } from '@nestjs/passport';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, GithubStrategy, GoogleStrategy, NaverStrategy],
+  providers: [AuthService, GithubStrategy, GoogleStrategy, NaverStrategy, JwtStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}
