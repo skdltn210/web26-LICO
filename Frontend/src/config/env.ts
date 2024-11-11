@@ -9,12 +9,15 @@ export const config = {
   auth: {
     google: {
       clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      redirectUri: `${import.meta.env.VITE_API_BASE_URL}/auth/google/callback`,
     },
     naver: {
       clientId: import.meta.env.VITE_NAVER_CLIENT_ID,
+      redirectUri: `${import.meta.env.VITE_API_BASE_URL}/auth/naver/callback`,
     },
     github: {
       clientId: import.meta.env.VITE_GITHUB_CLIENT_ID,
+      redirectUri: `${import.meta.env.VITE_API_BASE_URL}/auth/github/callback`,
     },
   },
 } as const;
