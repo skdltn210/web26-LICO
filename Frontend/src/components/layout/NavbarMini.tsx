@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo, LuMenu } from 'react-icons/lu';
+import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo, LuMenu, LuLogIn } from 'react-icons/lu';
 import useLayoutStore from '@store/useLayoutStore.ts';
 
 interface NavLinkProps {
@@ -10,13 +10,13 @@ export default function NavbarMini(): JSX.Element {
   const { toggleNavbar } = useLayoutStore();
 
   const linkClass = ({ isActive }: NavLinkProps): string =>
-    `flex justify-center items-center rounded-lg px-4 py-3 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2 ${
+    `flex justify-center items-center rounded-lg px-4 py-3 transition-colors text-lico-gray-1 hover:bg-lico-gray-3 hover:text-lico-orange-2 ${
       isActive ? 'text-lico-orange-2' : ''
     }`;
 
   return (
     <nav className="fixed left-0 top-0 z-10 h-screen border-r border-lico-gray-3 bg-lico-gray-4">
-      <div className="flex flex-col px-3 py-5">
+      <div className="flex h-full flex-col px-3 py-5">
         <button
           type="button"
           onClick={toggleNavbar}
@@ -24,7 +24,7 @@ export default function NavbarMini(): JSX.Element {
         >
           <LuMenu size={36} />
         </button>
-        <div className="flex flex-col text-lico-gray-1">
+        <div className="flex flex-col">
           <NavLink to="/lives" className={linkClass}>
             <div className="flex items-center">
               <LuMonitor className="h-5 w-5" />
@@ -49,6 +49,14 @@ export default function NavbarMini(): JSX.Element {
             </div>
           </NavLink>
         </div>
+
+        <div className="flex-grow" />
+
+        <NavLink to="/login" className={linkClass}>
+          <div className="flex items-center">
+            <LuLogIn className="h-5 w-5" />
+          </div>
+        </NavLink>
       </div>
     </nav>
   );

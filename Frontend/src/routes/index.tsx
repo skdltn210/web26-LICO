@@ -7,6 +7,7 @@ import CategoryDetailPage from '@pages/CategoryPage/CategoryDetailPage';
 import LivePage from '@pages/LivePage';
 import LivesPage from '@pages/LivesPage';
 import StudioPage from '@pages/StudioPage';
+import LoginPage from '@pages/LoginPage';
 
 const layoutRoutes = [
   { path: '/', element: <HomePage /> },
@@ -15,6 +16,7 @@ const layoutRoutes = [
   { path: '/category/:categoryId', element: <CategoryDetailPage /> },
   { path: '/live/:id', element: <LivePage /> },
   { path: '/lives', element: <LivesPage /> },
+  { path: '/login', element: <LoginPage /> },
 ];
 
 export default function AppRoutes() {
