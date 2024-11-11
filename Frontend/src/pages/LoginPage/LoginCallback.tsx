@@ -1,26 +1,12 @@
 import { useEffect } from 'react';
-import { useSearchParams, useParams } from 'react-router-dom';
-import { useAuth } from '@hooks/useAuth';
-
-type SocialProvider = 'google' | 'naver' | 'github';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginCallback() {
-  const [searchParams] = useSearchParams();
-  const { provider } = useParams<{ provider: string }>();
-  const { socialLoginCallback } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const code = searchParams.get('code');
-    const state = searchParams.get('state');
-
-    if (code && provider) {
-      socialLoginCallback({
-        code,
-        provider: provider as SocialProvider,
-        state: state || undefined,
-      });
-    }
-  }, [searchParams, provider, socialLoginCallback]);
+    navigate('/');
+  }, [navigate]);
 
   return (
     <div className="flex h-screen items-center justify-center">
