@@ -17,6 +17,8 @@ async function bootstrap() {
     // CORS 설정
     origin: configService.get<string>('CORS') || '*',
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   });
 
   await app.listen(port);

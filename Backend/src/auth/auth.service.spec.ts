@@ -41,7 +41,6 @@ describe('AuthService', () => {
     // LiveEntity의 메서드 추가
     toLivesDto: jest.fn(),
     toLiveDto: jest.fn(),
-    toUpdateLiveDto: jest.fn(),
   };
 
   function createMockUserEntity(overrides?: Partial<UserEntity>): UserEntity {

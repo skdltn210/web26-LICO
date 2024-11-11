@@ -43,9 +43,9 @@ export class AuthController {
 
     res.cookie('jwt', jwt, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       maxAge: 36000000, // 10시간
-      sameSite: 'lax',
+      sameSite: 'none',
     });
 
     const clientUrl = this.configService.get<string>('CLIENT_URL');
