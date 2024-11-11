@@ -138,6 +138,11 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
         <track kind="captions" src="" />
         브라우저가 비디오 재생을 지원하지 않습니다.
       </video>
+      {isBuffering && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      )}
 
       <Controls
         isPlaying={isPlaying}

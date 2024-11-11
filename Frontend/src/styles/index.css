@@ -38,3 +38,16 @@ input[type='range']::-ms-thumb {
   width: 0;
   height: 0;
 }
+
+@keyframes fillOrange {
+  0% {
+    clip-path: inset(100% 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.animate-fill-orange {
+  animation: fillOrange 0.5s ease-in-out infinite;
+}

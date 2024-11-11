@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import LoadingSpinner from '@components/VideoPlayer/LoadingSpinner.tsx';
 import VideoPlayer from '@/components/VideoPlayer';
 import LiveInfo from '@/components/LiveInfo';
 import StreamerInfo from '@/components/LiveInfo/StreamerInfo';
@@ -12,10 +13,8 @@ import { useLiveDetail } from '@/hooks/useLive';
 
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();
-
   const { currentChannel, setCurrentChannel } = useChannel();
   const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
-
   const { data: liveDetail, isLoading, error } = useLiveDetail(id!);
 
   const isLarge = useMediaQuery('(min-width: 1200px)');
@@ -39,7 +38,7 @@ export default function LivePage() {
   }, [liveDetail, currentChannel, id, setCurrentChannel]);
 
   if (!id) return <div>잘못된 접근입니다.</div>;
-  if (isLoading) return <div>로딩 중...</div>;
+  if (isLoading) return <LoadingSpinner />;
   if (error) return <div>에러가 발생했습니다.</div>;
   if (!liveDetail) return <div>존재하지 않는 채널입니다.</div>;
 
@@ -66,10 +65,8 @@ export default function LivePage() {
   return (
     <div className="flex h-screen">
       <div className="flex-1">
-        <div className="scrollbar-hide flex h-full flex-col overflow-y-auto">
-
+        <div className="flex h-full flex-col overflow-y-auto scrollbar-hide">
           <VideoPlayer streamUrl="https://objectstorage.ap-chuncheon-1.oraclecloud.com/n/axroqqceafgq/b/lico/o/SK1234567891.m3u8" />
-
           <LiveInfo channelId={id} />
           <StreamerInfo />
         </div>
