@@ -2,10 +2,11 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private configService: ConfigService, private authService: AuthService) {}
 
   @Get('github')
   @UseGuards(AuthGuard('github'))
@@ -47,6 +48,7 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    res.redirect('http://localhost:3000');
+    const clientUrl = this.configService.get<string>('CLIENT_URL');
+    res.redirect(clientUrl);
   }
 }

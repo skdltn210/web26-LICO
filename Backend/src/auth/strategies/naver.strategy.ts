@@ -13,7 +13,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
     super({
       clientID: configService.get<string>('NAVER_CLIENT_ID'),
       clientSecret: configService.get<string>('NAVER_CLIENT_SECRET'),
-      callbackURL: 'http://localhost:3000/auth/naver/callback',
+      callbackURL: configService.get<string>('CLIENT_URL') + '/auth/naver/callback',
       svcType: 0, // optional, 0 for PC web
     });
   }
@@ -25,7 +25,6 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
     done: Function,
   ): Promise<any> {
     try {
-      console.log('Naver Profile:', profile);
       const { id, emails, displayName, _json } = profile;
       const user = {
         provider: 'naver' as 'naver',
