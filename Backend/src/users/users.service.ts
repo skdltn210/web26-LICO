@@ -4,7 +4,7 @@ import { UserEntity } from './entity/user.entity';
 import { LiveEntity } from '../lives/entity/live.entity';
 import { Repository, DataSource } from 'typeorm';
 import { CreateUserDto } from './dto/create.user.dto';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -37,10 +37,10 @@ export class UsersService {
       // LiveEntity 생성
       const live = manager.create(LiveEntity, {
         categoriesId: null,
-        channelId: uuidv4(), // uuid
+        channelId: randomUUID(), // uuid
         name: null,
         description: null,
-        streamingKey: uuidv4(), // uuid
+        streamingKey: randomUUID(), // uuid
         onAir: false,
         startedAt: null,
       });
