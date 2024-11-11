@@ -25,10 +25,10 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
     done: Function,
   ): Promise<any> {
     try {
-      const { id, emails, displayName, _json } = profile;
+      const { id: oauthUid, emails, displayName, _json } = profile;
       const user = {
         provider: 'naver' as 'naver',
-        userId: id,
+        oauthUid: oauthUid,
         email: emails[0].value, // 이메일 구조에 따라 수정 필요
         username: displayName || _json.nickname,
         profileImage: _json.profile_image,
@@ -36,7 +36,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
 
       // AuthService를 통해 사용자 검증 및 JWT 생성
       const jwt = await this.authService.validateOAuthLogin(
-        user.userId,
+        user.oauthUid,
         user.provider,
         {
           username: user.username,

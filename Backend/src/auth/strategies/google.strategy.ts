@@ -25,10 +25,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): Promise<any> {
     try {
-      const { id, emails, displayName, photos } = profile;
+      const { id:oauthUid, emails, displayName, photos } = profile;
       const user = {
         provider: 'google' as 'google',
-        userId: id,
+        oauthUid: oauthUid,
         email: emails[0].value,
         username: displayName,
         profileImage: photos[0]?.value,
@@ -36,7 +36,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
       // AuthService를 통해 사용자 검증 및 JWT 생성
       const jwt = await this.authService.validateOAuthLogin(
-        user.userId,
+        user.oauthUid,
         user.provider,
         {
           username: user.username,

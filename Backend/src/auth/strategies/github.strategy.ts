@@ -24,9 +24,9 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     profile: Profile,
     done: Function,
   ) {
-    const { id, username, displayName, photos } = profile;
+    const { id: oauthUid, username, displayName, photos } = profile;
     const jwt = await this.authService.validateOAuthLogin(
-      id,
+      oauthUid,
       'github',
       {
         username,
