@@ -34,7 +34,7 @@ export class LivesController {
   @HttpCode(200)
   async startLive(@Param('streamingKey') streamingKey: UUID) {
     await this.livesService.startLive(streamingKey);
-    return 0;
+    return { code: 0 };
   }
 
   @Delete('/onair/:streamingKey')
