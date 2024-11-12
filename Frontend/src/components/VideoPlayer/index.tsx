@@ -23,14 +23,21 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
 
   const { isBuffering, error } = useHls(streamUrl, videoRef);
 
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+
   const togglePlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch(err => console.error('Error playing video:', err));
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -119,7 +126,15 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video ref={videoRef} className="h-full w-full bg-black" onPlay={togglePlay} muted autoPlay playsInline>
+      <video
+        ref={videoRef}
+        className="h-full w-full bg-black"
+        onPlay={handlePlay}
+        onPause={handlePause}
+        muted
+        autoPlay
+        playsInline
+      >
         <track kind="captions" src="" />
       </video>
       {isBuffering && isPlaying && (
