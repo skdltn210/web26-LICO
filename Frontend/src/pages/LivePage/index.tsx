@@ -2,15 +2,15 @@ import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import { config } from '@config/env';
-import VideoPlayer from '@/components/VideoPlayer';
-import LiveInfo from '@/components/LiveInfo';
-import StreamerInfo from '@/components/LiveInfo/StreamerInfo';
-import { useChannel, convertLiveDetailToChannel } from '@/contexts/ChannelContext';
-import ChatWindow from '@/components/chat/ChatWindow';
-import useMediaQuery from '@/hooks/useMediaQuery';
-import useLayoutStore from '@/store/useLayoutStore';
-import ChatOpenButton from '@/components/common/Buttons/ChatOpenButton';
-import { useLiveDetail } from '@/hooks/useLive';
+import VideoPlayer from '@components/VideoPlayer';
+import LiveInfo from '@components/LiveInfo';
+import StreamerInfo from '@components/LiveInfo/StreamerInfo';
+import { useChannel, convertLiveDetailToChannel } from '@contexts/ChannelContext';
+import ChatWindow from '@components/chat/ChatWindow';
+import useMediaQuery from '@hooks/useMediaQuery';
+import useLayoutStore from '@store/useLayoutStore';
+import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
+import { useLiveDetail } from '@hooks/useLive';
 
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();

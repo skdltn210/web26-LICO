@@ -36,7 +36,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play().catch(err => console.error('Error playing video:', err));
+        videoRef.current.play();
       }
     }
   };
