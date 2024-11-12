@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import useLayoutStore from '@store/useLayoutStore';
 import useHls from '@hooks/useHls';
-import LoadingSpinner from '@components/VideoPlayer/LoadingSpinner';
+import LoadingSpinner from '@components/common/LoadingSpinner.tsx';
 import Controls from './Control/index';
 
 interface VideoPlayerProps {

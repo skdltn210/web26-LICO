@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import LoadingSpinner from '@components/VideoPlayer/LoadingSpinner.tsx';
+import LoadingSpinner from '@components/common/LoadingSpinner.tsx';
 import VideoPlayer from '@/components/VideoPlayer';
 import LiveInfo from '@/components/LiveInfo';
 import StreamerInfo from '@/components/LiveInfo/StreamerInfo';
