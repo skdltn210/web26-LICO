@@ -6,6 +6,20 @@ export const config = {
   storageUrl: import.meta.env.VITE_STORAGE_URL,
   isDevelopment: import.meta.env.VITE_NODE_ENV === 'development',
   isProduction: import.meta.env.VITE_NODE_ENV === 'production',
+  auth: {
+    google: {
+      clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      redirectUri: `${import.meta.env.VITE_API_BASE_URL}/auth/google/callback`,
+    },
+    naver: {
+      clientId: import.meta.env.VITE_NAVER_CLIENT_ID,
+      redirectUri: `${import.meta.env.VITE_API_BASE_URL}/auth/naver/callback`,
+    },
+    github: {
+      clientId: import.meta.env.VITE_GITHUB_CLIENT_ID,
+      redirectUri: `${import.meta.env.VITE_API_BASE_URL}/auth/github/callback`,
+    },
+  },
 } as const;
 
 export const urls = {

@@ -2,10 +2,11 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private configService: ConfigService, private authService: AuthService) {}
 
   @Get('github')
   @UseGuards(AuthGuard('github'))
@@ -38,15 +39,17 @@ export class AuthController {
   }
 
   private handleAuthCallback(req: Request & { user: any }, res: Response) {
-    const jwt = this.authService.createJwt(req.user);
+    const jwt = req.user.jwt;
 
     res.cookie('jwt', jwt, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       maxAge: 36000000, // 10시간
-      sameSite: 'lax',
+      sameSite: 'none',
+      domain: '.lico.digital', // 공통 상위 도메인 설정
     });
 
-    res.redirect('http://localhost:3000');
+    const clientUrl = this.configService.get<string>('CLIENT_URL');
+    res.redirect(clientUrl);
   }
 }

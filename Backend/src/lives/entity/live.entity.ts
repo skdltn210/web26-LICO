@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 import { LivesDto } from '../dto/lives.dto';
 import { LiveDto } from '../dto/live.dto';
-import { UpdateLiveDto } from '../dto/update.live.dto';
 
 @Entity('lives')
 export class LiveEntity {
@@ -27,7 +26,7 @@ export class LiveEntity {
   @JoinColumn({ name: 'categories_id' })
   category: CategoryEntity;
 
-  @Column({ name: 'channel_id', type: 'varchar', length: 16 })
+  @Column({ name: 'channel_id', type: 'varchar', length: 36 })
   channelId: string;
 
   @Column({ name: 'lives_name', type: 'varchar', length: 50, nullable: true })
@@ -36,7 +35,7 @@ export class LiveEntity {
   @Column({ name: 'lives_description', type: 'varchar', length: 50, nullable: true })
   description: string | null;
 
-  @Column({ name: 'streaming_key', type: 'varchar', length: 16 })
+  @Column({ name: 'streaming_key', type: 'varchar', length: 36 })
   streamingKey: string;
 
   @Column({ name: 'onair', type: 'boolean', nullable: true })
@@ -59,8 +58,8 @@ export class LiveEntity {
 
   toLivesDto(): LivesDto {
     return {
-      categoriesId: this.category.id,
-      categoriesName: this.category.name,
+      categoriesId: this.category?.id,
+      categoriesName: this.category?.name,
       livesName: this.name,
       channelId: this.channelId,
       usersNickname: this.user.nickname,
@@ -70,21 +69,13 @@ export class LiveEntity {
 
   toLiveDto(): LiveDto {
     return {
-      categoriesId: this.category.id,
-      categoriesName: this.category.name,
+      categoriesId: this.category?.id,
+      categoriesName: this.category?.name,
       livesName: this.name,
       livesDescription: this.description,
       startedAt: this.startedAt,
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
-    };
-  }
-
-  toUpdateLiveDto(): UpdateLiveDto {
-    return {
-      categoriesId: this.category.id,
-      name: this.name,
-      description: this.description,
     };
   }
 }
