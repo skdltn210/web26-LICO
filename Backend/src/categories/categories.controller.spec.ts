@@ -3,10 +3,12 @@ import { CategoriesController } from './categories.controller';
 import { CategoriesService } from './categories.service';
 import { NotFoundException } from '@nestjs/common';
 import { ErrorMessage } from './error/error.message.enum';
+import { LivesService } from '../lives/lives.service';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;
-  let service: CategoriesService;
+  let categoriesService: CategoriesService;
+  let livesService: LivesService;
 
   const mockCategories = [
     { id: 1, name: '게임', image: 'https://example.com/game.jpg' },
@@ -18,6 +20,10 @@ describe('CategoriesController', () => {
     readCategory: jest.fn(),
   };
 
+  const mockLivesService = {
+    readLives: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CategoriesController],
@@ -26,11 +32,16 @@ describe('CategoriesController', () => {
           provide: CategoriesService,
           useValue: mockCategoriesService,
         },
+        {
+          provide: LivesService,
+          useValue: mockLivesService,
+        },
       ],
     }).compile();
 
     controller = module.get<CategoriesController>(CategoriesController);
-    service = module.get<CategoriesService>(CategoriesService);
+    categoriesService = module.get<CategoriesService>(CategoriesService);
+    livesService = module.get<LivesService>(LivesService);
   });
 
   afterEach(() => {
@@ -46,7 +57,7 @@ describe('CategoriesController', () => {
       const categories = await controller.getCategories();
 
       // Then
-      expect(service.readCategories).toHaveBeenCalledTimes(1);
+      expect(categoriesService.readCategories).toHaveBeenCalledTimes(1);
       expect(categories).toEqual(mockCategories);
     });
   });
@@ -62,8 +73,8 @@ describe('CategoriesController', () => {
       const category = await controller.getCategory(categoryId);
 
       // Then
-      expect(service.readCategory).toHaveBeenCalledTimes(1);
-      expect(service.readCategory).toHaveBeenCalledWith(categoryId);
+      expect(categoriesService.readCategory).toHaveBeenCalledTimes(1);
+      expect(categoriesService.readCategory).toHaveBeenCalledWith(categoryId);
       expect(category).toEqual(expectedCategory);
     });
 
@@ -76,8 +87,32 @@ describe('CategoriesController', () => {
       await expect(controller.getCategory(invalidCategoryId)).rejects.toThrow(
         new NotFoundException(ErrorMessage.READ_CATEGORY_404),
       );
-      expect(service.readCategory).toHaveBeenCalledTimes(1);
-      expect(service.readCategory).toHaveBeenCalledWith(invalidCategoryId);
+      expect(categoriesService.readCategory).toHaveBeenCalledTimes(1);
+      expect(categoriesService.readCategory).toHaveBeenCalledWith(invalidCategoryId);
+    });
+  });
+
+  describe('getLivesByCategory', () => {
+    it('카테고리 컨트롤러가 해당 카테고리의 방송중인 라이브 목록을 반환합니다.', async () => {
+      // Given
+      const categoriesId = 1;
+      const mockLives = [
+        {
+          channelId: 'abc123',
+        },
+        {
+          channelId: 'def456',
+        },
+      ];
+      mockLivesService.readLives.mockResolvedValue(mockLives);
+
+      // When
+      const lives = await controller.getOnAirLivesByCategory(categoriesId);
+
+      // Then
+      expect(livesService.readLives).toHaveBeenCalledTimes(1);
+      expect(livesService.readLives).toHaveBeenCalledWith({ categoriesId, onAir: true });
+      expect(lives).toEqual(mockLives);
     });
   });
 });
