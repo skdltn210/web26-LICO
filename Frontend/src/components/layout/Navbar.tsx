@@ -51,25 +51,21 @@ export default function Navbar(): JSX.Element {
               <span className="ml-4 font-bold text-base">카테고리</span>
             </div>
           </NavLink>
-          {user && (
-            <NavLink to="/following" className={linkClass}>
-              <div className="flex items-center">
-                <LuHeart className="h-5 w-5" />
-                <span className="ml-4 font-bold text-base">팔로잉</span>
-              </div>
-            </NavLink>
-          )}
+          <NavLink to="/following" className={linkClass}>
+            <div className="flex items-center">
+              <LuHeart className="h-5 w-5" />
+              <span className="ml-4 font-bold text-base">팔로잉</span>
+            </div>
+          </NavLink>
 
           <div className="my-2 h-px bg-lico-gray-3" />
 
-          {user && (
-            <NavLink to="/studio" target="_blank" rel="noopener noreferrer" className={linkClass}>
-              <div className="flex items-center">
-                <LuVideo className="h-5 w-5" />
-                <span className="ml-4 font-bold text-base">스튜디오</span>
-              </div>
-            </NavLink>
-          )}
+          <NavLink to="/studio" target="_blank" rel="noopener noreferrer" className={linkClass}>
+            <div className="flex items-center">
+              <LuVideo className="h-5 w-5" />
+              <span className="ml-4 font-bold text-base">스튜디오</span>
+            </div>
+          </NavLink>
         </div>
 
         <div className="flex-grow" />

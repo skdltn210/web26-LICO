@@ -44,23 +44,19 @@ export default function NavbarMini(): JSX.Element {
               <LuLayoutGrid className="h-5 w-5" />
             </div>
           </NavLink>
-          {user && (
-            <NavLink to="/following" className={linkClass}>
-              <div className="flex items-center">
-                <LuHeart className="h-5 w-5" />
-              </div>
-            </NavLink>
-          )}
+          <NavLink to="/following" className={linkClass}>
+            <div className="flex items-center">
+              <LuHeart className="h-5 w-5" />
+            </div>
+          </NavLink>
 
           <div className="my-2 h-px bg-lico-gray-3" />
 
-          {user && (
-            <NavLink to="/studio" target="_blank" rel="noopener noreferrer" className={linkClass}>
-              <div className="flex items-center">
-                <LuVideo className="h-5 w-5" />
-              </div>
-            </NavLink>
-          )}
+          <NavLink to="/studio" target="_blank" rel="noopener noreferrer" className={linkClass}>
+            <div className="flex items-center">
+              <LuVideo className="h-5 w-5" />
+            </div>
+          </NavLink>
         </div>
 
         <div className="flex-grow" />
