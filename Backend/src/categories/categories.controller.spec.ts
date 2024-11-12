@@ -85,7 +85,7 @@ describe('CategoriesController', () => {
 
       // When & Then
       await expect(controller.getCategory(invalidCategoryId)).rejects.toThrow(
-        new NotFoundException(ErrorMessage.READ_CATEGORY_404),
+        new NotFoundException(ErrorMessage.CATEGORY_NOT_FOUND),
       );
       expect(categoriesService.readCategory).toHaveBeenCalledTimes(1);
       expect(categoriesService.readCategory).toHaveBeenCalledWith(invalidCategoryId);

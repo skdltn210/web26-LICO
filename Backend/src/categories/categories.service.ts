@@ -25,7 +25,7 @@ export class CategoriesService {
     const category = await this.categoriesRepository.findOne({ where: { id } });
 
     if (!category) {
-      throw new NotFoundException(ErrorMessage.READ_CATEGORY_404);
+      throw new NotFoundException(ErrorMessage.CATEGORY_NOT_FOUND);
     }
 
     return { name: category.name, image: category.image };

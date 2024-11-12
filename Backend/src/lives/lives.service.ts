@@ -5,6 +5,7 @@ import { FindOptionsWhere, Repository } from 'typeorm';
 import { LivesDto } from './dto/lives.dto';
 import { LiveDto } from './dto/live.dto';
 import { UUID } from 'crypto';
+import { ErrorMessage } from './error/error.message.enum';
 
 @Injectable()
 export class LivesService {
@@ -23,7 +24,7 @@ export class LivesService {
     const live = await this.livesRepository.findOne({ relations: ['category', 'user'], where: { channelId } });
 
     if (!live) {
-      throw new NotFoundException('존재하지 않는 채널입니다.');
+      throw new NotFoundException(ErrorMessage.LIVE_NOT_FOUND);
     }
 
     return live.toLiveDto();
@@ -43,7 +44,7 @@ export class LivesService {
     const live = await this.livesRepository.findOne({ where: { streamingKey } });
 
     if (live.onAir) {
-      throw new ConflictException('이미 방송이 진행중입니다.');
+      throw new ConflictException(ErrorMessage.LIVE_ALREADY_STARTED);
     }
 
     await this.livesRepository.update({ streamingKey }, { startedAt: new Date(), onAir: true });
