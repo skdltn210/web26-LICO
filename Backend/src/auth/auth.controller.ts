@@ -40,16 +40,8 @@ export class AuthController {
 
   private handleAuthCallback(req: Request & { user: any }, res: Response) {
     const jwt = req.user.jwt;
-
-    res.cookie('jwt', jwt, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 36000000, // 10시간
-      sameSite: 'none',
-      domain: '.lico.digital', // 공통 상위 도메인 설정
-    });
-
-    const clientUrl = this.configService.get<string>('CLIENT_URL');
-    res.redirect(clientUrl);
+  
+    // JWT를 JSON 응답으로 반환
+    res.json({ accessToken: jwt });
   }
 }
