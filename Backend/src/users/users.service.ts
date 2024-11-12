@@ -49,7 +49,7 @@ export class UsersService {
       // UserEntity 생성
       const newUser = manager.create(UserEntity, {
         ...createUserDto,
-        livesId: savedLive.id, // LiveEntity의 id 사용
+        live: savedLive, // 올바른 관계 필드에 값 할당
       });
       const savedUser = await manager.save(newUser);
 
