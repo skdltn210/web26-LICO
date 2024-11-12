@@ -21,7 +21,7 @@ export class CategoriesController {
     return await this.categoriesService.readCategory(categoriesId);
   }
 
-  @Get('/:catrgoriesId/lives')
+  @Get('/:categoriesId/lives')
   async getOnAirLivesByCategory(@Param('categoriesId', ParseIntPipe) categoriesId: number) {
     return await this.livesService.readLives({ categoriesId, onAir: true });
   }
