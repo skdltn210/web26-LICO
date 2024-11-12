@@ -2,12 +2,14 @@ import { api } from './axios';
 import { AuthResponse, Provider, RefreshTokenResponse, AuthCallbackParams } from '@/types/auth';
 
 export const authApi = {
-  async login(provider: Provider): Promise<void> {
-    await api.get(`/auth/${provider}`);
+  async login(provider: Provider) {
+    const response = await api.get(`/auth/${provider}`);
+    return response.data;
   },
 
-  async logout(): Promise<void> {
-    await api.post('/auth/logout');
+  async logout() {
+    const response = await api.get('/auth/logout');
+    return response.data;
   },
 
   async refreshToken(): Promise<RefreshTokenResponse> {
@@ -20,11 +22,6 @@ export const authApi = {
     const response = await api.get<AuthResponse>(`/auth/${provider}/callback`, {
       params: { code, state },
     });
-    return response.data;
-  },
-
-  async checkStatus(): Promise<{ isAuthenticated: boolean }> {
-    const response = await api.get('/auth/status');
     return response.data;
   },
 };

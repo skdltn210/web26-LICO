@@ -1,8 +1,9 @@
 import { useAuth } from '@/hooks/useAuth';
 import { Naver, Google, Github } from '@/assets/icons/socialLoginIcons';
+import { Provider } from '@/types/auth';
 
 export default function LoginPage() {
-  const { login, isLoggingIn } = useAuth();
+  const { login } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col p-12">
@@ -13,8 +14,7 @@ export default function LoginPage() {
           <div className="flex flex-col gap-4">
             <button
               onClick={() => login('naver')}
-              disabled={isLoggingIn}
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#03C75A] px-6 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#03C75A] px-6 py-3 text-white transition-opacity hover:opacity-90"
             >
               <Naver size={21} />
               <span className="font-medium">네이버 로그인</span>
@@ -22,8 +22,7 @@ export default function LoginPage() {
 
             <button
               onClick={() => login('google')}
-              disabled={isLoggingIn}
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-100"
             >
               <Google size={22} />
               <span className="font-medium">구글 로그인</span>
@@ -31,8 +30,7 @@ export default function LoginPage() {
 
             <button
               onClick={() => login('github')}
-              disabled={isLoggingIn}
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#24292F] px-6 py-3 text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#24292F] px-6 py-3 text-white transition-opacity hover:opacity-90"
             >
               <Github size={22} />
               <span className="font-medium">깃허브 로그인</span>
