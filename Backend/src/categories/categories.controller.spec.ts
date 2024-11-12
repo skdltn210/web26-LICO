@@ -81,7 +81,7 @@ describe('CategoriesController', () => {
     it('존재하지 않는 카테고리 ID로 조회 시 404 에러를 반환합니다.', async () => {
       // Given
       const invalidCategoryId = 999;
-      mockCategoriesService.readCategory.mockRejectedValue(new NotFoundException(ErrorMessage.READ_CATEGORY_404));
+      mockCategoriesService.readCategory.mockRejectedValue(new NotFoundException(ErrorMessage.CATEGORY_NOT_FOUND));
 
       // When & Then
       await expect(controller.getCategory(invalidCategoryId)).rejects.toThrow(
