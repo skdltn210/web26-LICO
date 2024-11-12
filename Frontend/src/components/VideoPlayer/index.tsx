@@ -122,8 +122,8 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       <video ref={videoRef} className="h-full w-full bg-black" onPlay={togglePlay} muted autoPlay playsInline>
         <track kind="captions" src="" />
       </video>
-      {isBuffering && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
+      {isBuffering && isPlaying && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
           <LoadingSpinner />
         </div>
       )}
