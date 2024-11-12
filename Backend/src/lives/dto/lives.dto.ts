@@ -5,4 +5,5 @@ export class LivesDto {
   readonly usersProfileImage: string;
   readonly categoriesId: number | null;
   readonly categoriesName: string | null;
+  readonly onAir: boolean | null;
 }

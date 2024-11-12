@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LivesController } from './lives.controller';
 import { LivesService } from './lives.service';
 import { LivesDto } from './dto/lives.dto';
-import { NotFoundException } from '@nestjs/common';
 
 describe('LivesController', () => {
   let controller: LivesController;
@@ -16,6 +15,7 @@ describe('LivesController', () => {
       usersProfileImage: 'https://example.com/profile.jpg',
       categoriesId: 1,
       categoriesName: 'Gaming',
+      onAir: true,
     },
     {
       channelId: 'def456',
@@ -24,6 +24,7 @@ describe('LivesController', () => {
       usersProfileImage: 'https://example.com/jane-profile.jpg',
       categoriesId: 2,
       categoriesName: 'Music',
+      onAir: true,
     },
   ];
 
@@ -51,16 +52,17 @@ describe('LivesController', () => {
     jest.clearAllMocks();
   });
 
-  describe('getLives', () => {
-    it('라이브 컨트롤러가 라이브 목록을 반환합니다.', async () => {
+  describe('getOnAirLives', () => {
+    it('라이브 컨트롤러가 방송중인 라이브 목록을 반환합니다.', async () => {
       // Given
       mockLivesService.readLives.mockResolvedValue(mockLives);
 
       // When
-      const lives = await controller.getLives();
+      const lives = await controller.getOnAirLives();
 
       // Then
       expect(service.readLives).toHaveBeenCalledTimes(1);
+      expect(service.readLives).toHaveBeenCalledWith({ onAir: true });
       expect(lives).toEqual(mockLives);
     });
   });

@@ -1,7 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { LiveEntity } from './entity/live.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { LivesDto } from './dto/lives.dto';
 import { LiveDto } from './dto/live.dto';
 import { UUID } from 'crypto';
@@ -10,9 +10,12 @@ import { UUID } from 'crypto';
 export class LivesService {
   constructor(@InjectRepository(LiveEntity) private livesRepository: Repository<LiveEntity>) {}
 
-  async readLives(): Promise<LivesDto[]> {
+  async readLives(where: FindOptionsWhere<LiveEntity> = {}): Promise<LivesDto[]> {
     // TODO 데이터 베이스 뷰 추가
-    const lives = await this.livesRepository.find({ relations: ['category', 'user'], where: { onAir: true } });
+    const lives = await this.livesRepository.find({
+      relations: ['category', 'user'],
+      where,
+    });
     return lives.map(entity => entity.toLivesDto());
   }
 
