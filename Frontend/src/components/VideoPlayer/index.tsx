@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import useLayoutStore from '@store/useLayoutStore';
 import useHls from '@hooks/useHls';
-import LoadingSpinner from '@components/common/LoadingSpinner.tsx';
+import LoadingSpinner from '@components/common/LoadingSpinner';
 import Controls from './Control/index';
 
 interface VideoPlayerProps {
@@ -137,11 +137,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       >
         <track kind="captions" src="" />
       </video>
-      {isBuffering && isPlaying && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      )}
+      {isBuffering && isPlaying && <LoadingSpinner />}
 
       <Controls
         isPlaying={isPlaying}
