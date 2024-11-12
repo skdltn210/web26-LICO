@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
-import { api } from '@/apis/axios';
+import { authApi } from '@/apis/auth';
+import { Provider } from '@/types/auth';
+
 export default function LoginCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -10,7 +12,7 @@ export default function LoginCallback() {
   useEffect(() => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
-    const provider = window.location.pathname.split('/')[2];
+    const provider = window.location.pathname.split('/')[2] as Provider;
 
     if (!code) {
       console.error('Authorization code not found');
@@ -20,10 +22,14 @@ export default function LoginCallback() {
 
     const authenticateUser = async () => {
       try {
-        const response = await api.get(`/auth/${provider}/callback?code=${code}${state ? `&state=${state}` : ''}`);
+        const response = await authApi.handleCallback({
+          provider,
+          code,
+          state: state || undefined,
+        });
 
-        if (response.data.success) {
-          setAccessToken(response.data.accessToken);
+        if (response.success) {
+          setAccessToken(response.accessToken);
           setAuthenticated(true);
           navigate('/');
         } else {
