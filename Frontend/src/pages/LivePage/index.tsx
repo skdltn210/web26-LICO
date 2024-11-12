@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import LoadingSpinner from '@components/common/LoadingSpinner.tsx';
+import LoadingSpinner from '@components/common/LoadingSpinner';
+import { config } from '@config/env';
 import VideoPlayer from '@/components/VideoPlayer';
 import LiveInfo from '@/components/LiveInfo';
 import StreamerInfo from '@/components/LiveInfo/StreamerInfo';
@@ -16,6 +17,8 @@ export default function LivePage() {
   const { currentChannel, setCurrentChannel } = useChannel();
   const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
   const { data: liveDetail, isLoading, error } = useLiveDetail(id!);
+
+  const STREAM_URL = `${config.storageUrl}/${id}/index.m3u8`;
 
   const isLarge = useMediaQuery('(min-width: 1200px)');
   const isMedium = useMediaQuery('(min-width: 700px)');
