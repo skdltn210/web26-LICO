@@ -11,13 +11,35 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+api.interceptors.request.use(config => {
+  const accessToken = useAuthStore.getState().accessToken;
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   response => response,
-  error => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().setAuthenticated(false);
-      window.location.href = '/login';
+  async error => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        await useAuthStore.getState().refreshAccessToken();
+        const accessToken = useAuthStore.getState().accessToken;
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        useAuthStore.getState().setAuthenticated(false);
+        useAuthStore.getState().setAccessToken(null);
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
     }
+
     return Promise.reject(error);
   },
 );
