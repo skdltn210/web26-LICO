@@ -1,14 +1,45 @@
+import { authApi } from '@apis/auth';
 import { Provider, AuthCallbackParams } from '@/types/auth';
-import { authApi } from '@/apis/auth';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore } from '@store/useAuthStore';
 import { useNavigate } from 'react-router-dom';
+import { config } from '@config/env';
 
 export function useAuth() {
   const navigate = useNavigate();
   const { setAuth, clearAuth } = useAuthStore();
 
-  const login = async (provider: Provider) => {
-    await authApi.login(provider);
+  const getOAuthUrl = (provider: Provider) => {
+    const { clientId, redirectUri } = config.auth[provider];
+
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+    });
+
+    switch (provider) {
+      case 'google':
+        params.append('response_type', 'code');
+        params.append('scope', 'email');
+        return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+
+      case 'github':
+        params.append('scope', 'user:email');
+        return `https://github.com/login/oauth/authorize?${params.toString()}`;
+
+      case 'naver':
+        params.append('response_type', 'code');
+        params.append('state', crypto.randomUUID());
+        params.append('scope', 'email');
+        return `https://nid.naver.com/oauth2.0/authorize?${params.toString()}`;
+
+      default:
+        throw new Error(`Unsupported provider: ${provider}`);
+    }
+  };
+
+  const login = (provider: Provider) => {
+    const url = getOAuthUrl(provider);
+    window.location.href = url;
   };
 
   const handleCallback = async (params: AuthCallbackParams) => {

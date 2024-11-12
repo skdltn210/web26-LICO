@@ -1,12 +1,7 @@
 import { api } from './axios';
-import { AuthResponse, Provider, RefreshTokenResponse, AuthCallbackParams } from '@/types/auth';
+import { AuthResponse, RefreshTokenResponse, AuthCallbackParams } from '@/types/auth';
 
 export const authApi = {
-  async login(provider: Provider) {
-    const response = await api.get(`/auth/${provider}`);
-    return response.data;
-  },
-
   async logout() {
     const response = await api.get('/auth/logout');
     return response.data;

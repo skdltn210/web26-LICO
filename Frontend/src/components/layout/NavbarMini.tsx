@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo, LuMenu, LuLogIn, LuLogOut } from 'react-icons/lu';
 import useLayoutStore from '@store/useLayoutStore';
 import { useAuthStore } from '@store/useAuthStore';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@hooks/useAuth';
 
 interface NavLinkProps {
   isActive: boolean;
