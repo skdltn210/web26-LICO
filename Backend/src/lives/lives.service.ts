@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { LiveEntity } from './entity/live.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -21,6 +21,11 @@ export class LivesService {
 
   async readLive(channelId: string): Promise<LiveDto> {
     const live = await this.livesRepository.findOne({ relations: ['category', 'user'], where: { channelId } });
+
+    if (!live) {
+      throw new NotFoundException('존재하지 않는 채널입니다.');
+    }
+
     return live.toLiveDto();
   }
 
