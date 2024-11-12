@@ -21,7 +21,7 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const { isBuffering, error } = useHls(streamUrl, videoRef);
+  const { isBuffering, error, setQuality, qualities } = useHls(streamUrl, videoRef);
 
   const handlePlay = () => {
     setIsPlaying(true);
@@ -152,6 +152,8 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
         onFullScreenToggle={toggleFullScreen}
         onVideoPlayerToggle={toggleVideoPlayer}
         onShowControls={handleShowControls}
+        qualities={qualities}
+        setQuality={setQuality}
       />
     </div>
   );
