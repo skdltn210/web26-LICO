@@ -1,7 +1,7 @@
 import { LuPlay, LuPause, LuMinimize, LuMaximize, LuTv2 } from 'react-icons/lu';
 import VolumeControl from './VolumeControl';
 import SettingsControl from './SettingsControl';
-import type { HLSQuality } from '@/types/hls';
+import type { HLSQuality } from '@/types/hlsQuality';
 
 interface ControlsProps {
   isPlaying: boolean;

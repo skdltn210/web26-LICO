@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { LuSettings, LuCheck } from 'react-icons/lu';
-import type { HLSQuality } from '@/types/hls';
+import type { HLSQuality } from '@/types/hlsQuality';
 
 interface SettingsControlProps {
   onShowControls: () => void;

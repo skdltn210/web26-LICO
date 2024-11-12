@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Hls, { LevelSwitchedData } from 'hls.js';
-import type { HLSQuality } from '@/types/hls';
+import type { HLSQuality } from '@/types/hlsQuality';
 
 const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVideoElement>) => {
   const [isBuffering, setIsBuffering] = useState(false);
