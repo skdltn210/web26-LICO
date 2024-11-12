@@ -7,7 +7,7 @@ import { Provider } from '@/types/auth';
 export default function LoginCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setAuthenticated, setAccessToken } = useAuthStore();
+  const { setAuth } = useAuthStore();
 
   useEffect(() => {
     const code = searchParams.get('code');
@@ -29,8 +29,10 @@ export default function LoginCallback() {
         });
 
         if (response.success) {
-          setAccessToken(response.accessToken);
-          setAuthenticated(true);
+          setAuth({
+            accessToken: response.accessToken,
+            user: response.user,
+          });
           navigate('/');
         } else {
           throw new Error('Authentication failed');
@@ -42,7 +44,7 @@ export default function LoginCallback() {
     };
 
     authenticateUser();
-  }, [navigate, setAuthenticated, setAccessToken]);
+  }, [navigate, setAuth]);
 
   return (
     <div className="flex h-screen items-center justify-center">

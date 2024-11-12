@@ -1,35 +1,9 @@
 import { api } from './axios';
 import { AuthResponse, Provider, RefreshTokenResponse, AuthCallbackParams } from '@/types/auth';
-import { config } from '@/config/env';
 
 export const authApi = {
-  getOAuthLoginUrl(provider: Provider): string {
-    const params = new URLSearchParams({
-      client_id: config.auth[provider].clientId,
-      redirect_uri: config.auth[provider].redirectUri,
-    });
-
-    switch (provider) {
-      case 'github':
-        return `https://github.com/login/oauth/authorize?${params.toString()}`;
-
-      case 'google':
-        params.append('response_type', 'code');
-        params.append('scope', 'email profile');
-        return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-
-      case 'naver':
-        params.append('response_type', 'code');
-        params.append('state', Math.random().toString(36).substring(7));
-        return `https://nid.naver.com/oauth2.0/authorize?${params.toString()}`;
-    }
-  },
-
-  async handleCallback({ provider, code, state }: AuthCallbackParams): Promise<AuthResponse> {
-    const response = await api.get<AuthResponse>(
-      `/auth/${provider}/callback?code=${code}${state ? `&state=${state}` : ''}`,
-    );
-    return response.data;
+  async login(provider: Provider): Promise<void> {
+    await api.get(`/auth/${provider}`);
   },
 
   async logout(): Promise<void> {
@@ -38,6 +12,19 @@ export const authApi = {
 
   async refreshToken(): Promise<RefreshTokenResponse> {
     const response = await api.post<RefreshTokenResponse>('/auth/refresh');
+    return response.data;
+  },
+
+  async handleCallback(params: AuthCallbackParams): Promise<AuthResponse> {
+    const { provider, code, state } = params;
+    const response = await api.get<AuthResponse>(`/auth/${provider}/callback`, {
+      params: { code, state },
+    });
+    return response.data;
+  },
+
+  async checkStatus(): Promise<{ isAuthenticated: boolean }> {
+    const response = await api.get('/auth/status');
     return response.data;
   },
 };
