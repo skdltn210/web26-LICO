@@ -24,18 +24,18 @@ export class ChatsGateway implements OnGatewayConnection {
     const namespace = client.nsp;
     // TODO 로그인 검증(JWT)
     const parsedChat = JSON.parse(receivedChat);
-    const chatToPublish = JSON.stringify({ message: parsedChat?.message }); // TODO 유저 정보 추가 필요
 
+    const newChat = JSON.stringify({ message: parsedChat?.message }); // TODO 유저 정보 추가 필요
     const redisKey = `${namespace.name}:chats`;
-    this.redisClient.rpush(redisKey, chatToPublish);
-    namespace.emit('chat', chatToPublish); // 해당 네임스페이스의 모든 클라이언트에게 메시지 전송
 
+    namespace.emit('chat', newChat); // 해당 네임스페이스의 모든 클라이언트에게 메시지 전송
+    this.redisClient.rpush(redisKey, newChat);
     this.redisClient.ltrim(redisKey, -50, -1); // TODO .env로 주입받기
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
     const oldChats = await this.redisClient.lrange(`${client.nsp.name}:chats`, 0, -1);
 
-    client.emit('oldChats', oldChats);
+    client.emit('chat', JSON.stringify({ oldChats, type: 'old' }));
   }
 }

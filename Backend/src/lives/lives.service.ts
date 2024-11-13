@@ -51,6 +51,7 @@ export class LivesService {
       throw new ConflictException(ErrorMessage.LIVE_ALREADY_STARTED);
     }
 
+    this.chatsService.clearChat(live.channelId as UUID);
     await this.livesRepository.update({ streamingKey }, { startedAt: new Date(), onAir: true });
   }
 
