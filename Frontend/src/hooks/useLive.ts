@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { liveApi } from '@apis/live';
+import { AxiosError } from 'axios';
 import type { Live, LiveDetail, SortType } from '@/types/live';
 
 export const liveKeys = {
@@ -9,14 +10,14 @@ export const liveKeys = {
 };
 
 export const useLives = (sort: SortType) => {
-  return useQuery<Live[]>({
+  return useQuery<Live[], AxiosError>({
     queryKey: liveKeys.sorted(sort),
     queryFn: () => liveApi.getLives(sort),
   });
 };
 
 export const useLiveDetail = (channelId: string) => {
-  return useQuery<LiveDetail>({
+  return useQuery<LiveDetail, AxiosError>({
     queryKey: liveKeys.detail(channelId),
     queryFn: () => liveApi.getLiveByChannelId(channelId),
     enabled: !!channelId,
