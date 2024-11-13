@@ -1,10 +1,40 @@
+import { useState, useEffect } from 'react';
 import { LuSearch } from 'react-icons/lu';
+import { useAuthStore } from '@store/useAuthStore';
+import { useLiveDetail } from '@hooks/useLive';
+import { useDebounce } from '@hooks/useDebounce';
 
 interface StreamInfoProps {
   channelId: string;
 }
 
 export default function StreamInfo({ channelId }: StreamInfoProps) {
+  const { user } = useAuthStore();
+  const { data: liveDetail } = useLiveDetail(channelId);
+
+  const [title, setTitle] = useState(`${user?.name}의 라이브 방송`);
+  const [description, setDescription] = useState(`${user?.name}의 라이브 방송입니다`);
+
+  const debouncedTitle = useDebounce(title);
+  const debouncedDescription = useDebounce(description);
+
+  useEffect(() => {
+    if (liveDetail?.livesName) {
+      setTitle(liveDetail.livesName);
+    }
+    if (liveDetail?.livesDescription) {
+      setDescription(liveDetail.livesDescription);
+    }
+  }, [liveDetail]);
+
+  useEffect(() => {
+    console.log('Debounced title:', debouncedTitle);
+  }, [debouncedTitle]);
+
+  useEffect(() => {
+    console.log('Debounced description:', debouncedDescription);
+  }, [debouncedDescription]);
+
   return (
     <form className="flex flex-col gap-6" aria-label="방송 정보 설정">
       <div>
@@ -14,6 +44,8 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
         <input
           id="title"
           type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
           className="w-full rounded bg-lico-gray-5 p-2 font-medium text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
           aria-label="방송 제목"
         />
@@ -25,6 +57,8 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
         </label>
         <textarea
           id="description"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
           className="h-24 w-full resize-none overflow-y-auto rounded bg-lico-gray-5 p-2 font-medium text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
           aria-label="방송 설명"
         />
