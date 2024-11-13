@@ -7,46 +7,33 @@ import { AuthService } from '../auth.service';
 @Injectable()
 export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
   constructor(
-    configService: ConfigService,
-    private authService: AuthService
+    private configService: ConfigService,
+    private authService: AuthService,
   ) {
     super({
       clientID: configService.get<string>('NAVER_CLIENT_ID'),
       clientSecret: configService.get<string>('NAVER_CLIENT_SECRET'),
-      callbackURL: `${configService.get<string>('SERVER_URL')}/auth/naver/callback`,
-      svcType: 0, // optional, 0 for PC web
+      callbackURL: configService.get<string>('NAVER_REDIRECT_URI'),
+      svcType: 0,
     });
   }
 
-  async validate(
-    accessToken: string,
-    refreshToken: string,
-    profile: any,
-    done: Function,
-  ): Promise<any> {
+  async validate(accessToken: string, refreshToken: string, profile: any, done: Function): Promise<any> {
     try {
       const { id: oauthUid, emails, displayName, _json } = profile;
-      const user = {
-        provider: 'naver' as 'naver',
-        oauthUid: oauthUid,
-        email: emails[0].value, // 이메일 구조에 따라 수정 필요
-        username: displayName || _json.nickname,
-        profileImage: _json.profile_image,
+
+      // Naver 사용자 데이터 구성
+      const userData = {
+        oauthUid,
+        provider: 'naver' as const,
+        nickname: displayName || _json.nickname || `User${oauthUid.substring(0, 8)}`,
+        profileImage: _json.profile_image || null,
+        email: emails?.[0]?.value || null,
       };
 
-      // AuthService를 통해 사용자 검증 및 JWT 생성
-      const jwt = await this.authService.validateOAuthLogin(
-        user.oauthUid,
-        user.provider,
-        {
-          username: user.username,
-          email: user.email,
-          profileImage: user.profileImage,
-        },
-      );
-
-      done(null, { jwt });
+      done(null, userData);
     } catch (err) {
+      console.error('Naver Strategy Error:', err);
       done(err, false);
     }
   }

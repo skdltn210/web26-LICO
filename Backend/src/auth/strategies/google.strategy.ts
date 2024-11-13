@@ -3,7 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
-
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
@@ -13,40 +12,33 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID: configService.get<string>('GOOGLE_CLIENT_ID'),
       clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET'),
-      callbackURL: `${configService.get<string>('SERVER_URL')}/auth/google/callback`,
+      callbackURL: 'http://localhost:3000/auth/google/callback',
       scope: ['email', 'profile'],
+      passReqToCallback: true, // 이 옵션 추가
     });
   }
 
   async validate(
+    request: any,
     accessToken: string,
     refreshToken: string,
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
     try {
-      const { id:oauthUid, emails, displayName, photos } = profile;
-      const user = {
-        provider: 'google' as 'google',
-        oauthUid: oauthUid,
-        email: emails[0].value,
-        username: displayName,
-        profileImage: photos[0]?.value,
+      console.log('Access Token:', accessToken); // 토큰 확인용 로그
+
+      const userData = {
+        oauthUid: profile.id,
+        provider: 'google' as const,
+        nickname: profile.displayName || profile.emails[0].value.split('@')[0],
+        profileImage: profile.photos?.[0]?.value || null,
+        email: profile.emails[0].value,
       };
 
-      // AuthService를 통해 사용자 검증 및 JWT 생성
-      const jwt = await this.authService.validateOAuthLogin(
-        user.oauthUid,
-        user.provider,
-        {
-          username: user.username,
-          email: user.email,
-          profileImage: user.profileImage,
-        },
-      );
-
-      done(null, { jwt });
+      done(null, userData);
     } catch (err) {
+      console.error('Google Strategy Error:', err);
       done(err, false);
     }
   }

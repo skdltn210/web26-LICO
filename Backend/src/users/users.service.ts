@@ -19,41 +19,36 @@ export class UsersService {
     private connection: DataSource,
   ) {}
 
-  async findByOAuthUid(
-    oauthUid: string,
-    oauthPlatform: 'naver' | 'github' | 'google',
-  ): Promise<UserEntity | undefined> {
+  async findByOAuthUid(oauthUid: string, oauthPlatform: 'naver' | 'github' | 'google'): Promise<UserEntity | null> {
+    // undefined 대신 null 사용
     return this.usersRepository.findOne({
       where: { oauthUid, oauthPlatform },
     });
   }
 
-  async findById(id: number): Promise<UserEntity | undefined> {
+  async findById(id: number): Promise<UserEntity | null> {
+    // undefined 대신 null 사용
     return this.usersRepository.findOne({ where: { id } });
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
-    return this.connection.transaction(async (manager) => {
-      // LiveEntity 생성
+    return this.connection.transaction(async manager => {
       const live = manager.create(LiveEntity, {
         categoriesId: null,
-        channelId: randomUUID(), // uuid
+        channelId: randomUUID(),
         name: null,
         description: null,
-        streamingKey: randomUUID(), // uuid
+        streamingKey: randomUUID(),
         onAir: false,
         startedAt: null,
       });
-      const savedLive = await manager.save(live);
+      const savedLive = await manager.save(LiveEntity, live);
 
-      // UserEntity 생성
       const newUser = manager.create(UserEntity, {
         ...createUserDto,
-        live: savedLive, // 올바른 관계 필드에 값 할당
+        live: savedLive,
       });
-      const savedUser = await manager.save(newUser);
-
-      return savedUser;
+      return await manager.save(UserEntity, newUser);
     });
   }
 }
