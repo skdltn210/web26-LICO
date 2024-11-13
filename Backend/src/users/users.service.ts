@@ -19,16 +19,21 @@ export class UsersService {
     private connection: DataSource,
   ) {}
 
-  async findByOAuthUid(oauthUid: string, oauthPlatform: 'naver' | 'github' | 'google'): Promise<UserEntity | null> {
-    // undefined 대신 null 사용
+  async findByOAuthUid(
+    oauthUid: string,
+    oauthPlatform: 'naver' | 'github' | 'google',
+  ): Promise<UserEntity | null> {
     return this.usersRepository.findOne({
       where: { oauthUid, oauthPlatform },
+      relations: ['live'], // live 관계 추가
     });
   }
 
   async findById(id: number): Promise<UserEntity | null> {
-    // undefined 대신 null 사용
-    return this.usersRepository.findOne({ where: { id } });
+    return this.usersRepository.findOne({
+      where: { id },
+      relations: ['live'], // live 관계 추가
+    });
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
