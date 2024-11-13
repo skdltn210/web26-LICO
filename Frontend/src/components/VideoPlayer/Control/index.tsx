@@ -1,6 +1,7 @@
 import { LuPlay, LuPause, LuMinimize, LuMaximize, LuTv2 } from 'react-icons/lu';
 import VolumeControl from './VolumeControl';
 import SettingsControl from './SettingsControl';
+import type { HLSQuality } from '@/types/hlsQuality';
 
 interface ControlsProps {
   isPlaying: boolean;
@@ -15,6 +16,8 @@ interface ControlsProps {
   onFullScreenToggle: () => void;
   onVideoPlayerToggle: () => void;
   onShowControls: () => void;
+  qualities: HLSQuality[];
+  setQuality: (level: number) => void;
 }
 
 export default function Controls({
@@ -30,6 +33,8 @@ export default function Controls({
   onFullScreenToggle,
   onVideoPlayerToggle,
   onShowControls,
+  qualities,
+  setQuality,
 }: ControlsProps) {
   return (
     <div
@@ -59,7 +64,7 @@ export default function Controls({
         />
 
         <div className="relative ml-auto flex items-center gap-4">
-          <SettingsControl onShowControls={onShowControls} />
+          <SettingsControl onShowControls={onShowControls} qualities={qualities} setQuality={setQuality} />
 
           <button
             type="button"

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import useLayoutStore from '@store/useLayoutStore';
 import useHls from '@hooks/useHls';
-import LoadingSpinner from '@components/VideoPlayer/LoadingSpinner';
+import LoadingSpinner from '@components/common/LoadingSpinner';
 import Controls from './Control/index';
 
 interface VideoPlayerProps {
@@ -21,7 +21,15 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const { isBuffering, error } = useHls(streamUrl, videoRef);
+  const { isBuffering, error, setQuality, qualities } = useHls(streamUrl, videoRef);
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -30,7 +38,6 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       } else {
         videoRef.current.play();
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -119,14 +126,18 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video ref={videoRef} className="h-full w-full bg-black" onPlay={togglePlay} muted autoPlay playsInline>
+      <video
+        ref={videoRef}
+        className="h-full w-full bg-black"
+        onPlay={handlePlay}
+        onPause={handlePause}
+        muted
+        autoPlay
+        playsInline
+      >
         <track kind="captions" src="" />
       </video>
-      {isBuffering && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
-          <LoadingSpinner />
-        </div>
-      )}
+      {isBuffering && isPlaying && <LoadingSpinner />}
 
       <Controls
         isPlaying={isPlaying}
@@ -141,6 +152,8 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
         onFullScreenToggle={toggleFullScreen}
         onVideoPlayerToggle={toggleVideoPlayer}
         onShowControls={handleShowControls}
+        qualities={qualities}
+        setQuality={setQuality}
       />
     </div>
   );

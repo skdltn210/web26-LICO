@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Hls, { LevelSwitchedData } from 'hls.js';
-
-interface Quality {
-  level: number;
-  height: number;
-  width: number;
-  bitrate: number;
-}
+import type { HLSQuality } from '@/types/hlsQuality';
 
 const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVideoElement>) => {
   const [isBuffering, setIsBuffering] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [currentQuality, setCurrentQuality] = useState<number>(-1);
-  const [qualities, setQualities] = useState<Quality[]>([]);
+  const [qualities, setQualities] = useState<HLSQuality[]>([]);
   const [hls, setHls] = useState<Hls | null>(null);
 
   useEffect(() => {

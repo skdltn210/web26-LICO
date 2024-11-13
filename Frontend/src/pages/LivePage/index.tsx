@@ -1,21 +1,24 @@
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import LoadingSpinner from '@components/VideoPlayer/LoadingSpinner.tsx';
-import VideoPlayer from '@/components/VideoPlayer';
-import LiveInfo from '@/components/LiveInfo';
-import StreamerInfo from '@/components/LiveInfo/StreamerInfo';
-import { useChannel, convertLiveDetailToChannel } from '@/contexts/ChannelContext';
-import ChatWindow from '@/components/chat/ChatWindow';
-import useMediaQuery from '@/hooks/useMediaQuery';
-import useLayoutStore from '@/store/useLayoutStore';
-import ChatOpenButton from '@/components/common/Buttons/ChatOpenButton';
-import { useLiveDetail } from '@/hooks/useLive';
+import LoadingSpinner from '@components/common/LoadingSpinner';
+import { config } from '@config/env';
+import VideoPlayer from '@components/VideoPlayer';
+import LiveInfo from '@components/LiveInfo';
+import StreamerInfo from '@components/LiveInfo/StreamerInfo';
+import { useChannel, convertLiveDetailToChannel } from '@contexts/ChannelContext';
+import ChatWindow from '@components/chat/ChatWindow';
+import useMediaQuery from '@hooks/useMediaQuery';
+import useLayoutStore from '@store/useLayoutStore';
+import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
+import { useLiveDetail } from '@hooks/useLive';
 
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();
   const { currentChannel, setCurrentChannel } = useChannel();
   const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
   const { data: liveDetail, isLoading, error } = useLiveDetail(id!);
+
+  const STREAM_URL = `${config.storageUrl}/${id}/index.m3u8`;
 
   const isLarge = useMediaQuery('(min-width: 1200px)');
   const isMedium = useMediaQuery('(min-width: 700px)');
@@ -46,37 +49,29 @@ export default function LivePage() {
   const isTheaterMode = videoPlayerState === 'theater';
   const isVerticalMode = !isMedium;
 
-  if (isTheaterMode) {
-    return (
-      <div className={`flex h-screen ${isVerticalMode ? 'flex-col' : ''}`}>
-        <div className="flex-1">
-          <VideoPlayer streamUrl={`${liveDetail.streamingKey}`} />
-        </div>
-        {chatState === 'expanded' && (
-          <div className={`${isVerticalMode ? 'h-[40vh]' : 'w-[360px]'}`}>
-            <ChatWindow />
-          </div>
-        )}
-        {chatState === 'hidden' && <ChatOpenButton onClick={toggleChat} />}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-screen">
-      <div className="flex-1">
+    <div className={`flex h-screen ${isTheaterMode && isVerticalMode ? 'flex-col' : ''}`}>
+      <div className="relative flex-1">
         <div className="flex h-full flex-col overflow-y-auto scrollbar-hide">
-          <VideoPlayer streamUrl="https://objectstorage.ap-chuncheon-1.oraclecloud.com/n/axroqqceafgq/b/lico/o/SK1234567891.m3u8" />
-          <LiveInfo channelId={id} />
-          <StreamerInfo />
+          <VideoPlayer streamUrl={STREAM_URL} />
+          {!isTheaterMode && (
+            <>
+              <LiveInfo channelId={id} />
+              <StreamerInfo />
+            </>
+          )}
         </div>
       </div>
+
       {chatState === 'expanded' && (
-        <div className="w-[360px]">
+        <div className={`${isTheaterMode && isVerticalMode ? 'w-full overflow-hidden' : 'w-[360px]'}`}>
           <ChatWindow />
         </div>
       )}
-      {isChatToggleVisible && <ChatOpenButton onClick={toggleChat} />}
+
+      {((isTheaterMode && chatState === 'hidden') || (!isTheaterMode && isChatToggleVisible)) && (
+        <ChatOpenButton onClick={toggleChat} />
+      )}
     </div>
   );
 }

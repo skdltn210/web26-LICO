@@ -18,6 +18,7 @@ export default function LiveInfo({ channelId }: LiveInfoProps) {
 
   return (
     <div className="w-full bg-lico-gray-4 p-3">
+      <div className="m-1.5 font-medium text-xl text-lico-gray-1">{currentChannel.title}</div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-full bg-white">
@@ -40,7 +41,6 @@ export default function LiveInfo({ channelId }: LiveInfoProps) {
         </div>
         <FollowButton channelId={channelId} />
       </div>
-      <div className="mt-2 font-medium text-xl text-lico-gray-1">{currentChannel.title}</div>
       <div className="mt-2 flex items-center gap-2">
         <CategoryBadge
           category={currentChannel.category.name}
