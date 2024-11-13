@@ -3,6 +3,7 @@ import useLayoutStore from '@store/useLayoutStore';
 import useHls from '@hooks/useHls';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import Badge from '@components/common/Badges/Badge';
+import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
 import Controls from './Control/index';
 
 interface VideoPlayerProps {
@@ -128,17 +129,21 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video
-        ref={videoRef}
-        className="h-full w-full bg-black"
-        onPlay={handlePlay}
-        onPause={handlePause}
-        muted
-        autoPlay
-        playsInline
-      >
-        <track kind="captions" src="" />
-      </video>
+      {onAir ? (
+        <video
+          ref={videoRef}
+          className="h-full w-full bg-black"
+          onPlay={handlePlay}
+          onPause={handlePause}
+          muted
+          autoPlay
+          playsInline
+        >
+          <track kind="captions" src="" />
+        </video>
+      ) : (
+        <OfflinePlayer />
+      )}
 
       {isBuffering && isPlaying && <LoadingSpinner />}
 
