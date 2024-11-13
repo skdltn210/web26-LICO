@@ -1,8 +1,19 @@
-import { useState, useEffect } from 'react';
-import { LuSearch } from 'react-icons/lu';
+import { useRef, useState, useEffect } from 'react';
+import { LuX } from 'react-icons/lu';
 import { useAuthStore } from '@store/useAuthStore';
 import { useLiveDetail } from '@hooks/useLive';
-import { useDebounce } from '@hooks/useDebounce';
+import { useCategories } from '@/hooks/useCategory';
+import { useSearch } from '@/hooks/useSearch';
+import { useClickOutside } from '@/hooks/useClickOutside';
+import { SearchInput } from '@/components/common/SearchInput';
+import { Dropdown } from '@/components/common/Dropdown';
+import CategoryBadge from '@components/common/Badges/CategoryBadge';
+
+interface Category {
+  id: number;
+  name: string;
+  image: string;
+}
 
 interface StreamInfoProps {
   channelId: string;
@@ -11,12 +22,11 @@ interface StreamInfoProps {
 export default function StreamInfo({ channelId }: StreamInfoProps) {
   const { user } = useAuthStore();
   const { data: liveDetail } = useLiveDetail(channelId);
+  const { data: categories } = useCategories();
 
   const [title, setTitle] = useState(`${user?.name}의 라이브 방송`);
   const [description, setDescription] = useState(`${user?.name}의 라이브 방송입니다`);
-
-  const debouncedTitle = useDebounce(title);
-  const debouncedDescription = useDebounce(description);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   useEffect(() => {
     if (liveDetail?.livesName) {
@@ -27,16 +37,36 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
     }
   }, [liveDetail]);
 
-  useEffect(() => {
-    console.log('Debounced title:', debouncedTitle);
-  }, [debouncedTitle]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    console.log('Debounced description:', debouncedDescription);
-  }, [debouncedDescription]);
+  const handleCategorySelect = (category: Category) => {
+    setSelectedCategory(category);
+  };
+
+  const {
+    searchValue: categorySearch,
+    setSearchValue: setCategorySearch,
+    showDropdown,
+    setShowDropdown,
+    highlightedIndex,
+    setHighlightedIndex,
+    filteredItems,
+    handleKeyDown,
+    handleSelect,
+  } = useSearch({
+    items: categories,
+    searchKey: 'name',
+    onSelect: handleCategorySelect,
+  });
+
+  useClickOutside(containerRef, () => setShowDropdown(false));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
 
   return (
-    <form className="flex flex-col gap-6" aria-label="방송 정보 설정">
+    <form className="flex flex-col gap-6" aria-label="방송 정보 설정" onSubmit={handleSubmit} autoComplete="off">
       <div>
         <label htmlFor="title" className="mb-2 block font-bold text-lico-gray-1">
           방송 제목
@@ -64,25 +94,57 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
         />
       </div>
 
-      <div>
-        <label htmlFor="category" className="mb-2 block font-bold text-lico-gray-1">
+      <div id="category-container" ref={containerRef} className="relative">
+        <label htmlFor="category" className="mb-2 block font-bold text-lico-gray-1" onClick={e => e.preventDefault()}>
           카테고리
         </label>
-        <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <LuSearch className="h-4 w-4 text-lico-gray-2" aria-hidden="true" />
-          </div>
-          <input
-            id="category"
-            type="text"
-            className="w-full rounded bg-lico-gray-5 py-2 pl-9 pr-2 font-medium text-sm text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
+        <div className="flex flex-col gap-2">
+          <SearchInput
+            value={categorySearch}
+            onChange={setCategorySearch}
+            onClick={() => setShowDropdown(true)}
+            onFocus={() => setShowDropdown(true)}
+            onKeyDown={handleKeyDown}
             placeholder="카테고리 검색"
-            aria-label="카테고리 검색"
+          />
+
+          {selectedCategory && (
+            <div className="-mb-2 flex items-center gap-1">
+              <div className="w-fit">
+                <CategoryBadge
+                  category={selectedCategory.name}
+                  categoryId={selectedCategory.id}
+                  className="text-sm text-lico-gray-4"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedCategory(null)}
+                className="rounded p-0.5 hover:bg-lico-gray-4"
+                aria-label="카테고리 삭제"
+              >
+                <LuX className="h-4 w-4 text-lico-gray-2" />
+              </button>
+            </div>
+          )}
+
+          <Dropdown
+            show={showDropdown}
+            items={filteredItems}
+            highlightedIndex={highlightedIndex}
+            onSelect={handleSelect}
+            onHighlight={setHighlightedIndex}
+            renderItem={category => (
+              <div className="flex items-center gap-2">
+                <img src={category.image} alt={category.name} className="h-6 w-6 rounded" />
+                <span className="font-medium text-sm text-lico-gray-1">{category.name}</span>
+              </div>
+            )}
           />
         </div>
       </div>
 
-      <div>
+      {/* <div>
         <label htmlFor="tags" className="mb-2 block font-bold text-lico-gray-1">
           태그<span className="text-lico-gray-2"> (최대 5개)</span>
         </label>
@@ -102,11 +164,11 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
             추가
           </button>
         </div>
-      </div>
+      </div> */}
 
       <button
         type="submit"
-        className="flex items-center justify-center gap-2 rounded bg-lico-orange-2 px-4 py-2 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
+        className="flex items-center justify-center rounded bg-lico-orange-2 px-4 py-2 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
         aria-label="방송 정보 업데이트"
       >
         업데이트
