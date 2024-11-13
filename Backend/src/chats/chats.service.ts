@@ -1,10 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import { Injectable } from '@nestjs/common';
 import { UUID } from 'crypto';
 import Redis from 'ioredis';
 
 @Injectable()
 export class ChatsService {
-  constructor(@Inject('Redis') private redisClient: Redis) {}
+  constructor(@InjectRedis() private redisClient: Redis) {}
 
   async readViewers(channelId: UUID) {
     return await this.redisClient.get(`/chats/${channelId}:viewers`);

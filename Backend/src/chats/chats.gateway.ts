@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import {
   ConnectedSocket,
   MessageBody,
@@ -17,7 +17,7 @@ export class ChatsGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  constructor(@Inject('Redis') private redisClient: Redis) {}
+  constructor(@InjectRedis() private redisClient: Redis) {}
 
   @SubscribeMessage('chat')
   async publishChat(@ConnectedSocket() client: Socket, @MessageBody() receivedChat: string) {
