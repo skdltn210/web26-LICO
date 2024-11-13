@@ -15,10 +15,10 @@ async function bootstrap() {
   // app.use(cookieParser()); // cookie-parser 미들웨어 사용
   app.enableCors({
     // CORS 설정
-    origin: configService.get<string>('CORS') || '*',
+    origin: configService.get<string>('CORS').split(',') || '*',
     // credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   await app.listen(port);
