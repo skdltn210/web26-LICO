@@ -2,6 +2,8 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { redisConfig } from 'src/config/redis.config';
+import { ChatsGateway } from './chats.gateway';
+import { ChatsService } from './chats.service';
 
 @Module({
   imports: [
@@ -11,5 +13,6 @@ import { redisConfig } from 'src/config/redis.config';
       useFactory: async (configService: ConfigService) => redisConfig(configService),
     }),
   ],
+  providers: [ChatsGateway, ChatsService],
 })
 export class ChatsModule {}

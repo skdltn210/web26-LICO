@@ -7,7 +7,8 @@ export const redisConfig = (configService: ConfigService): RedisModuleOptions =>
     host: configService.get<string>('REDIS_HOST'),
     port: configService.get<number>('REDIS_PORT'),
     password: configService.get<string>('REDIS_PASSWORD'),
-    enableOfflineQueue: false,
-    retryStrategy: times => null,
+    retryStrategy: times => {
+      return configService.get<number>('REDIS_RETRY_MILLISECONDS');
+    },
   },
 });
