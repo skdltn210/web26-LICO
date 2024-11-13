@@ -10,6 +10,7 @@ export default function LoginCallback() {
 
   useEffect(() => {
     const code = searchParams.get('code');
+
     if (!code) {
       navigate('/login');
       return;
