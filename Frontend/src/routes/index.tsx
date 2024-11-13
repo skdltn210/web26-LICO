@@ -16,7 +16,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/auth/:provider/callback" element={<LoginCallback />} />
       <Route
-        path="/studio"
+        path="/studio/:userId"
         element={
           <ProtectedRoute>
             <StudioPage />

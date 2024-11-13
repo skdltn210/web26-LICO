@@ -1,19 +1,35 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  profileImage?: string;
+}
+
 interface AuthState {
   accessToken: string | null;
-  user: any | null;
-  setAuth: (auth: { accessToken: string; user: any }) => void;
+  user: User | null;
+  setAuth: (auth: { accessToken: string; user: User }) => void;
   clearAuth: () => void;
 }
 
+const mockUser: User = {
+  id: 1,
+  name: 'test',
+  email: 'test@example.com',
+  profileImage: 'https://via.placeholder.com/150',
+};
+
+const mockAccessToken = 'mock_jwt_token_12345';
+
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
-      accessToken: null,
-      user: null,
-      setAuth: (auth) =>
+    set => ({
+      accessToken: mockAccessToken,
+      user: mockUser,
+      setAuth: auth =>
         set({
           accessToken: auth.accessToken,
           user: auth.user,
@@ -26,8 +42,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      // storage: createJSONStorage(() => sessionStorage), // sessionStorage를 사용하고 싶다면
-      partialize: (state) => ({ user: state.user }), // accessToken은 제외하고 user 정보만 저장
-    }
-  )
+      partialize: state => ({ user: state.user }),
+    },
+  ),
 );
