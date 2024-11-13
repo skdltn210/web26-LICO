@@ -1,0 +1,15 @@
+import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { redisConfig } from 'src/config/redis.config';
+
+@Module({
+  imports: [
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => redisConfig(configService),
+    }),
+  ],
+})
+export class ChatsModule {}
