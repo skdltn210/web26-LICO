@@ -40,8 +40,14 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
       } else {
         setDescription(`${user?.name}의 라이브 방송입니다`);
       }
+      if (liveDetail?.categoriesId && liveDetail?.categoriesName && categories) {
+        const category = categories.find(cat => cat.id === liveDetail.categoriesId);
+        if (category) {
+          setSelectedCategory(category);
+        }
+      }
     }
-  }, [liveDetail, isLoading, user?.name]);
+  }, [liveDetail, isLoading, user?.name, categories]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
