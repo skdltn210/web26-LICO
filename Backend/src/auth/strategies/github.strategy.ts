@@ -25,7 +25,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       // GitHub 사용자 데이터 구성
       const userData = {
         oauthUid,
-        provider: 'github' as const,
+        provider: 'github' as 'github',
         nickname: displayName || username || `User${oauthUid.substring(0, 8)}`,
         profileImage: photos?.[0]?.value || null,
         email: emails?.[0]?.value || null,

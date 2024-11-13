@@ -15,7 +15,7 @@ export class AuthService {
 
   async validateOAuthLogin(
     oauthUid: string,
-    oauthPlatform: 'google',
+    oauthPlatform: OAuthPlatform, // 타입 수정
     profileData: {
       nickname: string;
       profileImage?: string;
@@ -33,10 +33,19 @@ export class AuthService {
       });
     }
 
+    const payload = {
+      sub: {
+        id: user.id,
+        provider: user.oauthPlatform,
+      },
+    };
+
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync({ sub: user.id }, { expiresIn: '1h' }),
-      this.jwtService.signAsync({ sub: user.id, type: 'refresh' }, { expiresIn: '7d' }),
+      this.jwtService.signAsync(payload, { expiresIn: '1h' }),
+      this.jwtService.signAsync({ ...payload, type: 'refresh' }, { expiresIn: '7d' }),
     ]);
+
+    console.log('accessToken :', accessToken)
 
     return {
       accessToken,
@@ -44,7 +53,6 @@ export class AuthService {
       user: {
         id: user.id,
         nickname: user.nickname,
-        email: profileData.email,
         profileImage: user.profileImage,
       },
     };

@@ -12,15 +12,32 @@ export class AuthController {
     private configService: ConfigService,
     private authService: AuthService,
   ) {}
+
+  // 콜백 엔드포인트 추가
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
+    return this.handleOAuthCallback(req, res);
+  }
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
+    return this.handleOAuthCallback(req, res);
+  }
+
+  @Get('naver/callback')
+  @UseGuards(AuthGuard('naver'))
+  async naverAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
+    return this.handleOAuthCallback(req, res);
+  }
+
+  // 공통 콜백 처리 메서드
+  private async handleOAuthCallback(req: Request & { user: any }, res: Response) {
     try {
       if (!req.user) {
-        throw new UnauthorizedException('No user from Google');
+        throw new UnauthorizedException('OAuth 인증 실패');
       }
-
-      console.log('Received user data:', req.user); // 디버깅용 로그
 
       const { accessToken, refreshToken, user } = await this.authService.validateOAuthLogin(
         req.user.oauthUid,
@@ -32,21 +49,25 @@ export class AuthController {
         },
       );
 
+
       res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: '/auth',
       });
 
+      // 프론트엔드에서 토큰을 받을 수 있도록 리다이렉트 또는 JSON 응답
+      
       res.json({
         success: true,
         accessToken,
         user,
       });
+    
     } catch (error) {
-      console.error('Detailed callback error:', error); // 더 자세한 에러 로깅
+      console.error('OAuth Callback Error:', error);
       res.status(error.status || 401).json({
         success: false,
         message: error.message || 'Authentication failed',

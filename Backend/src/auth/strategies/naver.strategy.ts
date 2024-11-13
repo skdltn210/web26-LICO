@@ -25,7 +25,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
       // Naver 사용자 데이터 구성
       const userData = {
         oauthUid,
-        provider: 'naver' as const,
+        provider: 'naver' as 'naver',
         nickname: displayName || _json.nickname || `User${oauthUid.substring(0, 8)}`,
         profileImage: _json.profile_image || null,
         email: emails?.[0]?.value || null,
