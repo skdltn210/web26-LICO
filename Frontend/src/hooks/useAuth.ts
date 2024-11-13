@@ -19,17 +19,17 @@ export function useAuth() {
     switch (provider) {
       case 'google':
         params.append('response_type', 'code');
-        params.append('scope', 'email');
+        params.append('scope', 'openid email profile');
         return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
       case 'github':
-        params.append('scope', 'user:email');
+        params.append('scope', 'user:email read:user');
         return `https://github.com/login/oauth/authorize?${params.toString()}`;
 
       case 'naver':
         params.append('response_type', 'code');
         params.append('state', crypto.randomUUID());
-        params.append('scope', 'email');
+        params.append('scope', 'email profile');
         return `https://nid.naver.com/oauth2.0/authorize?${params.toString()}`;
 
       default:
