@@ -13,13 +13,16 @@ export class ChatsGateway {
   constructor(@Inject('Redis') private redisClient: Redis) {}
 
   @SubscribeMessage('chat')
-  publishChat(@ConnectedSocket() client: Socket, @MessageBody() receivedChat: string): void {
+  async publishChat(@ConnectedSocket() client: Socket, @MessageBody() receivedChat: string) {
     const namespace = client.nsp;
     // TODO 로그인 검증(JWT)
     const parsedChat = JSON.parse(receivedChat);
     const chatToPublish = JSON.stringify({ message: parsedChat?.message }); // TODO 유저 정보 추가 필요
 
-    this.redisClient.rpush(namespace.name, chatToPublish);
+    const redisKey = `${namespace.name}:chat`;
+    this.redisClient.rpush(redisKey, chatToPublish);
     namespace.emit('chat', chatToPublish); // 해당 네임스페이스의 모든 클라이언트에게 메시지 전송
+
+    this.redisClient.ltrim(redisKey, -50, -1); // TODO .env로 주입받기
   }
 }
