@@ -9,6 +9,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
 import { LivesModule } from './lives/lives.module';
+import { UserEntity } from './users/entity/user.entity';
+import { LiveEntity } from './lives/entity/live.entity';
 import sqliteConfig from './config/sqlite.config';
 import mysqlConfig from './config/mysql.config';
 
@@ -21,7 +23,11 @@ import mysqlConfig from './config/mysql.config';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (ConfigService: ConfigService) => typeOrmConfig(ConfigService),
+      useFactory: async (configService: ConfigService) => ({
+        ...(await typeOrmConfig(configService)),
+        entities: [UserEntity, LiveEntity], // 엔티티 명시적 추가
+        autoLoadEntities: true, // 자동 엔티티 로드 활성화
+      }),
     }),
     AuthModule,
     UsersModule,

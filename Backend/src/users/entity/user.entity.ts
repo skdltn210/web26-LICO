@@ -1,47 +1,25 @@
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 import { LiveEntity } from '../../lives/entity/live.entity';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
 
 @Entity('users')
 export class UserEntity {
-  @PrimaryGeneratedColumn({ name: 'users_id' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'oauth_uid', type: 'varchar', length: 50 })
+  @Column()
   oauthUid: string;
 
-  @Column({
-    name: 'oauth_platform',
-    type: process.env.DB_TYPE === 'sqlite' ? 'simple-enum' : 'enum',
-    enum: ['naver', 'github', 'google'],
-    nullable: false,
-  })
+  // enum 대신 varchar 타입 사용
+  @Column('varchar', { length: 10 })
   oauthPlatform: 'naver' | 'github' | 'google';
 
-  @Column({ name: 'users_nickname', type: 'varchar', length: 50 })
+  @Column()
   nickname: string;
 
-  @Column({ name: 'users_profile_image', type: 'text', nullable: true })
-  profileImage: string | null;
-
-  @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', nullable: true })
-  updatedAt: Date | null;
-
-  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
-  deletedAt: Date | null;
+  @Column({ nullable: true })
+  profileImage: string;
 
   @OneToOne(() => LiveEntity)
-  @JoinColumn({ name: 'lives_id' })
+  @JoinColumn()
   live: LiveEntity;
 }

@@ -1,47 +1,77 @@
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from './auth.service';
+import { UnauthorizedException } from '@nestjs/common';
+import { access } from 'fs';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private configService: ConfigService, private authService: AuthService) {}
+  constructor(
+    private configService: ConfigService,
+    private authService: AuthService,
+  ) {}
 
-  @Get('github')
-  @UseGuards(AuthGuard('github'))
-  async githubAuth() {}
+  // 콜백 엔드포인트 추가
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
+    return this.handleOAuthCallback(req, res);
+  }
 
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   async githubAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
-    this.handleAuthCallback(req, res);
+    return this.handleOAuthCallback(req, res);
   }
-
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {}
-
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
-    this.handleAuthCallback(req, res);
-  }
-
-  @Get('naver')
-  @UseGuards(AuthGuard('naver'))
-  async naverAuth(@Req() req) {}
 
   @Get('naver/callback')
   @UseGuards(AuthGuard('naver'))
   async naverAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
-    this.handleAuthCallback(req, res);
+    return this.handleOAuthCallback(req, res);
   }
 
-  private handleAuthCallback(req: Request & { user: any }, res: Response) {
-    const jwt = req.user.jwt;
-  
-    // JWT를 JSON 응답으로 반환
-    res.json({ accessToken: jwt });
+  // 공통 콜백 처리 메서드
+  private async handleOAuthCallback(req: Request & { user: any }, res: Response) {
+    try {
+      if (!req.user) {
+        throw new UnauthorizedException('OAuth 인증 실패');
+      }
+
+      const { accessToken, refreshToken, user } = await this.authService.validateOAuthLogin(
+        req.user.oauthUid,
+        req.user.provider,
+        {
+          nickname: req.user.nickname,
+          profileImage: req.user.profileImage,
+          email: req.user.email,
+        },
+      );
+
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/auth',
+      });
+
+      // 프론트엔드에서 토큰을 받을 수 있도록 리다이렉트 또는 JSON 응답
+      
+      res.json({
+        success: true,
+        accessToken,
+        user,
+      });
+    
+    } catch (error) {
+      console.error('OAuth Callback Error:', error);
+      res.status(error.status || 401).json({
+        success: false,
+        message: error.message || 'Authentication failed',
+      });
+    }
   }
 }
