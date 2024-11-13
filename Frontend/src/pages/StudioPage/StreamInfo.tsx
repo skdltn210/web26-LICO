@@ -1,6 +1,10 @@
 import { LuSearch } from 'react-icons/lu';
 
-export default function StreamInfo() {
+interface StreamInfoProps {
+  channelId: string;
+}
+
+export default function StreamInfo({ channelId }: StreamInfoProps) {
   return (
     <form className="flex flex-col gap-6" aria-label="방송 정보 설정">
       <div>

@@ -14,6 +14,7 @@ interface WebStreamControlsProps {
   setDrawEnabled: (enabled: boolean) => void;
   arEnabled: boolean;
   setArEnabled: (enabled: boolean) => void;
+  channelId: string;
 }
 
 export default function WebStreamControls({
@@ -29,6 +30,7 @@ export default function WebStreamControls({
   setDrawEnabled,
   arEnabled,
   setArEnabled,
+  channelId,
 }: WebStreamControlsProps) {
   return (
     <>

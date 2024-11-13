@@ -7,7 +7,11 @@ import useLayoutStore from '@store/useLayoutStore';
 import { getConsistentTextColor, createTestChatMessage } from '@utils/chatUtils';
 import ChatMessage from './ChatMessage';
 
-export default function ChatWindow() {
+interface ChatWindowProps {
+  channelId: string;
+}
+
+export default function ChatWindow({ channelId }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const chatRef = useRef<HTMLDivElement | null>(null);
@@ -58,7 +62,7 @@ export default function ChatWindow() {
         aria-label="채팅 메시지"
         aria-live="polite"
         ref={chatRef}
-        className="scrollbar-hide h-screen overflow-auto p-4"
+        className="h-screen overflow-auto p-4 scrollbar-hide"
       >
         <div className="flex break-after-all flex-col gap-2.5">
           {messages.map(message => (
