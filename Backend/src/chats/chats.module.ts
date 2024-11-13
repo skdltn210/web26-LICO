@@ -14,5 +14,6 @@ import { ChatsService } from './chats.service';
     }),
   ],
   providers: [ChatsGateway, ChatsService],
+  exports: [ChatsService],
 })
 export class ChatsModule {}
