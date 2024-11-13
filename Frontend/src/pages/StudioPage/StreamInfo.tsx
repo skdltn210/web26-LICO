@@ -21,21 +21,27 @@ interface StreamInfoProps {
 
 export default function StreamInfo({ channelId }: StreamInfoProps) {
   const { user } = useAuthStore();
-  const { data: liveDetail } = useLiveDetail(channelId);
+  const { data: liveDetail, isLoading } = useLiveDetail(channelId);
   const { data: categories } = useCategories();
 
-  const [title, setTitle] = useState(`${user?.name}의 라이브 방송`);
-  const [description, setDescription] = useState(`${user?.name}의 라이브 방송입니다`);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   useEffect(() => {
-    if (liveDetail?.livesName) {
-      setTitle(liveDetail.livesName);
+    if (!isLoading) {
+      if (liveDetail?.livesName) {
+        setTitle(liveDetail.livesName);
+      } else {
+        setTitle(`${user?.name}의 라이브 방송`);
+      }
+      if (liveDetail?.livesDescription) {
+        setDescription(liveDetail.livesDescription);
+      } else {
+        setDescription(`${user?.name}의 라이브 방송입니다`);
+      }
     }
-    if (liveDetail?.livesDescription) {
-      setDescription(liveDetail.livesDescription);
-    }
-  }, [liveDetail]);
+  }, [liveDetail, isLoading, user?.name]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
