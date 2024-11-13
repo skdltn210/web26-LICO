@@ -64,6 +64,7 @@ export class LiveEntity {
       channelId: this.channelId,
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
+      onAir: this.onAir,
     };
   }
 
@@ -76,6 +77,7 @@ export class LiveEntity {
       startedAt: this.startedAt,
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
+      onAir: this.onAir,
     };
   }
 }

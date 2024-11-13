@@ -1,3 +1,3 @@
 export enum ErrorMessage {
-  READ_CATEGORY_404 = '등록되지 않은 카테고리입니다.',
+  CATEGORY_NOT_FOUND = '존재하지 않는 카테고리입니다.',
 }

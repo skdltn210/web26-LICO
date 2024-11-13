@@ -118,14 +118,14 @@ describe('LivesService', () => {
   describe('readLives', () => {
     it('라이브 서비스가 라이브 목록을 반환합니다.', async () => {
       // Given
-      mockLivesRepository.find.mockResolvedValue(mockLives.filter(entity => entity.onAir));
+      mockLivesRepository.find.mockResolvedValue(mockLives);
 
       // When
       const lives = await service.readLives();
 
       // Then
       expect(repository.find).toHaveBeenCalledTimes(1);
-      expect(repository.find).toHaveBeenCalledWith({ relations: ['category', 'user'], where: { onAir: true } });
+      expect(repository.find).toHaveBeenCalledWith({ relations: ['category', 'user'], where: {} });
       expect(lives).toEqual([
         {
           categoriesId: 1,
@@ -134,6 +134,7 @@ describe('LivesService', () => {
           channelId: 'abc123',
           usersNickname: 'JohnDoe',
           usersProfileImage: 'https://example.com/profile.jpg',
+          onAir: true,
         },
         {
           categoriesId: 2,
@@ -142,6 +143,16 @@ describe('LivesService', () => {
           channelId: 'def456',
           usersNickname: 'JaneDoe',
           usersProfileImage: 'https://example.com/jane-profile.jpg',
+          onAir: true,
+        },
+        {
+          categoriesId: 3,
+          categoriesName: 'Talk Show',
+          channelId: 'ghi789',
+          livesName: 'Evening Talk Show',
+          usersNickname: 'HostName',
+          usersProfileImage: 'https://example.com/host-profile.jpg',
+          onAir: false,
         },
       ]);
     });

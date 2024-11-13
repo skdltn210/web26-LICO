@@ -10,8 +10,8 @@ export class LivesController {
   constructor(private readonly livesService: LivesService) {}
 
   @Get()
-  async getLives(): Promise<LivesDto[]> {
-    return await this.livesService.readLives();
+  async getOnAirLives(): Promise<LivesDto[]> {
+    return await this.livesService.readLives({ onAir: true });
   }
 
   @Get('/:channelId')
