@@ -2,13 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import useLayoutStore from '@store/useLayoutStore';
 import useHls from '@hooks/useHls';
 import LoadingSpinner from '@components/common/LoadingSpinner';
+import Badge from '@components/common/Badges/Badge';
 import Controls from './Control/index';
 
 interface VideoPlayerProps {
   streamUrl: string;
+  onAir: boolean;
 }
 
-export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
+export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(true);
@@ -137,7 +139,15 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       >
         <track kind="captions" src="" />
       </video>
+
       {isBuffering && isPlaying && <LoadingSpinner />}
+
+      {onAir && (
+        <Badge
+          text="LIVE"
+          className={`absolute right-2 top-2 bg-red-600 text-lico-gray-1 transition-opacity duration-300 ${showControls ? 'opacity-90' : 'pointer-events-none opacity-0'}`}
+        />
+      )}
 
       <Controls
         isPlaying={isPlaying}

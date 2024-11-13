@@ -53,7 +53,7 @@ export default function LivePage() {
     <div className={`flex h-screen ${isTheaterMode && isVerticalMode ? 'flex-col' : ''}`}>
       <div className="relative flex-1">
         <div className="flex h-full flex-col overflow-y-auto scrollbar-hide">
-          <VideoPlayer streamUrl={STREAM_URL} />
+          <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail.onAir} />
           {!isTheaterMode && (
             <>
               <LiveInfo channelId={id} />
