@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo, LuMenu, LuLogIn, LuLogOut } from 'react-icons/lu';
 import useLayoutStore from '@store/useLayoutStore';
 import { useAuthStore } from '@store/useAuthStore';
+import { useAuth } from '@hooks/useAuth';
 
 interface NavLinkProps {
   isActive: boolean;
@@ -9,7 +10,8 @@ interface NavLinkProps {
 
 export default function Navbar(): JSX.Element {
   const { toggleNavbar } = useLayoutStore();
-  const { isAuthenticated, logout } = useAuthStore();
+  const user = useAuthStore(state => state.user);
+  const { logout } = useAuth();
 
   const linkClass = ({ isActive }: NavLinkProps): string =>
     `flex items-center rounded-lg px-4 py-3 transition-colors hover:bg-lico-gray-3 text-lico-gray-1 hover:text-lico-orange-2 ${
@@ -68,7 +70,7 @@ export default function Navbar(): JSX.Element {
 
         <div className="flex-grow" />
 
-        {isAuthenticated ? (
+        {user ? (
           <button
             onClick={handleLogout}
             className="flex w-full items-center rounded-lg px-4 py-3 text-lico-gray-1 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"

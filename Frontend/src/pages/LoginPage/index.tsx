@@ -1,8 +1,8 @@
-import { useAuth } from '@/hooks/useAuth';
-import { Naver, Google, Github } from '@/assets/icons/socialLoginIcons';
+import { useAuth } from '@hooks/useAuth';
+import { Naver, Google, Github } from '@assets/icons/socialLoginIcons';
 
 export default function LoginPage() {
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col p-12">
@@ -12,7 +12,6 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="flex flex-col gap-4">
             <button
-              disabled={isLoading}
               onClick={() => login('naver')}
               className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#03C75A] px-6 py-3 text-white transition-opacity hover:opacity-90"
             >
@@ -21,7 +20,6 @@ export default function LoginPage() {
             </button>
 
             <button
-              disabled={isLoading}
               onClick={() => login('google')}
               className="flex w-full items-center justify-center gap-3 rounded-lg bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-100"
             >
@@ -30,7 +28,6 @@ export default function LoginPage() {
             </button>
 
             <button
-              disabled={isLoading}
               onClick={() => login('github')}
               className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#24292F] px-6 py-3 text-white transition-opacity hover:opacity-90"
             >
