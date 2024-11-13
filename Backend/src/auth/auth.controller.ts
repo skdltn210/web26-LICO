@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { UnauthorizedException } from '@nestjs/common';
-import { access } from 'fs';
+import { JwtAuthGuard } from './guards/jwt-auth.guard'; 
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +30,29 @@ export class AuthController {
   @UseGuards(AuthGuard('naver'))
   async naverAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
     return this.handleOAuthCallback(req, res);
+  }
+
+  @Get('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(@Req() req: Request, @Res() res: Response) {
+    try {
+      // 클라이언트에서 전달된 accessToken이 유효한지 이미 JwtAuthGuard가 검증함
+
+      // refreshToken 쿠키 제거
+      res.cookie('refreshToken', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        maxAge: 0,
+        path: '/auth',
+      });
+
+      // 응답
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Logout Error:', error);
+      res.status(500).json({ success: false, message: '로그아웃에 실패했습니다.' });
+    }
   }
 
   // 공통 콜백 처리 메서드
@@ -74,4 +97,6 @@ export class AuthController {
       });
     }
   }
+
+
 }

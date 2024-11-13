@@ -9,6 +9,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { GithubStrategy } from './strategies/github.strategy';
 import { NaverStrategy } from './strategies/naver.strategy';
 import { ConfigService } from '@nestjs/config';
+import { JwtStrategy } from './strategies/jwt.strategy'; 
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ConfigService } from '@nestjs/config';
     GoogleStrategy, // 추가
     GithubStrategy, // 추가
     NaverStrategy, // 추가
+    JwtStrategy,
   ],
   exports: [AuthService],
 })
