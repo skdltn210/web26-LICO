@@ -6,6 +6,7 @@ interface User {
   name: string;
   email: string;
   profileImage?: string;
+  channelID: string;
 }
 
 interface AuthState {
@@ -20,6 +21,7 @@ const mockUser: User = {
   name: 'test',
   email: 'test@example.com',
   profileImage: 'https://via.placeholder.com/150',
+  channelID: 'abc',
 };
 
 const mockAccessToken = 'mock_jwt_token_12345';
