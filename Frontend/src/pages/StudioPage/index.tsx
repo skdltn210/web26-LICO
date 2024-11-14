@@ -8,6 +8,7 @@ import WebStreamControls from '@pages/StudioPage/WebStreamControls';
 import StreamInfo from '@pages/StudioPage/StreamInfo';
 import ChatWindow from '@components/chat/ChatWindow';
 import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
+import { useStreamingKey } from '@hooks/useLive';
 
 type StreamType = 'OBS' | 'WebOBS';
 
@@ -25,17 +26,29 @@ export default function StudioPage() {
 
   const { chatState, toggleChat } = useLayoutStore();
 
+  // 스트리밍 키 데이터 가져오기
+  const { data: streamingKeyData, refetch: refetchStreamingKey } = useStreamingKey();
+
+  // 컴포넌트 마운트 시 토큰 리프레시
   useEffect(() => {
-    refreshToken();
-  }, [refreshToken]);
+    const initializeToken = async () => {
+      try {
+        await refreshToken();
+        await refetchStreamingKey();
+      } catch (error) {
+        console.error('Failed to refresh token:', error);
+        window.location.href = '/login';
+      }
+    };
+
+    initializeToken();
+  }, []);
 
   if (!channelId) {
     return (
-      <>
-        <div className="flex h-screen items-center justify-center">
-          <div className="font-bold text-lg text-lico-gray-1">올바른 주소를 입력해주세요</div>
-        </div>
-      </>
+      <div className="flex h-screen items-center justify-center">
+        <div className="font-bold text-lg text-lico-gray-1">올바른 주소를 입력해주세요</div>
+      </div>
     );
   }
 

@@ -31,10 +31,10 @@ export const useUpdateLive = () => {
   });
 };
 
-export const useStreamingKey = () => {
+export const useStreamingKey = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: liveKeys.streamingKey(),
     queryFn: () => liveApi.getStreamingKey(),
+    enabled: options?.enabled,
   });
 };
-
