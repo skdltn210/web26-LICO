@@ -85,13 +85,14 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
         updateData: {
           name: title,
           description,
-          categoriesId: selectedCategory?.id.toString(),
+          categoriesId: selectedCategory?.id,
         },
       });
 
       setToastMessage('방송 정보가 업데이트되었습니다.');
       setShowToast(true);
     } catch (error) {
+      console.error('Update error:', error);
       setToastMessage('방송 정보 업데이트에 실패했습니다.');
       setShowToast(true);
     }
