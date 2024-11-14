@@ -18,4 +18,14 @@ export interface LiveDetail {
   onAir: boolean;
 }
 
+export interface UpdateLiveRequest {
+  categoriesId?: number;
+  name?: string;
+  description?: string;
+}
+
+export interface StreamingKeyResponse {
+  streamingKey: string;
+}
+
 export type SortType = 'viewers' | 'latest' | 'random';
