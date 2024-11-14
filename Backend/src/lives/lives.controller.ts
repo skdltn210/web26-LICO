@@ -57,9 +57,8 @@ export class LivesController {
     this.livesService.endLive(channelId);
   }
 
-  @Get('/streaming-key')
-  @UseGuards(JwtAuthGuard)
-  async getStreamingKey(@Req() req: Request & { user: UserEntity }) {
-    return { streamingKey: req.user.live.streamingKey };
+  @Get('/streaming-key/:livesId')
+  async getStreamingKey(@Param('livesId') livesId: number) {
+    return this.livesService.readStreamingKey(livesId);
   }
 }
