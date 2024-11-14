@@ -19,7 +19,7 @@ export interface LiveDetail {
 }
 
 export interface UpdateLiveRequest {
-  categoriesId?: string;
+  categoriesId?: number;
   name?: string;
   description?: string;
 }
