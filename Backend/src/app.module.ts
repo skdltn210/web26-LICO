@@ -10,8 +10,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
 import { LivesModule } from './lives/lives.module';
 import { ChatsModule } from './chats/chats.module';
-import { UserEntity } from './users/entity/user.entity';
-import { LiveEntity } from './lives/entity/live.entity';
 import sqliteConfig from './config/sqlite.config';
 import mysqlConfig from './config/mysql.config';
 

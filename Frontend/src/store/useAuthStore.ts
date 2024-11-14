@@ -10,10 +10,10 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    set => ({
       accessToken: null,
       user: null,
-      setAuth: (auth) =>
+      setAuth: auth =>
         set({
           accessToken: auth.accessToken,
           user: auth.user,
@@ -26,8 +26,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      // storage: createJSONStorage(() => sessionStorage), // sessionStorage를 사용하고 싶다면
-      partialize: (state) => ({ user: state.user }), // accessToken은 제외하고 user 정보만 저장
-    }
-  )
+      partialize: state => ({ user: state.user }),
+    },
+  ),
 );

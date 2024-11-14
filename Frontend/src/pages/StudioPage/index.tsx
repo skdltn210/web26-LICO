@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import useLayoutStore from '@store/useLayoutStore';
+import { useAuth } from '@hooks/useAuth';
+import { useStreamingKey } from '@hooks/useLive';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
 import WebStreamControls from '@pages/StudioPage/WebStreamControls';
@@ -10,6 +13,8 @@ import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 type StreamType = 'OBS' | 'WebOBS';
 
 export default function StudioPage() {
+  const { channelId } = useParams<{ channelId: string }>();
+  const { refreshToken } = useAuth();
   const [streamType, setStreamType] = useState<StreamType>('OBS');
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [webcamEnabled, setWebcamEnabled] = useState(false);
@@ -20,13 +25,36 @@ export default function StudioPage() {
   const [arEnabled, setArEnabled] = useState(false);
 
   const { chatState, toggleChat } = useLayoutStore();
+  const { data: streamingKeyData, refetch: refetchStreamingKey } = useStreamingKey();
+
+  useEffect(() => {
+    const initializeToken = async () => {
+      try {
+        await refreshToken();
+        await refetchStreamingKey();
+      } catch (error) {
+        console.error('Failed to refresh token:', error);
+        window.location.href = '/login';
+      }
+    };
+
+    initializeToken();
+  }, []);
+
+  if (!channelId) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="font-bold text-lg text-lico-gray-1">올바른 주소를 입력해주세요</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen">
       <main className="min-w-96 flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
         <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
         <div className="mt-4 h-3/5">
-          <VideoPlayer streamUrl="" onAir />
+          <VideoPlayer streamUrl={`/stream/${channelId}`} onAir />
         </div>
 
         <div className="mt-4">
@@ -65,7 +93,11 @@ export default function StudioPage() {
 
           {streamType === 'OBS' ? (
             <div id="obs-panel" role="tabpanel">
-              <StreamSettings showStreamKey={showStreamKey} setShowStreamKey={setShowStreamKey} />
+              <StreamSettings
+                showStreamKey={showStreamKey}
+                setShowStreamKey={setShowStreamKey}
+                streamingKey={streamingKeyData?.streamingKey}
+              />
             </div>
           ) : (
             <div id="webobs-panel" role="tabpanel">
@@ -89,7 +121,7 @@ export default function StudioPage() {
       </main>
 
       <aside className="min-w-96 overflow-y-auto bg-lico-gray-4 p-6 scrollbar-hide" aria-label="방송 정보">
-        <StreamInfo />
+        <StreamInfo channelId={channelId} />
       </aside>
 
       {chatState === 'expanded' && (

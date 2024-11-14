@@ -3,11 +3,17 @@ import { LuCopy, LuEye, LuEyeOff } from 'react-icons/lu';
 interface StreamSettingsProps {
   showStreamKey: boolean;
   setShowStreamKey: (show: boolean) => void;
+  streamingKey?: string;
 }
 
-export default function StreamSettings({ showStreamKey, setShowStreamKey }: StreamSettingsProps) {
+export default function StreamSettings({ showStreamKey, setShowStreamKey, streamingKey }: StreamSettingsProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+  };
+
+  const maskStreamKey = (key?: string) => {
+    if (!key) return '';
+    return showStreamKey ? key : '•'.repeat(key.length);
   };
 
   return (
@@ -22,12 +28,12 @@ export default function StreamSettings({ showStreamKey, setShowStreamKey }: Stre
             type="text"
             readOnly
             className="flex-1 rounded bg-lico-gray-4 p-2 font-medium text-sm text-lico-gray-1 outline-none"
-            value="rtmp://stream.example.com/live"
+            value="rtmp:relay.lico.digital/live"
             aria-label="스트림 URL"
           />
           <button
             type="button"
-            onClick={() => copyToClipboard('rtmp://stream.example.com/live')}
+            onClick={() => copyToClipboard('rtmp:relay.lico.digital/live')}
             className="flex items-center justify-center rounded bg-lico-gray-3 px-3 text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2"
             aria-label="스트림 URL 복사"
           >
@@ -43,10 +49,10 @@ export default function StreamSettings({ showStreamKey, setShowStreamKey }: Stre
           <div className="relative flex-1">
             <input
               id="streamKey"
-              type={showStreamKey ? 'text' : 'password'}
+              type="text"
               readOnly
               className="w-full rounded bg-lico-gray-4 p-2 font-medium text-sm text-lico-gray-1 outline-none"
-              value="xxxx-xxxx-xxxx-xxxx"
+              value={maskStreamKey(streamingKey)}
               aria-label="스트림 키"
             />
             <button
@@ -60,7 +66,7 @@ export default function StreamSettings({ showStreamKey, setShowStreamKey }: Stre
           </div>
           <button
             type="button"
-            onClick={() => copyToClipboard('xxxx-xxxx-xxxx-xxxx')}
+            onClick={() => streamingKey && copyToClipboard(streamingKey)}
             className="flex items-center justify-center rounded bg-lico-gray-3 px-3 text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2"
             aria-label="스트림 키 복사"
           >
