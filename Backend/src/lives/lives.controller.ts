@@ -39,9 +39,15 @@ export class LivesController {
     return { code: 0 };
   }
 
+  @Delete('/onair/:channelId')
+  @HttpCode(202)
+  async endLive(@Param('channelId') channelId: UUID) {
+    this.livesService.endLive(channelId);
+  }
+
   @Get('/streaming-key')
   @UseGuards(JwtAuthGuard)
   async getStreamingKey(user: UserEntity) {
-    return user.live.streamingKey;
+    return { streamingKey: user.live.streamingKey };
   }
 }
