@@ -18,7 +18,7 @@ export class WebSocketStrategy extends PassportStrategy(Strategy, 'websocket') {
     });
   }
 
-  async validate(payload: any): Promise<UserEntity | { id: number }> {
+  async validate(payload: any): Promise<UserEntity> {
     const { id, provider } = payload.sub;
 
     const user = await this.usersService.findById(id);
@@ -26,6 +26,6 @@ export class WebSocketStrategy extends PassportStrategy(Strategy, 'websocket') {
     if (user && user.oauthPlatform === provider) {
       return user; // req.user에 사용자 정보 첨부
     }
-    return { id: -1 };
+    return new UserEntity();
   }
 }
