@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useLayoutStore from '@store/useLayoutStore';
-import { useAuth } from '@hooks/useAuth';
 import { useStreamingKey } from '@hooks/useLive';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
@@ -14,7 +13,6 @@ type StreamType = 'OBS' | 'WebOBS';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
-  const { refreshToken } = useAuth();
   const [streamType, setStreamType] = useState<StreamType>('OBS');
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [webcamEnabled, setWebcamEnabled] = useState(false);
@@ -25,21 +23,7 @@ export default function StudioPage() {
   const [arEnabled, setArEnabled] = useState(false);
 
   const { chatState, toggleChat } = useLayoutStore();
-  const { data: streamingKeyData, refetch: refetchStreamingKey } = useStreamingKey();
-
-  useEffect(() => {
-    const initializeToken = async () => {
-      try {
-        await refreshToken();
-        await refetchStreamingKey();
-      } catch (error) {
-        console.error('Failed to refresh token:', error);
-        window.location.href = '/login';
-      }
-    };
-
-    initializeToken();
-  }, []);
+  const { data: streamingKeyData } = useStreamingKey();
 
   if (!channelId) {
     return (
