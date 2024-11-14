@@ -29,15 +29,16 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const response = await api.post<RefreshTokenResponse>('/auth/refresh');
-        const { accessToken, user } = response.data;
+        const refreshResponse = await api.post<RefreshTokenResponse>('/auth/refresh');
+        const { accessToken, user } = refreshResponse.data;
 
         useAuthStore.getState().setAuth({ accessToken, user });
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
         return api(originalRequest);
       } catch (refreshError) {
         useAuthStore.getState().clearAuth();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(refreshError);
       }
     }
