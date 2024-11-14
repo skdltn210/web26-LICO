@@ -1,5 +1,5 @@
 import { api } from './axios';
-import type { Live, LiveDetail, UpdateLiveRequest, SortType } from '@/types/live';
+import type { Live, LiveDetail, UpdateLiveRequest, StreamingKeyResponse, SortType } from '@/types/live';
 
 export const liveApi = {
   getLives: async (sort: SortType) => {
@@ -16,6 +16,11 @@ export const liveApi = {
 
   updateLive: async (channelId: string, updateData: UpdateLiveRequest) => {
     const { data } = await api.patch<LiveDetail>(`/lives/${channelId}`, updateData);
+    return data;
+  },
+
+  getStreamingKey: async () => {
+    const { data } = await api.get<StreamingKeyResponse>('/lives/streaming-key');
     return data;
   },
 };

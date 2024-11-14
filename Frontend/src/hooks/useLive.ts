@@ -6,6 +6,7 @@ export const liveKeys = {
   all: ['lives'] as const,
   sorted: (sort: SortType) => [...liveKeys.all, { sort }] as const,
   detail: (channelId: string) => [...liveKeys.all, 'detail', channelId] as const,
+  streamingKey: () => [...liveKeys.all, 'streaming-key'] as const,
 };
 
 export const useLives = (sort: SortType) => {
@@ -27,5 +28,12 @@ export const useUpdateLive = () => {
   return useMutation({
     mutationFn: ({ channelId, updateData }: { channelId: string; updateData: UpdateLiveRequest }) =>
       liveApi.updateLive(channelId, updateData),
+  });
+};
+
+export const useStreamingKey = () => {
+  return useQuery({
+    queryKey: liveKeys.streamingKey(),
+    queryFn: () => liveApi.getStreamingKey(),
   });
 };

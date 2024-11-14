@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import useLayoutStore from '@store/useLayoutStore';
+import { useAuth } from '@hooks/useAuth';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
 import WebStreamControls from '@pages/StudioPage/WebStreamControls';
@@ -12,6 +13,7 @@ type StreamType = 'OBS' | 'WebOBS';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
+  const { refreshToken } = useAuth();
   const [streamType, setStreamType] = useState<StreamType>('OBS');
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [webcamEnabled, setWebcamEnabled] = useState(false);
@@ -23,8 +25,18 @@ export default function StudioPage() {
 
   const { chatState, toggleChat } = useLayoutStore();
 
+  useEffect(() => {
+    refreshToken();
+  }, [refreshToken]);
+
   if (!channelId) {
-    return <div>Invalid channel ID</div>;
+    return (
+      <>
+        <div className="flex h-screen items-center justify-center">
+          <div className="font-bold text-lg text-lico-gray-1">올바른 주소를 입력해주세요</div>
+        </div>
+      </>
+    );
   }
 
   return (
