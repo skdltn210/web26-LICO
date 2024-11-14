@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Req,
-  Res,
-  UseGuards,
-  Post,
-  HttpCode,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards, Post, HttpCode, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -55,7 +46,7 @@ export class AuthController {
         secure: this.isProduction,
         sameSite: this.isProduction ? 'none' : 'lax',
         maxAge: 0,
-        path: '/auth',
+        path: '/',
       });
 
       // 응답
@@ -88,10 +79,9 @@ export class AuthController {
         secure: this.isProduction,
         sameSite: this.isProduction ? 'none' : 'lax', 
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-        path: '/auth',
+        path: '/',
       });
 
-      // 프론트엔드에서 토큰을 받을 수 있도록 JSON 응답
       res.json({
         success: true,
         accessToken,
@@ -115,8 +105,7 @@ export class AuthController {
     }
 
     try {
-      const { accessToken, refreshToken: newRefreshToken, user } =
-        await this.authService.refreshTokens(refreshToken);
+      const { accessToken, refreshToken: newRefreshToken, user } = await this.authService.refreshTokens(refreshToken);
 
       // 새로운 Refresh 토큰을 쿠키에 설정
       res.cookie('refreshToken', newRefreshToken, {
@@ -124,7 +113,7 @@ export class AuthController {
         secure: this.isProduction,
         sameSite: this.isProduction ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-        path: '/auth',
+        path: '/',
       });
 
       // 응답
@@ -138,3 +127,4 @@ export class AuthController {
     }
   }
 }
+

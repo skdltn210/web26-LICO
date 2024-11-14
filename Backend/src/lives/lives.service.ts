@@ -59,4 +59,9 @@ export class LivesService {
     this.livesRepository.update({ channelId }, { onAir: false });
     this.chatsService.clearChat(channelId);
   }
+
+  async readStreamingKey(livesId: number) {
+    const live = await this.livesRepository.findOne({ where: { id: livesId } });
+    return live.streamingKey;
+  }
 }

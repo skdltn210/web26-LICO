@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useLayoutStore from '@store/useLayoutStore';
-import { useAuth } from '@hooks/useAuth';
-import { useStreamingKey } from '@hooks/useLive';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
 import WebStreamControls from '@pages/StudioPage/WebStreamControls';
@@ -14,9 +12,7 @@ type StreamType = 'OBS' | 'WebOBS';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
-  const { refreshToken } = useAuth();
   const [streamType, setStreamType] = useState<StreamType>('OBS');
-  const [showStreamKey, setShowStreamKey] = useState(false);
   const [webcamEnabled, setWebcamEnabled] = useState(false);
   const [screenEnabled, setScreenEnabled] = useState(false);
   const [imageEnabled, setImageEnabled] = useState(false);
@@ -25,21 +21,6 @@ export default function StudioPage() {
   const [arEnabled, setArEnabled] = useState(false);
 
   const { chatState, toggleChat } = useLayoutStore();
-  const { data: streamingKeyData, refetch: refetchStreamingKey } = useStreamingKey();
-
-  useEffect(() => {
-    const initializeToken = async () => {
-      try {
-        await refreshToken();
-        await refetchStreamingKey();
-      } catch (error) {
-        console.error('Failed to refresh token:', error);
-        window.location.href = '/login';
-      }
-    };
-
-    initializeToken();
-  }, []);
 
   if (!channelId) {
     return (
@@ -93,11 +74,7 @@ export default function StudioPage() {
 
           {streamType === 'OBS' ? (
             <div id="obs-panel" role="tabpanel">
-              <StreamSettings
-                showStreamKey={showStreamKey}
-                setShowStreamKey={setShowStreamKey}
-                streamingKey={streamingKeyData?.streamingKey}
-              />
+              <StreamSettings />
             </div>
           ) : (
             <div id="webobs-panel" role="tabpanel">
