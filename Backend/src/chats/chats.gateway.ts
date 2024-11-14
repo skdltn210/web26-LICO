@@ -32,9 +32,8 @@ export class ChatsGateway implements OnGatewayConnection {
       client.emit('notify', JSON.stringify({ message: '채팅을 전송하려면 로그인 해야합니다.' }));
     } else {
       const namespace = client.nsp;
-      const parsedChat = JSON.parse(receivedChat);
       const newChat = JSON.stringify({
-        content: parsedChat.message,
+        content: receivedChat,
         nickname: user.nickname,
         userId: user.id,
         timestamp: new Date(),
