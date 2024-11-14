@@ -100,7 +100,6 @@ export default function StudioPage() {
                 setDrawEnabled={setDrawEnabled}
                 arEnabled={arEnabled}
                 setArEnabled={setArEnabled}
-                channelId={channelId}
               />
             </div>
           )}
@@ -113,7 +112,7 @@ export default function StudioPage() {
 
       {chatState === 'expanded' && (
         <aside className="min-w-96 overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
-          <ChatWindow channelId={channelId} />
+          <ChatWindow />
         </aside>
       )}
       {chatState === 'hidden' && <ChatOpenButton className="text-lico-gray-2" onClick={toggleChat} />}

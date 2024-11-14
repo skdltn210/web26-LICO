@@ -7,11 +7,7 @@ import useLayoutStore from '@store/useLayoutStore';
 import { getConsistentTextColor, createTestChatMessage } from '@utils/chatUtils';
 import ChatMessage from './ChatMessage';
 
-interface ChatWindowProps {
-  channelId: string;
-}
-
-export default function ChatWindow({ channelId }: ChatWindowProps) {
+export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>(mockMessages);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const chatRef = useRef<HTMLDivElement | null>(null);
