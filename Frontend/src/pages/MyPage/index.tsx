@@ -1,12 +1,13 @@
 import { useParams, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@store/useAuthStore';
 import { LuCamera } from 'react-icons/lu';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 export default function MyPage() {
   const { userId } = useParams<{ userId: string }>();
   const user = useAuthStore(state => state.user);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewImage, setPreviewImage] = useState(user?.profileImage);
 
   if (user && user.id !== Number(userId)) {
     return <Navigate to="/" replace />;
@@ -19,7 +20,8 @@ export default function MyPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log('Selected file:', file);
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
     }
   };
 
@@ -34,7 +36,7 @@ export default function MyPage() {
               onClick={handleImageClick}
             >
               <img
-                src={user?.profileImage}
+                src={previewImage}
                 alt="프로필 이미지"
                 className="h-full w-full object-cover transition-opacity group-hover:opacity-50"
               />
