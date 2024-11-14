@@ -13,14 +13,16 @@ import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
- 
 
 @Controller('auth')
 export class AuthController {
+  private readonly isProduction: boolean;
   constructor(
     private configService: ConfigService,
     private authService: AuthService,
-  ) {}
+  ) {
+    this.isProduction = this.configService.get<string>('IS_PRODUCTION') === 'true' ? true : false;
+  }
 
   // 콜백 엔드포인트 추가
   @Get('google/callback')
@@ -50,8 +52,8 @@ export class AuthController {
       // refreshToken 쿠키 제거
       res.cookie('refreshToken', '', {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        secure: this.isProduction,
+        sameSite: this.isProduction ? 'none' : 'lax',
         maxAge: 0,
         path: '/auth',
       });
@@ -81,23 +83,20 @@ export class AuthController {
         },
       );
 
-
       res.cookie('refreshToken', refreshToken, {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: this.isProduction,
+        sameSite: this.isProduction ? 'none' : 'lax', 
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
         path: '/auth',
       });
 
-      // 프론트엔드에서 토큰을 받을 수 있도록 리다이렉트 또는 JSON 응답
-      
+      // 프론트엔드에서 토큰을 받을 수 있도록 JSON 응답
       res.json({
         success: true,
         accessToken,
         user,
       });
-    
     } catch (error) {
       console.error('OAuth Callback Error:', error);
       res.status(error.status || 401).json({
@@ -122,8 +121,8 @@ export class AuthController {
       // 새로운 Refresh 토큰을 쿠키에 설정
       res.cookie('refreshToken', newRefreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: this.isProduction,
+        sameSite: this.isProduction ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
         path: '/auth',
       });
@@ -138,5 +137,4 @@ export class AuthController {
       throw new UnauthorizedException('Could not refresh tokens');
     }
   }
-
 }
