@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import useLayoutStore from '@store/useLayoutStore';
 import { useAuth } from '@hooks/useAuth';
+import { useStreamingKey } from '@hooks/useLive';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
 import WebStreamControls from '@pages/StudioPage/WebStreamControls';
 import StreamInfo from '@pages/StudioPage/StreamInfo';
 import ChatWindow from '@components/chat/ChatWindow';
 import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
-import { useStreamingKey } from '@hooks/useLive';
 
 type StreamType = 'OBS' | 'WebOBS';
 
@@ -25,11 +25,8 @@ export default function StudioPage() {
   const [arEnabled, setArEnabled] = useState(false);
 
   const { chatState, toggleChat } = useLayoutStore();
-
-  // 스트리밍 키 데이터 가져오기
   const { data: streamingKeyData, refetch: refetchStreamingKey } = useStreamingKey();
 
-  // 컴포넌트 마운트 시 토큰 리프레시
   useEffect(() => {
     const initializeToken = async () => {
       try {
@@ -96,7 +93,11 @@ export default function StudioPage() {
 
           {streamType === 'OBS' ? (
             <div id="obs-panel" role="tabpanel">
-              <StreamSettings showStreamKey={showStreamKey} setShowStreamKey={setShowStreamKey} />
+              <StreamSettings
+                showStreamKey={showStreamKey}
+                setShowStreamKey={setShowStreamKey}
+                streamingKey={streamingKeyData?.streamingKey}
+              />
             </div>
           ) : (
             <div id="webobs-panel" role="tabpanel">
