@@ -2,14 +2,12 @@ import { useParams, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@store/useAuthStore';
 import { LuCamera } from 'react-icons/lu';
 import { useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useUpdateProfile } from '@hooks/useUser';
 import Toast from '@components/common/Toast';
 
 export default function MyPage() {
   const { userId } = useParams<{ userId: string }>();
   const user = useAuthStore(state => state.user);
-  const queryClient = useQueryClient();
   const updateProfileMutation = useUpdateProfile();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
