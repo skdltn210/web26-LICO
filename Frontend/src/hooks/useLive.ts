@@ -37,3 +37,4 @@ export const useStreamingKey = () => {
     queryFn: () => liveApi.getStreamingKey(),
   });
 };
+
