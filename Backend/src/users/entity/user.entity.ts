@@ -20,7 +20,7 @@ export class UserEntity {
 
   @Column({
     name: 'oauth_platform',
-    type: process.env.DB_TYPE === 'sqlite' ? 'simple-enum' : 'enum',
+    type: 'enum',
     enum: ['naver', 'github', 'google'],
     nullable: false,
   })

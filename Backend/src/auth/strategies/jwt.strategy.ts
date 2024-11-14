@@ -19,8 +19,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any): Promise<UserEntity | null> {
-    const user = await this.usersService.findById(payload.sub);
-    if (user) {
+    const { id, provider } = payload.sub;
+  
+    const user = await this.usersService.findById(id);
+  
+    if (user && user.oauthPlatform === provider) {
       return user; // req.user에 사용자 정보 첨부
     }
     return null;
