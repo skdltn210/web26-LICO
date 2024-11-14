@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, UseGuards, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
 import { LivesService } from './lives.service';
 import { LivesDto } from './dto/lives.dto';
 import { LiveDto } from './dto/live.dto';
@@ -47,7 +59,7 @@ export class LivesController {
 
   @Get('/streaming-key')
   @UseGuards(JwtAuthGuard)
-  async getStreamingKey(user: UserEntity) {
-    return { streamingKey: user.live.streamingKey };
+  async getStreamingKey(@Req() req: Request & { user: UserEntity }) {
+    return { streamingKey: req.user.live.streamingKey };
   }
 }
