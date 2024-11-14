@@ -1,12 +1,11 @@
+import { useState } from 'react';
 import { LuCopy, LuEye, LuEyeOff } from 'react-icons/lu';
+import { useStreamingKey } from '@hooks/useLive';
 
-interface StreamSettingsProps {
-  showStreamKey: boolean;
-  setShowStreamKey: (show: boolean) => void;
-  streamingKey?: string;
-}
+export default function StreamSettings() {
+  const [showStreamKey, setShowStreamKey] = useState(false);
+  const { data: streamingKeyData } = useStreamingKey();
 
-export default function StreamSettings({ showStreamKey, setShowStreamKey, streamingKey }: StreamSettingsProps) {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
@@ -52,7 +51,7 @@ export default function StreamSettings({ showStreamKey, setShowStreamKey, stream
               type="text"
               readOnly
               className="w-full rounded bg-lico-gray-4 p-2 font-medium text-sm text-lico-gray-1 outline-none"
-              value={maskStreamKey(streamingKey)}
+              value={maskStreamKey(streamingKeyData?.streamingKey)}
               aria-label="스트림 키"
             />
             <button
@@ -66,7 +65,7 @@ export default function StreamSettings({ showStreamKey, setShowStreamKey, stream
           </div>
           <button
             type="button"
-            onClick={() => streamingKey && copyToClipboard(streamingKey)}
+            onClick={() => streamingKeyData?.streamingKey && copyToClipboard(streamingKeyData.streamingKey)}
             className="flex items-center justify-center rounded bg-lico-gray-3 px-3 text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2"
             aria-label="스트림 키 복사"
           >

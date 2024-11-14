@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import useLayoutStore from '@store/useLayoutStore';
-import { useStreamingKey } from '@hooks/useLive';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
 import WebStreamControls from '@pages/StudioPage/WebStreamControls';
@@ -14,7 +13,6 @@ type StreamType = 'OBS' | 'WebOBS';
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const [streamType, setStreamType] = useState<StreamType>('OBS');
-  const [showStreamKey, setShowStreamKey] = useState(false);
   const [webcamEnabled, setWebcamEnabled] = useState(false);
   const [screenEnabled, setScreenEnabled] = useState(false);
   const [imageEnabled, setImageEnabled] = useState(false);
@@ -23,7 +21,6 @@ export default function StudioPage() {
   const [arEnabled, setArEnabled] = useState(false);
 
   const { chatState, toggleChat } = useLayoutStore();
-  const { data: streamingKeyData } = useStreamingKey();
 
   if (!channelId) {
     return (
@@ -77,11 +74,7 @@ export default function StudioPage() {
 
           {streamType === 'OBS' ? (
             <div id="obs-panel" role="tabpanel">
-              <StreamSettings
-                showStreamKey={showStreamKey}
-                setShowStreamKey={setShowStreamKey}
-                streamingKey={streamingKeyData?.streamingKey}
-              />
+              <StreamSettings />
             </div>
           ) : (
             <div id="webobs-panel" role="tabpanel">
