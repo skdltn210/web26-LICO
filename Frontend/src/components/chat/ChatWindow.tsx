@@ -58,7 +58,7 @@ export default function ChatWindow() {
         aria-label="채팅 메시지"
         aria-live="polite"
         ref={chatRef}
-        className="scrollbar-hide h-screen overflow-auto p-4"
+        className="h-screen overflow-auto p-4 scrollbar-hide"
       >
         <div className="flex break-after-all flex-col gap-2.5">
           {messages.map(message => (

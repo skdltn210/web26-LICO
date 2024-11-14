@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor(configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private authService: AuthService,
+  ) {
     super({
       clientID: configService.get<string>('GOOGLE_CLIENT_ID'),
       clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET'),
-      callbackURL: 'http://localhost:3000/auth/google/callback',
-      scope: ['email', 'profile'],
+      callbackURL: configService.get<string>('GOOGLE_REDIRECT_URI'),
+      scope: ['email', 'profile', 'openid'],
     });
   }
 
@@ -18,18 +22,24 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: VerifyCallback,
+    done: Function
   ): Promise<any> {
-    const { name, emails, photos, id } = profile;
-    const user = {
-      provider: 'google',
-      userId: id,
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      picture: photos[0].value,
-      accessToken,
-    };
-    done(null, user);
+    try {
+      const { id: oauthUid, displayName, emails, photos } = profile;
+
+      // Google 사용자 데이터 구성
+      const userData = {
+        oauthUid,
+        provider: 'google' as 'google',
+        nickname: displayName || emails?.[0]?.value?.split('@')[0] || `User${oauthUid.substring(0, 8)}`,
+        profileImage: photos?.[0]?.value || null,
+        email: emails?.[0]?.value || null,
+      };
+
+      done(null, userData);
+    } catch (err) {
+      console.error('Google Strategy Error:', err);
+      done(err, false);
+    }
   }
 }

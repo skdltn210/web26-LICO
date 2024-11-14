@@ -3,6 +3,7 @@ export class LivesDto {
   readonly livesName: string;
   readonly usersNickname: string;
   readonly usersProfileImage: string;
-  readonly categoriesId: number;
-  readonly categoriesName: string;
+  readonly categoriesId: number | null;
+  readonly categoriesName: string | null;
+  readonly onAir: boolean | null;
 }

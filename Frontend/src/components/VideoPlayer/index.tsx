@@ -1,33 +1,38 @@
 import { useState, useRef, useEffect } from 'react';
 import useLayoutStore from '@store/useLayoutStore';
+import useHls from '@hooks/useHls';
+import LoadingSpinner from '@components/common/LoadingSpinner';
+import Badge from '@components/common/Badges/Badge';
+import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
 import Controls from './Control/index';
-import { useHls } from './useHls';
 
 interface VideoPlayerProps {
   streamUrl: string;
+  onAir: boolean;
 }
 
-export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
+export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showCursor, setShowCursor] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
   const { videoPlayerState, toggleVideoPlayer } = useLayoutStore();
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // HLS 초기화
-  useHls(streamUrl, videoRef, {
-    debug: false,
-    enableWorker: true,
-    lowLatencyMode: true,
-    onError: (err) => setError(err),
-  });
+  const { isBuffering, error, setQuality, qualities } = useHls(streamUrl, videoRef);
+
+  const handlePlay = () => {
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -36,22 +41,23 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       } else {
         videoRef.current.play();
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
   const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
     if (videoRef.current) {
+      videoRef.current.muted = false;
       videoRef.current.volume = newVolume;
     }
     setIsMuted(newVolume === 0);
+    setVolume(newVolume || 1);
   };
 
   const toggleMute = () => {
     if (videoRef.current) {
+      videoRef.current.muted = false;
       if (isMuted) {
-        videoRef.current.volume = volume || 1;
+        videoRef.current.volume = volume;
         setIsMuted(false);
       } else {
         videoRef.current.volume = 0;
@@ -101,17 +107,6 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
   };
 
   useEffect(() => {
-    const handleFullScreenChange = () => {
-      setIsFullScreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullScreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullScreenChange);
-    };
-  }, []);
-
-  useEffect(() => {
     return () => {
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
@@ -134,15 +129,30 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <video
-        ref={videoRef}
-        className="h-full w-full bg-black"
-        autoPlay
-        playsInline
-      >
-        <track kind="captions" src="" />
-        브라우저가 비디오 재생을 지원하지 않습니다.
-      </video>
+      {onAir ? (
+        <video
+          ref={videoRef}
+          className="h-full w-full bg-black"
+          onPlay={handlePlay}
+          onPause={handlePause}
+          muted
+          autoPlay
+          playsInline
+        >
+          <track kind="captions" src="" />
+        </video>
+      ) : (
+        <OfflinePlayer />
+      )}
+
+      {isBuffering && isPlaying && <LoadingSpinner />}
+
+      {onAir && (
+        <Badge
+          text="LIVE"
+          className={`absolute right-2 top-2 bg-red-600 text-lico-gray-1 transition-opacity duration-300 ${showControls ? 'opacity-90' : 'pointer-events-none opacity-0'}`}
+        />
+      )}
 
       <Controls
         isPlaying={isPlaying}
@@ -157,6 +167,8 @@ export default function VideoPlayer({ streamUrl }: VideoPlayerProps) {
         onFullScreenToggle={toggleFullScreen}
         onVideoPlayerToggle={toggleVideoPlayer}
         onShowControls={handleShowControls}
+        qualities={qualities}
+        setQuality={setQuality}
       />
     </div>
   );

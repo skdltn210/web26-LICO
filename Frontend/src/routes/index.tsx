@@ -7,25 +7,47 @@ import CategoryDetailPage from '@pages/CategoryPage/CategoryDetailPage';
 import LivePage from '@pages/LivePage';
 import LivesPage from '@pages/LivesPage';
 import StudioPage from '@pages/StudioPage';
-
-const layoutRoutes = [
-  { path: '/', element: <HomePage /> },
-  { path: '/following', element: <FollowingPage /> },
-  { path: '/category', element: <CategoryPage /> },
-  { path: '/category/:categoryId', element: <CategoryDetailPage /> },
-  { path: '/live/:id', element: <LivePage /> },
-  { path: '/lives', element: <LivesPage /> },
-];
+import LoginPage from '@pages/LoginPage';
+import MyPage from '@pages/MyPage';
+import LoginCallback from '@pages/LoginPage/LoginCallback';
+import ProtectedRoute from './ProtectedRoute';
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/studio" element={<StudioPage />} />
+      <Route path="/auth/:provider/callback" element={<LoginCallback />} />
+      <Route
+        path="/studio/:channelId"
+        element={
+          <ProtectedRoute>
+            <StudioPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route element={<Layout />}>
-        {layoutRoutes.map(route => (
-          <Route key={route.path} path={route.path} element={route.element} />
-        ))}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/category" element={<CategoryPage />} />
+        <Route path="/category/:categoryId" element={<CategoryDetailPage />} />
+        <Route path="/live/:id" element={<LivePage />} />
+        <Route path="/lives" element={<LivesPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/following"
+          element={
+            <ProtectedRoute>
+              <FollowingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mypage/:userId"
+          element={
+            <ProtectedRoute>
+              <MyPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
     </Routes>
   );

@@ -15,6 +15,16 @@ export interface LiveDetail {
   usersNickname: string;
   usersProfileImage: string;
   startedAt: string;
+  onAir: boolean;
+}
+
+export interface UpdateLiveRequest {
+  categoriesId?: number;
+  name?: string;
+  description?: string;
+}
+
+export interface StreamingKeyResponse {
   streamingKey: string;
 }
 

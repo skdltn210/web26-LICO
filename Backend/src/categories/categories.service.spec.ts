@@ -99,7 +99,7 @@ describe('CategoriesService', () => {
 
       // When & Then
       await expect(service.readCategory(invalidCategoryId)).rejects.toThrow(
-        new NotFoundException(ErrorMessage.READ_CATEGORY_404),
+        new NotFoundException(ErrorMessage.CATEGORY_NOT_FOUND),
       );
       expect(repository.findOne).toHaveBeenCalledTimes(1);
       expect(repository.findOne).toHaveBeenCalledWith({

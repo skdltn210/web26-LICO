@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import * as cookieParser from 'cookie-parser'; // cookie-parser
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,8 +15,11 @@ async function bootstrap() {
   app.use(cookieParser()); // cookie-parser 미들웨어 사용
   app.enableCors({
     // CORS 설정
-    origin: configService.get<string>('CORS') || '*',
+    origin: configService.get<string>('CORS').split(',') || '*',
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Authorization'],
   });
 
   await app.listen(port);
