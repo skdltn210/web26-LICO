@@ -1,19 +1,9 @@
-import {
-  Controller,
-  Get,
-  Req,
-  Res,
-  UseGuards,
-  Post,
-  HttpCode,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards, Post, HttpCode, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
- 
 
 @Controller('auth')
 export class AuthController {
@@ -53,7 +43,7 @@ export class AuthController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
         maxAge: 0,
-        path: '/auth',
+        path: '/',
       });
 
       // 응답
@@ -81,23 +71,21 @@ export class AuthController {
         },
       );
 
-
       res.cookie('refreshToken', refreshToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        path: '/auth',
+        path: '/',
       });
 
       // 프론트엔드에서 토큰을 받을 수 있도록 리다이렉트 또는 JSON 응답
-      
+
       res.json({
         success: true,
         accessToken,
         user,
       });
-    
     } catch (error) {
       console.error('OAuth Callback Error:', error);
       res.status(error.status || 401).json({
@@ -116,8 +104,7 @@ export class AuthController {
     }
 
     try {
-      const { accessToken, refreshToken: newRefreshToken, user } =
-        await this.authService.refreshTokens(refreshToken);
+      const { accessToken, refreshToken: newRefreshToken, user } = await this.authService.refreshTokens(refreshToken);
 
       // 새로운 Refresh 토큰을 쿠키에 설정
       res.cookie('refreshToken', newRefreshToken, {
@@ -125,7 +112,7 @@ export class AuthController {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-        path: '/auth',
+        path: '/',
       });
 
       // 응답
@@ -138,5 +125,4 @@ export class AuthController {
       throw new UnauthorizedException('Could not refresh tokens');
     }
   }
-
 }
