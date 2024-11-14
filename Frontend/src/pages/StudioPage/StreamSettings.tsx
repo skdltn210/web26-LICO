@@ -4,7 +4,7 @@ import { useStreamingKey } from '@hooks/useLive';
 
 export default function StreamSettings() {
   const [showStreamKey, setShowStreamKey] = useState(false);
-  const { data: streamingKeyData } = useStreamingKey();
+  const { data } = useStreamingKey();
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -14,6 +14,8 @@ export default function StreamSettings() {
     if (!key) return '';
     return showStreamKey ? key : '•'.repeat(key.length);
   };
+
+  const streamKey = data?.toString() || '';
 
   return (
     <div className="mt-4 space-y-4">
@@ -51,7 +53,7 @@ export default function StreamSettings() {
               type="text"
               readOnly
               className="w-full rounded bg-lico-gray-4 p-2 font-medium text-sm text-lico-gray-1 outline-none"
-              value={maskStreamKey(streamingKeyData?.streamingKey)}
+              value={maskStreamKey(streamKey)}
               aria-label="스트림 키"
             />
             <button
@@ -65,7 +67,7 @@ export default function StreamSettings() {
           </div>
           <button
             type="button"
-            onClick={() => streamingKeyData?.streamingKey && copyToClipboard(streamingKeyData.streamingKey)}
+            onClick={() => streamKey && copyToClipboard(streamKey)}
             className="flex items-center justify-center rounded bg-lico-gray-3 px-3 text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2"
             aria-label="스트림 키 복사"
           >
