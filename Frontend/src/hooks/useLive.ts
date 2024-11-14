@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { liveApi } from '@apis/live';
-import type { Live, LiveDetail, SortType } from '@/types/live';
+import type { Live, LiveDetail, UpdateLiveRequest, SortType } from '@/types/live';
 
 export const liveKeys = {
   all: ['lives'] as const,
@@ -20,5 +20,12 @@ export const useLiveDetail = (channelId: string) => {
     queryKey: liveKeys.detail(channelId),
     queryFn: () => liveApi.getLiveByChannelId(channelId),
     enabled: !!channelId,
+  });
+};
+
+export const useUpdateLive = () => {
+  return useMutation({
+    mutationFn: ({ channelId, updateData }: { channelId: string; updateData: UpdateLiveRequest }) =>
+      liveApi.updateLive(channelId, updateData),
   });
 };

@@ -18,4 +18,10 @@ export interface LiveDetail {
   streamingKey: string;
 }
 
+export interface UpdateLiveRequest {
+  categoriesId?: string;
+  name?: string;
+  description?: string;
+}
+
 export type SortType = 'viewers' | 'latest' | 'random';

@@ -9,7 +9,14 @@ interface DropdownProps<T> {
   renderItem: (item: T) => React.ReactNode;
 }
 
-export function Dropdown<T>({ show, items, highlightedIndex, onSelect, onHighlight, renderItem }: DropdownProps<T>) {
+export default function Dropdown<T>({
+  show,
+  items,
+  highlightedIndex,
+  onSelect,
+  onHighlight,
+  renderItem,
+}: DropdownProps<T>) {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
