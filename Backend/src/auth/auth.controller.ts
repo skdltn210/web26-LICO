@@ -46,6 +46,7 @@ export class AuthController {
         secure: this.isProduction,
         sameSite: this.isProduction ? 'none' : 'lax',
         maxAge: 0,
+        domain: '.lico.digital',
         path: '/',
       });
 
@@ -79,6 +80,7 @@ export class AuthController {
         secure: this.isProduction,
         sameSite: this.isProduction ? 'none' : 'lax', 
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+        domain: '.lico.digital',
         path: '/',
       });
 
@@ -113,6 +115,7 @@ export class AuthController {
         secure: this.isProduction,
         sameSite: this.isProduction ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+        domain: '.lico.digital',
         path: '/',
       });
 

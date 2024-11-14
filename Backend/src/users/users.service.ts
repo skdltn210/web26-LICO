@@ -34,11 +34,7 @@ export class UsersService {
 
       region: this.configService.get<string>('NCLOUD_REGION'),
       endpoint: this.configService.get<string>('NCLOUD_ENDPOINT'),
-
-      // The key sslEnabled is renamed to tls.
       tls: true,
-
-      // The key s3ForcePathStyle is renamed to forcePathStyle.
       forcePathStyle: true,
     });
   }
