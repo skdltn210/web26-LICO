@@ -78,7 +78,7 @@ export default function WebStreamControls({
         className="mt-6 flex w-full items-center justify-center gap-2 rounded bg-lico-orange-2 px-4 py-2.5 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
         aria-label="방송 시작하기"
       >
-        <LuPlay className="-mt-0.5 h-5 w-5" aria-hidden="true" />
+        <LuPlay className="h-5 w-5" aria-hidden="true" />
         방송 시작하기
       </button>
     </>
