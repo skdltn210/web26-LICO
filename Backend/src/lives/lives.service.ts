@@ -19,9 +19,11 @@ export class LivesService {
     @InjectRedis() private redisClient: Redis,
   ) {
     this.redisClient.config('SET', 'notify-keyspace-events', 'Ex');
-    this.redisClient.subscribe('__keyevent@0__:expired');
 
-    this.redisClient.on('message', async (channel, key) => {
+    const subscriber = this.redisClient.duplicate();
+    subscriber.subscribe('__keyevent@0__:expired');
+
+    subscriber.on('message', async (channel, key) => {
       const { channelId } = key.match(
         /(?<channelId>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}):status/,
       ).groups;
@@ -83,5 +85,23 @@ export class LivesService {
   async readStreamingKey(livesId: number) {
     const live = await this.livesRepository.findOne({ where: { id: livesId } });
     return live.streamingKey;
+  }
+
+  async readStatus(channelId: UUID) {
+    const redisKey = `${channelId}:status`;
+    const cache = await this.redisClient.get(redisKey);
+    if (cache) {
+      return JSON.parse(cache);
+    }
+
+    const live = await this.livesRepository.findOne({ where: { channelId } });
+
+    if (!live) {
+      throw new NotFoundException(ErrorMessage.LIVE_NOT_FOUND);
+    }
+
+    const status = live.toStatus();
+    await this.redisClient.set(redisKey, JSON.stringify(status), 'EX', 60);
+    return status;
   }
 }
