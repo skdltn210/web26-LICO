@@ -19,8 +19,8 @@ export const liveApi = {
     return data;
   },
 
-  getStreamingKey: async (liveId: string) => {
-    const { data } = await api.get<StreamingKeyResponse>(`/lives/streaming-key/${liveId}`);
+  getStreamingKey: async () => {
+    const { data } = await api.get<StreamingKeyResponse>('/lives/streaming-key');
     return data;
   },
 };

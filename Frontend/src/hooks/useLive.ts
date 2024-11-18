@@ -1,13 +1,12 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { liveApi } from '@apis/live';
 import type { Live, LiveDetail, UpdateLiveRequest, SortType } from '@/types/live';
-import { useAuthStore } from '@store/useAuthStore';
 
 export const liveKeys = {
   all: ['lives'] as const,
   sorted: (sort: SortType) => [...liveKeys.all, { sort }] as const,
   detail: (channelId: string) => [...liveKeys.all, 'detail', channelId] as const,
-  streamingKey: (liveId: string) => [...liveKeys.all, 'streaming-key', liveId] as const,
+  streamingKey: () => [...liveKeys.all, 'streaming-key'] as const,
 };
 
 export const useLives = (sort: SortType) => {
@@ -33,11 +32,9 @@ export const useUpdateLive = () => {
 };
 
 export const useStreamingKey = (options?: { enabled?: boolean }) => {
-  const { user } = useAuthStore();
-
   return useQuery({
-    queryKey: liveKeys.streamingKey(user?.liveId ?? ''),
-    queryFn: () => liveApi.getStreamingKey(user?.liveId ?? ''),
-    enabled: options?.enabled && !!user?.liveId,
+    queryKey: liveKeys.streamingKey(),
+    queryFn: () => liveApi.getStreamingKey(),
+    enabled: options?.enabled,
   });
 };
