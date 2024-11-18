@@ -5,6 +5,7 @@ export interface Live {
   channelId: string;
   usersNickname: string;
   usersProfileImage: string;
+  onAir: boolean;
 }
 
 export interface LiveDetail {
