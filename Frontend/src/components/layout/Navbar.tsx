@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo, LuMenu, LuLogIn, LuLogOut } from 'react-icons/lu';
+import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo, LuMenu, LuLogIn, LuLogOut, LuUser } from 'react-icons/lu';
 import useLayoutStore from '@store/useLayoutStore';
 import { useAuthStore } from '@store/useAuthStore';
 import { useAuth } from '@hooks/useAuth';
@@ -60,7 +60,7 @@ export default function Navbar(): JSX.Element {
 
           <div className="my-2 h-px bg-lico-gray-3" />
 
-          <NavLink to={`/studio/${user?.channelId}`} target="_blank" rel="noopener noreferrer" className={linkClass}>
+          <NavLink to={`/studio/${user?.channelId}`} className={linkClass}>
             <div className="flex items-center">
               <LuVideo className="h-5 w-5" />
               <span className="ml-4 font-bold text-base">스튜디오</span>
@@ -71,15 +71,23 @@ export default function Navbar(): JSX.Element {
         <div className="flex-grow" />
 
         {user ? (
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center rounded-lg px-4 py-3 text-lico-gray-1 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"
-          >
-            <div className="flex items-center">
-              <LuLogOut className="h-5 w-5" />
-              <span className="ml-4 font-bold text-base">로그아웃</span>
-            </div>
-          </button>
+          <>
+            <NavLink to={`/mypage/${user.id}`} className={linkClass}>
+              <div className="flex items-center">
+                <LuUser className="h-5 w-5" />
+                <span className="ml-4 font-bold text-base">마이페이지</span>
+              </div>
+            </NavLink>
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center rounded-lg px-4 py-3 text-lico-gray-1 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"
+            >
+              <div className="flex items-center">
+                <LuLogOut className="h-5 w-5" />
+                <span className="ml-4 font-bold text-base">로그아웃</span>
+              </div>
+            </button>
+          </>
         ) : (
           <NavLink to="/login" className={linkClass}>
             <div className="flex items-center">
