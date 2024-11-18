@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
@@ -14,10 +15,9 @@ import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { ChatsMiddleware } from './chats.middleware';
 import { UUID } from 'crypto';
-import { UserEntity } from 'src/users/entity/user.entity';
 
 @WebSocketGateway({ namespace: '/chats' })
-export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect {
+export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
@@ -43,7 +43,7 @@ export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.redisClient.hincrby(`${channelId}:viewers`, socket.data.user.id, 1);
 
     const oldChats = await this.redisClient.lrange(`${channelId}:chats`, 0, -1);
-    socket.emit('chat', JSON.stringify(oldChats));
+    socket.emit('chat', oldChats);
   }
 
   @SubscribeMessage('chat')
@@ -64,6 +64,16 @@ export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect {
     this.redisClient.rpush(redisKey, JSON.stringify(newChat));
     this.redisClient.ltrim(redisKey, -50, -1);
     // }
+  }
+
+  async handleConnection(socket: Socket) {
+    const { user, channelId } = socket.data;
+    const redisKey = `${channelId}:viewers`;
+
+    if (channelId) {
+      // channelId가 있다면 채팅방 입장한 상태에서 재연결 된 것
+      this.redisClient.hincrby(redisKey, user.id, 1);
+    }
   }
 
   async handleDisconnect(socket: Socket) {
