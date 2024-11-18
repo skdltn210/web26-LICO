@@ -8,6 +8,8 @@ import {
   DeleteDateColumn,
   OneToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 @Entity('users')
@@ -44,4 +46,19 @@ export class UserEntity {
   @OneToOne(() => LiveEntity)
   @JoinColumn({ name: 'lives_id' })
   live: LiveEntity;
+
+    // 👇 following 프로퍼티 추가
+    @ManyToMany(() => UserEntity)
+    @JoinTable({
+      name: 'follows',
+      joinColumn: {
+        name: 'follower_id',
+        referencedColumnName: 'id',
+      },
+      inverseJoinColumn: {
+        name: 'streamer_id',
+        referencedColumnName: 'id',
+      },
+    })
+    following: UserEntity[];
 }
