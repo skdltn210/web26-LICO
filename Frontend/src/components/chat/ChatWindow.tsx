@@ -101,7 +101,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
       {
         root: chatRef.current,
         threshold: 1,
-        rootMargin: '-14px',
+        rootMargin: '100px',
       },
     );
 
@@ -156,7 +156,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         aria-label="채팅 메시지"
         aria-live="polite"
         ref={chatRef}
-        className="h-screen overflow-auto p-4 scrollbar-hide"
+        className="h-screen overflow-auto p-3 scrollbar-hide"
       >
         {onAir ? (
           <div className="flex break-after-all flex-col">
@@ -192,7 +192,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
             aria-label="최신 메시지로 이동"
             type="button"
             onClick={scrollToBottom}
-            className="absolute -top-10 right-4 rounded-full bg-lico-orange-2 p-2 text-sm text-lico-gray-1 opacity-75 shadow-lg hover:bg-lico-orange-1"
+            className="absolute -top-12 right-6 z-50 rounded-full bg-lico-orange-2 p-2 text-xl text-lico-gray-1 opacity-90 shadow-lg hover:bg-lico-orange-1"
           >
             <FaAngleDown />
           </button>
