@@ -15,6 +15,7 @@ import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
 import { ChatsMiddleware } from './chats.middleware';
 import { UUID } from 'crypto';
+import { UserEntity } from 'src/users/entity/user.entity';
 
 @WebSocketGateway({ namespace: '/chats' })
 export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection {
@@ -50,20 +51,20 @@ export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatew
   async publishChat(@ConnectedSocket() socket: Socket, @MessageBody() receivedChat: { message }) {
     const { user, channelId } = socket.data;
 
-    // if (user instanceof UserEntity) {
-    const newChat = {
-      content: receivedChat,
-      nickname: user.nickname || '홍길동',
-      userId: user.id || -1,
-      timestamp: new Date(),
-    };
+    if (user instanceof UserEntity) {
+      const newChat = {
+        content: receivedChat,
+        nickname: user.nickname,
+        userId: user.id,
+        timestamp: new Date(),
+      };
 
-    const redisKey = `${channelId}:chats`;
+      const redisKey = `${channelId}:chats`;
 
-    this.server.to(channelId).emit('chat', [newChat]);
-    this.redisClient.rpush(redisKey, JSON.stringify(newChat));
-    this.redisClient.ltrim(redisKey, -50, -1);
-    // }
+      this.server.to(channelId).emit('chat', [newChat]);
+      this.redisClient.rpush(redisKey, JSON.stringify(newChat));
+      this.redisClient.ltrim(redisKey, -50, -1);
+    }
   }
 
   async handleConnection(socket: Socket) {
