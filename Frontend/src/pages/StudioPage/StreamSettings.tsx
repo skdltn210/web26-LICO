@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { LuCopy, LuEye, LuEyeOff } from 'react-icons/lu';
-import { useStreamingKey } from '@hooks/useLive';
 import Toast from '@components/common/Toast';
 
-export default function StreamSettings() {
-  const [showStreamKey, setShowStreamKey] = useState(false);
-  const { data } = useStreamingKey();
+interface StreamSettingsProps {
+  streamKey: string;
+}
 
+export default function StreamSettings({ streamKey }: StreamSettingsProps) {
+  const [showStreamKey, setShowStreamKey] = useState(false);
   const [toast, setToast] = useState({
     isOpen: false,
     message: '',
@@ -20,12 +21,9 @@ export default function StreamSettings() {
     });
   };
 
-  const maskStreamKey = (key?: string) => {
-    if (!key) return '';
+  const maskStreamKey = (key: string) => {
     return showStreamKey ? key : '•'.repeat(key.length);
   };
-
-  const streamKey = data?.toString() || '';
 
   return (
     <>
