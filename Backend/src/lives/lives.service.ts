@@ -94,7 +94,7 @@ export class LivesService {
       return JSON.parse(cache);
     }
 
-    const live = await this.livesRepository.findOne({ where: { channelId } });
+    const live = await this.livesRepository.findOne({ relations: ['category'], where: { channelId } });
 
     if (!live) {
       throw new NotFoundException(ErrorMessage.LIVE_NOT_FOUND);
