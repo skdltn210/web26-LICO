@@ -26,7 +26,7 @@ export class LivesService {
   ) {}
 
   async readLives(options: ReadLivesOptions): Promise<LivesDto[]> {
-    const { sort = 'latest', limit = 20, offset = 0, categoriesId, onAir } = options;
+    const { sort = 'latest', limit = 20, offset = 0, categoriesId, onAir = true } = options;
 
     const queryBuilder = this.livesRepository
       .createQueryBuilder('live')
