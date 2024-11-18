@@ -83,7 +83,7 @@ export class AuthController {
         domain: '.lico.digital',
         path: '/',
       });
-      console.log(`accessToken :      ${accessToken}`)
+
       res.json({
         success: true,
         accessToken,
