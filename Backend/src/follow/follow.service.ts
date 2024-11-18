@@ -68,7 +68,7 @@ export class FollowService {
   async getFollowingStreamers(userId: number): Promise<any[]> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      relations: ['following', 'following.live'],
+      relations: ['following', 'following.live','following.live.category'],
     });
 
     if (!user) {
@@ -76,6 +76,9 @@ export class FollowService {
     }
 
     return user.following.map((streamer) => ({
+      categoriesId: streamer.live?.category?.id || null,
+      categoriesName: streamer.live?.category?.name || null,
+      livesName: streamer.live?.name || null,
       channelId: streamer.live?.channelId || null,
       usersNickname: streamer.nickname,
       usersProfileImage: streamer.profileImage,
