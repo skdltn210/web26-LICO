@@ -28,6 +28,12 @@ export class LivesController {
     return await this.livesService.readLives({ onAir: true });
   }
 
+  @Get('/streaming-key')
+  @UseGuards(JwtAuthGuard)
+  async getStreamingKey(@Req() req: Request & { user: UserEntity }) {
+    return req.user.live.streamingKey;
+  }
+
   @Get('/:channelId')
   async getLive(@Param('channelId') channelId: UUID): Promise<LiveDto> {
     return await this.livesService.readLive(channelId);
@@ -55,10 +61,5 @@ export class LivesController {
   @HttpCode(202)
   async endLive(@Param('channelId') channelId: UUID) {
     this.livesService.endLive(channelId);
-  }
-
-  @Get('/streaming-key/:livesId')
-  async getStreamingKey(@Param('livesId') livesId: number) {
-    return this.livesService.readStreamingKey(livesId);
   }
 }
