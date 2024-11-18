@@ -1,4 +1,3 @@
-// src/config/redis.config.ts
 import { RedisModuleOptions } from '@nestjs-modules/ioredis';
 import { ConfigService } from '@nestjs/config';
 

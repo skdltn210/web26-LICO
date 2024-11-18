@@ -13,6 +13,8 @@ import { ChatsModule } from './chats/chats.module';
 import { FollowModule } from './follow/follow.module';
 import sqliteConfig from './config/sqlite.config';
 import mysqlConfig from './config/mysql.config';
+import { RedisModule } from '@nestjs-modules/ioredis';
+import { redisConfig } from './config/redis.config';
 
 @Module({
   imports: [
@@ -24,6 +26,11 @@ import mysqlConfig from './config/mysql.config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => typeOrmConfig(configService),
+    }),
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => redisConfig(configService),
     }),
     AuthModule,
     UsersModule,
