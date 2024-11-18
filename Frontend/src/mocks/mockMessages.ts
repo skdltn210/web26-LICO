@@ -1,6 +1,6 @@
 export type Message = {
-  id: string;
-  userName: string;
+  userId: number;
+  nickname: string;
   content: string;
   timestamp: string;
 };

@@ -1,21 +1,27 @@
-import { useState, useEffect, useRef } from 'react';
-import mockMessages, { Message } from '@mocks/mockMessages.ts';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Message } from '@mocks/mockMessages.ts';
 import { FaAngleDown } from 'react-icons/fa';
 import ChatHeader from '@components/chat/ChatHeader';
 import ChatInput from '@components/chat/ChatInput';
 import useLayoutStore from '@store/useLayoutStore';
 import { getConsistentTextColor, createTestChatMessage } from '@utils/chatUtils';
+import { getConsistentTextColor } from '@utils/chatUtils';
+import ChatProfileModal from '@components/chat/ChatProfileModal';
 import ChatMessage from './ChatMessage';
 
-export default function ChatWindow() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
 interface ChatWindowProps {
   onAir: boolean;
   id: string;
 }
 
+interface SelectedMessage {
+  userId: number;
+  element: HTMLElement;
+}
+
 export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const accessToken = useAuthStore(state => state.accessToken);
@@ -26,8 +32,18 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const scrollToBottom = () => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  const handleUserClick = (userId: number, messageElement: HTMLElement) => {
+    if (selectedMessage?.userId === userId) {
+      setSelectedMessage(null);
+      return;
     }
+    setSelectedMessage({ userId, element: messageElement });
   };
+
+  const handleModalClose = () => {
+    setSelectedMessage(null);
+  };
+
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -69,18 +85,16 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         ref={chatRef}
         className="h-screen overflow-auto p-4 scrollbar-hide"
       >
-        <div className="flex break-after-all flex-col gap-2.5">
-          {messages.map(message => (
-            <ChatMessage
-              key={message.id}
-              userName={message.userName}
-              content={message.content}
-              color={getConsistentTextColor(message.userName)}
-            />
-          ))}
-        </div>
         {onAir ? (
           <div className="flex break-after-all flex-col">
+            {messages?.map(message => (
+              <ChatMessage
+                id={message.userId}
+                nickname={message.nickname}
+                content={message.content}
+                color={getConsistentTextColor(message.nickname)}
+                onUserClick={(userId, element) => handleUserClick(userId, element)}
+              />
             ))}
           </div>
         ) : (
@@ -90,6 +104,15 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         )}
         <div ref={bottomRef} />
       </div>
+
+      {selectedMessage && (
+        <ChatProfileModal
+          userId={selectedMessage.userId}
+          anchorEl={selectedMessage.element}
+          onClose={handleModalClose}
+        />
+      )}
+
       <div className="relative">
         {showScrollButton && (
           <button
