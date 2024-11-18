@@ -1,5 +1,3 @@
-// src/follow/follow.controller.ts
-
 import {
   Controller,
   Get,
@@ -8,7 +6,6 @@ import {
   UseGuards,
   Req,
   Param,
-  Body,
   HttpCode,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -30,11 +27,11 @@ export class FollowController {
   }
 
   // 스트리머 팔로우
-  @Post()
+  @Post(':streamerId')
   @HttpCode(201)
   async followStreamer(
     @Req() req: Request & { user: UserEntity },
-    @Body('streamerId', ParseIntPipe) streamerId: number,
+    @Param('streamerId', ParseIntPipe) streamerId: number,
   ) {
     const userId = req.user.id;
     await this.followService.followStreamer(userId, streamerId);

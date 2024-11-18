@@ -21,7 +21,7 @@ export class FollowService {
       relations: ['following'],
     });
 
-    const streamer = await this.usersRepository.findOne({ where: { id: streamerId } });
+    const streamer = await this.usersRepository.findOneBy({ id: streamerId });
 
     if (!user || !streamer) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
@@ -68,7 +68,7 @@ export class FollowService {
   async getFollowingStreamers(userId: number): Promise<any[]> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
-      relations: ['following', 'following.live', 'following.live.category'],
+      relations: ['following', 'following.live'],
     });
 
     if (!user) {
@@ -76,9 +76,6 @@ export class FollowService {
     }
 
     return user.following.map((streamer) => ({
-      categoriesId: streamer.live?.category?.id || null,
-      categoriesName: streamer.live?.category?.name || null,
-      livesName: streamer.live?.name || null,
       channelId: streamer.live?.channelId || null,
       usersNickname: streamer.nickname,
       usersProfileImage: streamer.profileImage,
