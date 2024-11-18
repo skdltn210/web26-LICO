@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CategoriesDto } from './dto/categories.dto';
 import { CategoryDto } from './dto/category.dto';
@@ -22,7 +22,12 @@ export class CategoriesController {
   }
 
   @Get('/:categoriesId/lives')
-  async getOnAirLivesByCategory(@Param('categoriesId', ParseIntPipe) categoriesId: number) {
-    return await this.livesService.readLives({ categoriesId, onAir: true });
+  async getOnAirLivesByCategory(
+    @Param('categoriesId', ParseIntPipe) categoriesId: number,
+    @Query('sort') sort: 'latest' | 'viewers' | 'recommendation' = 'latest',
+    @Query('limit') limit: number = 20,
+    @Query('offset') offset: number = 0,
+  ) {
+    return await this.livesService.readLives({ sort, limit, offset, categoriesId, onAir: true });
   }
 }
