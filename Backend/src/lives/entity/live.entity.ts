@@ -69,6 +69,7 @@ export class LiveEntity {
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
       onAir: this.onAir,
+      viewers: this.viewers,
     };
   }
 
@@ -82,6 +83,7 @@ export class LiveEntity {
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
       onAir: this.onAir,
+      viewers: this.viewers,
     };
   }
 

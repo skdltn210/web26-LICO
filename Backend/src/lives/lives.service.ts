@@ -64,6 +64,11 @@ export class LivesService {
 
   async readChannelId(streamingKey: UUID) {
     const live = await this.livesRepository.findOne({ where: { streamingKey } });
+
+    if (!live) {
+      throw new NotFoundException(ErrorMessage.LIVE_NOT_FOUND);
+    }
+
     return { channelId: live.channelId };
   }
 
@@ -80,11 +85,6 @@ export class LivesService {
 
   async endLive(channelId: UUID) {
     this.livesRepository.update({ channelId }, { onAir: false });
-  }
-
-  async readStreamingKey(livesId: number) {
-    const live = await this.livesRepository.findOne({ where: { id: livesId } });
-    return live.streamingKey;
   }
 
   async readStatus(channelId: UUID) {
