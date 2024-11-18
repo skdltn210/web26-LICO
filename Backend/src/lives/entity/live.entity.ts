@@ -53,6 +53,9 @@ export class LiveEntity {
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
 
+  @Column({ name: 'viewers', type: 'int', default: 0 })
+  viewers: Number;
+
   @OneToOne(() => UserEntity, user => user.live)
   user: UserEntity;
 
