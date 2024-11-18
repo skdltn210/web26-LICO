@@ -7,13 +7,30 @@ import { LiveDto } from './dto/live.dto';
 import { UUID } from 'crypto';
 import { ErrorMessage } from './error/error.message.enum';
 import { ChatsService } from './../chats/chats.service';
+import Redis from 'ioredis';
+import { UpdateLiveDto } from './dto/update.live.dto';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 
 @Injectable()
 export class LivesService {
   constructor(
     @InjectRepository(LiveEntity) private livesRepository: Repository<LiveEntity>,
     private chatsService: ChatsService,
-  ) {}
+    @InjectRedis() private redisClient: Redis,
+  ) {
+    this.redisClient.config('SET', 'notify-keyspace-events', 'Ex');
+    this.redisClient.subscribe('__keyevent@0__:expired');
+
+    this.redisClient.on('message', async (channel, key) => {
+      const { channelId } = key.match(
+        /(?<channelId>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}):status/,
+      ).groups;
+
+      if (channelId) {
+        this.updateViewers(channelId as UUID);
+      }
+    });
+  }
 
   async readLives(where: FindOptionsWhere<LiveEntity> = {}): Promise<LivesDto[]> {
     // TODO 데이터 베이스 뷰 추가
@@ -34,9 +51,13 @@ export class LivesService {
     return live.toLiveDto();
   }
 
-  async updateLive({ channelId, updateLiveDto }) {
+  async updateLive({ channelId, updateLiveDto }: { channelId: UUID; updateLiveDto: UpdateLiveDto }) {
     // TODO 요청자와 채널 소유자 일치여부 체크(로그인 기능 구현 후)
     await this.livesRepository.update({ channelId }, updateLiveDto);
+  }
+
+  async updateViewers(channelId: UUID) {
+    await this.livesRepository.update({ channelId }, { viewers: await this.chatsService.readViewers(channelId) });
   }
 
   async readChannelId(streamingKey: UUID) {
@@ -57,7 +78,6 @@ export class LivesService {
 
   async endLive(channelId: UUID) {
     this.livesRepository.update({ channelId }, { onAir: false });
-    this.chatsService.clearChat(channelId);
   }
 
   async readStreamingKey(livesId: number) {

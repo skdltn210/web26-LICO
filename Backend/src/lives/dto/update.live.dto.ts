@@ -1,4 +1,4 @@
-import { IsNotEmpty, isNotEmpty, IsNumber, IsString, MaxLength, Min, MIN } from 'class-validator';
+import { IsNumber, IsString, MaxLength, Min } from 'class-validator';
 
 export class UpdateLiveDto {
   @IsString()
