@@ -44,7 +44,11 @@ export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatew
     this.redisClient.hincrby(`${channelId}:viewers`, socket.data.user.id, 1);
 
     const oldChats = await this.redisClient.lrange(`${channelId}:chats`, 0, -1);
-    socket.emit('chat', oldChats);
+
+    socket.emit(
+      'chat',
+      oldChats.map(chat => JSON.parse(chat)),
+    );
   }
 
   @SubscribeMessage('chat')
