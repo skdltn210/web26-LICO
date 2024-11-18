@@ -9,6 +9,7 @@ import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@store/useAuthStore';
 import { config } from '@config/env';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
+import PendingMessageNotification from '@components/chat/PendingMessageNotification';
 import ChatMessage from './ChatMessage';
 
 interface ChatWindowProps {
@@ -24,6 +25,7 @@ interface SelectedMessage {
 const MESSAGE_LIMIT = 150;
 
 export default function ChatWindow({ onAir, id }: ChatWindowProps) {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const [isScrollPaused, setIsScrollPaused] = useState(false);
@@ -31,14 +33,16 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
   const accessToken = useAuthStore(state => state.accessToken);
   const { toggleChat } = useLayoutStore();
 
   const isLoggedIn = accessToken !== null;
 
   const scrollToBottom = () => {
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    if (!chatRef.current) return;
+    chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  };
 
   const handleNewMessage = (content: string) => {
     setIsScrollPaused(false);
@@ -97,6 +101,15 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
       ([entry]) => {
         const isScrolled = !entry.isIntersecting;
         setShowScrollButton(isScrolled);
+        setIsScrollPaused(isScrolled);
+        if (!isScrolled && pendingMessages.length > 0) {
+          setMessages(prevMessages => {
+            const updatedMessages = [...prevMessages, ...pendingMessages];
+            return updatedMessages.slice(-MESSAGE_LIMIT);
+          });
+          setPendingMessages([]);
+          setShowPendingMessages(false);
+        }
       },
       {
         root: chatRef.current,
@@ -110,7 +123,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     }
 
     return () => observer.disconnect();
-  }, []);
+  }, [pendingMessages]);
 
   useEffect(() => {
     if (!onAir) return undefined;
@@ -187,7 +200,16 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
       )}
 
       <div className="relative">
-        {showScrollButton && (
+        {showPendingMessages && (
+          <button
+            type="button"
+            onClick={handlePendingMessageNotification}
+            className="absolute -top-24 z-40 mt-6 w-full p-4 opacity-90"
+          >
+            <PendingMessageNotification pendingMessages={pendingMessages} />
+          </button>
+        )}
+        {!showPendingMessages && showScrollButton && (
           <button
             aria-label="최신 메시지로 이동"
             type="button"
