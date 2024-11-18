@@ -92,10 +92,8 @@ export default function LivePage() {
       </div>
 
       {chatState === 'expanded' && (
-        <div
-          className={`border-x border-lico-gray-3 ${isTheaterMode && isVerticalMode ? 'w-full overflow-hidden' : 'w-[360px]'}`}
-        >
-          <ChatWindow />
+        <div className={`${isTheaterMode && isVerticalMode ? 'w-full overflow-hidden' : 'w-[360px]'}`}>
+          <ChatWindow id={id} onAir={onAir} />
         </div>
       )}
 

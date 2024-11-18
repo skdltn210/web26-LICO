@@ -9,6 +9,12 @@ import ChatMessage from './ChatMessage';
 
 export default function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>(mockMessages);
+interface ChatWindowProps {
+  onAir: boolean;
+  id: string;
+}
+
+export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -70,6 +76,15 @@ export default function ChatWindow() {
             />
           ))}
         </div>
+        {onAir ? (
+          <div className="flex break-after-all flex-col">
+            ))}
+          </div>
+        ) : (
+          <div className="flex h-full items-center justify-center font-bold text-xl text-lico-gray-1">
+            오프라인 입니다.
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
       <div className="relative">
