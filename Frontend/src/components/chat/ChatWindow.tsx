@@ -18,7 +18,10 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const accessToken = useAuthStore(state => state.accessToken);
   const { toggleChat } = useLayoutStore();
+
+  const isLoggedIn = accessToken !== null;
 
   const scrollToBottom = () => {
     if (chatRef.current) {
@@ -98,7 +101,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
             <FaAngleDown />
           </button>
         )}
-        <ChatInput onSubmit={handleNewMessage} />
+        <ChatInput onSubmit={handleNewMessage} isLoggedIn={isLoggedIn} />
       </div>
     </div>
   );
