@@ -4,8 +4,10 @@ import { FaAngleDown } from 'react-icons/fa';
 import ChatHeader from '@components/chat/ChatHeader';
 import ChatInput from '@components/chat/ChatInput';
 import useLayoutStore from '@store/useLayoutStore';
-import { getConsistentTextColor, createTestChatMessage } from '@utils/chatUtils';
 import { getConsistentTextColor } from '@utils/chatUtils';
+import { io, Socket } from 'socket.io-client';
+import { useAuthStore } from '@store/useAuthStore';
+import { config } from '@config/env';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
 import ChatMessage from './ChatMessage';
 
@@ -19,9 +21,14 @@ interface SelectedMessage {
   element: HTMLElement;
 }
 
+const MESSAGE_LIMIT = 150;
+
 export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
+  const [isScrollPaused, setIsScrollPaused] = useState(false);
+  const [showPendingMessages, setShowPendingMessages] = useState(false);
+  const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const chatRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const accessToken = useAuthStore(state => state.accessToken);
@@ -32,6 +39,12 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const scrollToBottom = () => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
+
+  const handleNewMessage = (content: string) => {
+    setIsScrollPaused(false);
+    socketRef.current?.emit('chat', content);
+  };
+
   const handleUserClick = (userId: number, messageElement: HTMLElement) => {
     if (selectedMessage?.userId === userId) {
       setSelectedMessage(null);
@@ -44,6 +57,40 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     setSelectedMessage(null);
   };
 
+  const handlePendingMessageNotification = () => {
+    setMessages(prevMessages => {
+      const updatedMessages = [...prevMessages, ...pendingMessages];
+      return updatedMessages.slice(-MESSAGE_LIMIT);
+    });
+    setPendingMessages([]);
+    setShowPendingMessages(false);
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+  };
+
+  const chatHandler = useCallback(
+    (data: string[]) => {
+      const newMessages = data.map(v => JSON.parse(v));
+
+      if (isScrollPaused) {
+        setShowPendingMessages(true);
+        setPendingMessages(prev => [...prev, ...newMessages]);
+      } else {
+        setMessages(prevMessages => {
+          const updatedMessages = [...prevMessages, ...newMessages];
+          return updatedMessages.slice(-MESSAGE_LIMIT);
+        });
+      }
+    },
+    [isScrollPaused],
+  );
+
+  useEffect(() => {
+    if (isScrollPaused) return;
+
+    scrollToBottom();
+  }, [isScrollPaused, messages]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -66,14 +113,40 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, showScrollButton]);
+    if (!onAir) return undefined;
+    if (socketRef.current?.connected) return undefined;
 
-  const handleNewMessage = (content: string) => {
-    // 임시로 입력값을 추가합니다. 서버에 연결 후 삭제합니다.
-    setMessages(prev => [...prev, createTestChatMessage(content)]);
-    scrollToBottom();
-  };
+    const socket = io(`${config.apiBaseUrl}/chats`, {
+      transports: ['websocket'],
+      auth: {
+        token: accessToken,
+      },
+    });
+
+    socket.on('connect', () => {
+      socket.emit('join', { channelId: id });
+    });
+
+    socketRef.current = socket;
+
+    return () => {
+      if (!onAir) {
+        socket.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, [onAir, accessToken, id]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket) return undefined;
+
+    socket.off('chat').on('chat', chatHandler);
+
+    return () => {
+      socket.off('chat');
+    };
+  }, [chatHandler]);
 
   return (
     <div className="relative flex h-full flex-col border-l border-lico-gray-3 bg-lico-gray-4">
