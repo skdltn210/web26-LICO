@@ -7,16 +7,17 @@ import LoginConfirmModal from '@components/common/Modals/LoginConfirmModal';
 
 interface FollowButtonProps {
   streamerId: number;
+  channelId: string;
 }
 
-export default function FollowButton({ streamerId }: FollowButtonProps) {
+export default function FollowButton({ streamerId, channelId }: FollowButtonProps) {
   const { isFollowed, followChannel, unfollowChannel, isFollowing, isUnfollowing } = useFollow();
   const [isHovered, setIsHovered] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const accessToken = useAuthStore(state => state.accessToken);
+  const user = useAuthStore(state => state.user);
 
-  const isLoggedIn = accessToken !== null;
-  const isFollowingChannel = isLoggedIn ? isFollowed(streamerId) : false;
+  const isLoggedIn = user !== null;
+  const isFollowingChannel = isLoggedIn ? isFollowed(channelId) : false;
 
   const handleClick = () => {
     if (!isLoggedIn) {
