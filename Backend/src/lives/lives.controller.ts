@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
   ValidationPipe,
+  Query
 } from '@nestjs/common';
 import { LivesService } from './lives.service';
 import { LivesDto } from './dto/lives.dto';
@@ -24,9 +25,13 @@ import { StatusDto } from './dto/status.dto';
 export class LivesController {
   constructor(private readonly livesService: LivesService) {}
 
-  @Get()
-  async getOnAirLives(): Promise<LivesDto[]> {
-    return await this.livesService.readLives({ onAir: true });
+  @Get() // 새로운 live 요청
+  async getOnAirLives(
+    @Query('sort') sort: 'latest' | 'viewers' | 'recommendation' = 'latest',
+    @Query('limit') limit = 20,
+    @Query('offset') offset = 0,
+  ): Promise<LivesDto[]> {
+    return await this.livesService.readLives({ sort, limit, offset });
   }
 
   @Get('/streaming-key')

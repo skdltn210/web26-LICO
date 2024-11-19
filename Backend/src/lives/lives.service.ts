@@ -11,6 +11,16 @@ import Redis from 'ioredis';
 import { UpdateLiveDto } from './dto/update.live.dto';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 
+// 인터페이스 추가
+export interface ReadLivesOptions {
+  sort?: 'latest' | 'viewers' | 'recommendation';
+  limit?: number;
+  offset?: number;
+  categoriesId?: number;
+  onAir?: boolean;
+}
+
+
 @Injectable()
 export class LivesService {
   constructor(
@@ -34,13 +44,41 @@ export class LivesService {
     });
   }
 
-  async readLives(where: FindOptionsWhere<LiveEntity> = {}): Promise<LivesDto[]> {
-    // TODO 데이터 베이스 뷰 추가
-    const lives = await this.livesRepository.find({
-      relations: ['category', 'user'],
-      where,
-    });
-    return lives.map(entity => entity.toLivesDto());
+  async readLives(options: ReadLivesOptions): Promise<LivesDto[]> {
+    const { sort = 'latest', limit = 20, offset = 0, categoriesId, onAir = true } = options;
+
+    const queryBuilder = this.livesRepository
+      .createQueryBuilder('live')
+      .leftJoinAndSelect('live.category', 'category')
+      .leftJoinAndSelect('live.user', 'user');
+
+    // 기본 onAir true 상태
+    if (typeof onAir === 'boolean') {
+      queryBuilder.andWhere('live.onAir = :onAir', { onAir });
+    }
+
+    // 카테고리 필터
+    if (categoriesId) {
+      queryBuilder.andWhere('live.categoriesId = :categoriesId', { categoriesId });
+    }
+
+    // 정렬 로직 추가
+    if (sort === 'recommendation') {
+      queryBuilder.orderBy('RAND()'); // 추천은 랜덤 정렬
+    } else if (sort === 'viewers') {
+      // viewers 정렬은 아직 구현 X
+    } else {
+      // 기본은 최신순
+      queryBuilder.orderBy('live.createdAt', 'DESC');
+    }
+
+    // 페이지네이션 적용
+    const lives = await queryBuilder
+      .skip(offset)
+      .take(limit)
+      .getMany();
+
+    return lives.map((entity) => entity.toLivesDto());
   }
 
   async readLive(channelId: string): Promise<LiveDto> {
