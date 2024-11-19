@@ -7,7 +7,6 @@ import { formatNumber } from '@utils/format';
 import StreamingTimer from '@pages/LivePage/StreamingTimer';
 
 interface LiveInfoProps {
-  channelId: string;
   streamerId: string;
   title: string;
   profileImgUrl: string;
@@ -19,7 +18,6 @@ interface LiveInfoProps {
 }
 
 export default function LiveInfo({
-  channelId,
   streamerId,
   title,
   profileImgUrl,
