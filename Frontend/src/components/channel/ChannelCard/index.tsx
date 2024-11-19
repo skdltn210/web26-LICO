@@ -32,7 +32,7 @@ export default function ChannelCard({
         title={title}
         streamerName={streamerName}
         category={category}
-        categoryId={categoryId.toString()}
+        categoryId={categoryId}
         profileImgUrl={profileImgUrl}
       />
     </Link>
