@@ -10,26 +10,26 @@ import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 import { useLiveDetail } from '@hooks/useLive.ts';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import NotFound from '@components/error/NotFound';
-import { useStreamingKey } from '@hooks/useLive';
 import { config } from '@config/env';
+import { useStreamingKey } from '@hooks/useLive';
 
-
-type TabType = 'OBS' | 'WebOBS' | 'Info';
+type TabType = 'External' | 'WebStudio' | 'Info';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
-  const [activeTab, setActiveTab] = useState<TabType>('OBS');
-  const [webcamEnabled, setWebcamEnabled] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('External');
+  const [settingEnabled, setSettingEnabled] = useState(false);
   const [screenEnabled, setScreenEnabled] = useState(false);
   const [imageEnabled, setImageEnabled] = useState(false);
   const [textEnabled, setTextEnabled] = useState(false);
   const [drawEnabled, setDrawEnabled] = useState(false);
-  const [arEnabled, setArEnabled] = useState(false);
+  const [eraserEnabled, setEraserEnabled] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
-
-  const { chatState, toggleChat } = useLayoutStore();
   const { data: streamKey } = useStreamingKey();
+  const { chatState, toggleChat } = useLayoutStore();
+
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
 
   if (isLoading)
@@ -54,31 +54,31 @@ export default function StudioPage() {
             <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
               <button
                 type="button"
-                onClick={() => setActiveTab('OBS')}
+                onClick={() => setActiveTab('External')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
-                  activeTab === 'OBS'
+                  activeTab === 'External'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
                     : 'text-lico-gray-1 hover:text-lico-orange-2'
                 }`}
                 role="tab"
-                aria-selected={activeTab === 'OBS'}
-                aria-controls="obs-panel"
+                aria-selected={activeTab === 'External'}
+                aria-controls="External-panel"
               >
-                OBS
+                외부 스트림
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('WebOBS')}
+                onClick={() => setActiveTab('WebStudio')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
-                  activeTab === 'WebOBS'
+                  activeTab === 'WebStudio'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
                     : 'text-lico-gray-1 hover:text-lico-orange-2'
                 }`}
                 role="tab"
-                aria-selected={activeTab === 'WebOBS'}
-                aria-controls="webobs-panel"
+                aria-selected={activeTab === 'WebStudio'}
+                aria-controls="WebStudio-panel"
               >
-                WebOBS
+                웹 스튜디오
               </button>
               <button
                 type="button"
@@ -98,26 +98,28 @@ export default function StudioPage() {
           </div>
 
           <div className="mt-4 rounded-lg bg-lico-gray-4 p-6">
-            {activeTab === 'OBS' && (
-              <div id="obs-panel" role="tabpanel">
+            {activeTab === 'External' && (
+              <div id="External-panel" role="tabpanel">
                 <StreamSettings streamKey={streamKey?.toString() || ''} />
               </div>
             )}
-            {activeTab === 'WebOBS' && (
-              <div id="webobs-panel" role="tabpanel">
+            {activeTab === 'WebStudio' && (
+              <div id="WebStudio-panel" role="tabpanel">
                 <WebStreamControls
                   screenEnabled={screenEnabled}
                   setScreenEnabled={setScreenEnabled}
-                  webcamEnabled={webcamEnabled}
-                  setWebcamEnabled={setWebcamEnabled}
+                  settingEnabled={settingEnabled}
+                  setSettingEnabled={setSettingEnabled}
                   imageEnabled={imageEnabled}
                   setImageEnabled={setImageEnabled}
                   textEnabled={textEnabled}
                   setTextEnabled={setTextEnabled}
                   drawEnabled={drawEnabled}
                   setDrawEnabled={setDrawEnabled}
-                  arEnabled={arEnabled}
-                  setArEnabled={setArEnabled}
+                  eraserEnabled={eraserEnabled}
+                  setEraserEnabled={setEraserEnabled}
+                  isStreaming={isStreaming}
+                  setIsStreaming={setIsStreaming}
                 />
               </div>
             )}
