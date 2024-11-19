@@ -2,7 +2,15 @@ import React, { useEffect, useState } from 'react';
 import Hls, { LevelSwitchedData } from 'hls.js';
 import type { HLSQuality } from '@/types/hlsQuality';
 
-const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVideoElement>) => {
+interface HlsOptions {
+  startLevel?: number;
+}
+
+const useHls = (
+  streamUrl: string | undefined,
+  videoRef: React.RefObject<HTMLVideoElement>,
+  options: HlsOptions = {},
+) => {
   const [isBuffering, setIsBuffering] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [currentQuality, setCurrentQuality] = useState<number>(-1);
@@ -37,7 +45,9 @@ const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVid
       setError(null);
 
       if (Hls.isSupported()) {
-        hlsInstance = new Hls();
+        hlsInstance = new Hls({
+          startLevel: options.startLevel ?? -1,
+        });
         setHls(hlsInstance);
 
         hlsInstance.loadSource(streamUrl);
