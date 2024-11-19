@@ -1,5 +1,6 @@
 import { api } from './axios';
 import type { Category } from '@/types/category';
+import type { Live } from '@/types/live';
 
 export const categoryApi = {
   getCategories: async () => {
@@ -9,6 +10,11 @@ export const categoryApi = {
 
   getCategoryById: async (categoryId: string) => {
     const { data } = await api.get<Category>(`/categories/${categoryId}`);
+    return data;
+  },
+
+  getCategoryLives: async (categoryId: string) => {
+    const { data } = await api.get<Live[]>(`/categories/${categoryId}/lives`);
     return data;
   },
 };

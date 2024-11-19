@@ -3,8 +3,3 @@ export interface Category {
   name: string;
   image: string;
 }
-
-export interface CategoryWithStats extends Category {
-  totalViewers: number;
-  totalLives: number;
-}
