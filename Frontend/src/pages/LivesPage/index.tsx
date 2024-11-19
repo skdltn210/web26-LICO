@@ -50,7 +50,7 @@ export default function LivesPage() {
           title: live.livesName,
           streamerName: live.usersNickname,
           profileImgUrl: live.usersProfileImage,
-          viewers: 0,
+          viewers: live.viewers,
           category: live.categoriesName,
           categoryId: live.categoriesId,
           thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.png`,
