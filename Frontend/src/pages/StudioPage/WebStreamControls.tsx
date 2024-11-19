@@ -1,6 +1,15 @@
+import { useState } from 'react';
 import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
+import CamMicSetting from './StreamCanvas/CamMicSetting';
+
+interface MediaSettings {
+  videoEnabled: boolean;
+  audioEnabled: boolean;
+  videoDeviceId?: string;
+  audioDeviceId?: string;
+}
 
 interface WebStreamControlsProps {
   screenStream: MediaStream | null;
@@ -17,6 +26,8 @@ interface WebStreamControlsProps {
   setEraserEnabled: (enabled: boolean) => void;
   isStreaming: boolean;
   setIsStreaming: (enabled: boolean) => void;
+  onMediaSettingsChange: (settings: MediaSettings | null) => void;
+  mediaSettings: MediaSettings | null; // 추가
 }
 
 export default function WebStreamControls({
@@ -34,7 +45,11 @@ export default function WebStreamControls({
   setIsStreaming,
   screenStream,
   setScreenStream,
+  onMediaSettingsChange,
+  mediaSettings,
 }: WebStreamControlsProps) {
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
   const handleScreenShare = async () => {
     if (screenStream) {
       screenStream.getTracks().forEach(track => track.stop());
@@ -53,8 +68,19 @@ export default function WebStreamControls({
     }
   };
 
-  const handleSettingsToggle = () => {
-    setSettingEnabled(!settingEnabled);
+  const handleSettingsClick = () => {
+    if (settingEnabled) {
+      setSettingEnabled(false);
+      onMediaSettingsChange(null);
+    } else {
+      setIsSettingsModalOpen(true);
+    }
+  };
+
+  const handleSettingsConfirm = (settings: MediaSettings) => {
+    setSettingEnabled(settings.videoEnabled || settings.audioEnabled);
+    onMediaSettingsChange(settings);
+    setIsSettingsModalOpen(false);
   };
 
   return (
@@ -66,7 +92,7 @@ export default function WebStreamControls({
             icon={LuSettings}
             label="카메라 / 마이크 설정"
             isEnabled={settingEnabled}
-            onClick={handleSettingsToggle}
+            onClick={handleSettingsClick}
           />
           <ControlButton
             icon={LuImage}
@@ -112,6 +138,15 @@ export default function WebStreamControls({
         )}
         {isStreaming ? '방송 종료하기' : '방송 시작하기'}
       </button>
+
+      {isSettingsModalOpen && (
+        <CamMicSetting
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          onConfirm={handleSettingsConfirm}
+          initialSettings={mediaSettings}
+        />
+      )}
     </>
   );
 }

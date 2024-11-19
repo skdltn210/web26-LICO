@@ -1,30 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
 import CanvasContainer from '@components/common/CanvasContainer';
-
+interface MediaSettings {
+  videoEnabled: boolean;
+  audioEnabled: boolean;
+  videoDeviceId?: string;
+  audioDeviceId?: string;
+}
 interface StreamContainerProps {
   screenStream: MediaStream | null;
   setScreenStream: (stream: MediaStream | null) => void;
-  camEnabled: boolean;
+  mediaSettings: MediaSettings | null;
   isStreaming: boolean;
 }
-
 export default function StreamContainer({
   screenStream,
   setScreenStream,
-  camEnabled,
+  mediaSettings,
   isStreaming,
 }: StreamContainerProps) {
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const camVideoRef = useRef<HTMLVideoElement>(null);
-  const [camStream, setCamStream] = useState<MediaStream | null>(null);
-
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   useEffect(() => {
     if (screenVideoRef.current && screenStream) {
       screenVideoRef.current.srcObject = screenStream;
     } else if (!screenStream && screenVideoRef.current) {
       screenVideoRef.current.srcObject = null;
     }
-
     return () => {
       if (screenStream && !screenVideoRef.current?.srcObject) {
         screenStream.getTracks().forEach(track => track.stop());
@@ -32,42 +34,56 @@ export default function StreamContainer({
       }
     };
   }, [screenStream, setScreenStream]);
-
   useEffect(() => {
-    if (camEnabled && !isStreaming && !camStream) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then(stream => {
+    const setupMediaStream = async () => {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        setMediaStream(null);
+      }
+      if (mediaSettings && !isStreaming && (mediaSettings.videoEnabled || mediaSettings.audioEnabled)) {
+        try {
+          const constraints = {
+            video: mediaSettings.videoEnabled ? { deviceId: mediaSettings.videoDeviceId } : false,
+            audio: mediaSettings.audioEnabled ? { deviceId: mediaSettings.audioDeviceId } : false,
+          };
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
           if (camVideoRef.current) {
             camVideoRef.current.srcObject = stream;
-            setCamStream(stream);
+            setMediaStream(stream);
           }
-        })
-        .catch(err => console.error('Error accessing camera:', err));
-    }
-
-    return () => {
-      if (camStream && !camEnabled) {
-        camStream.getTracks().forEach(track => track.stop());
-        setCamStream(null);
+        } catch (err) {
+          console.error('Error accessing media devices:', err);
+        }
       }
     };
-  }, [camEnabled, isStreaming, camStream]);
-
+    setupMediaStream();
+    return () => {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [mediaSettings, isStreaming]);
   return (
     <div className="relative h-full w-full bg-black">
-      <video ref={screenVideoRef} autoPlay playsInline className="absolute left-0 top-0 h-full w-full object-contain" />
-      {camEnabled && (
+      {' '}
+      <video
+        ref={screenVideoRef}
+        autoPlay
+        playsInline
+        className="absolute left-0 top-0 h-full w-full object-contain"
+      />{' '}
+      {mediaSettings?.videoEnabled && (
         <CanvasContainer>
+          {' '}
           <video
             ref={camVideoRef}
             autoPlay
             playsInline
             className="h-full w-full object-cover"
             data-drag-handle="true"
-          />
+          />{' '}
         </CanvasContainer>
-      )}
+      )}{' '}
     </div>
   );
 }

@@ -14,6 +14,13 @@ import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 
+interface MediaSettings {
+  videoEnabled: boolean;
+  audioEnabled: boolean;
+  videoDeviceId?: string;
+  audioDeviceId?: string;
+}
+
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
 
@@ -24,6 +31,7 @@ export default function StudioPage() {
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
 
   const [settingEnabled, setSettingEnabled] = useState(false);
+  const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(null);
   const [imageEnabled, setImageEnabled] = useState(false);
   const [textEnabled, setTextEnabled] = useState(false);
   const [drawEnabled, setDrawEnabled] = useState(false);
@@ -53,7 +61,7 @@ export default function StudioPage() {
       <StreamContainer
         screenStream={screenStream}
         setScreenStream={setScreenStream}
-        camEnabled={settingEnabled}
+        mediaSettings={mediaSettings}
         isStreaming={isStreaming}
       />
     );
@@ -148,6 +156,8 @@ export default function StudioPage() {
                   setEraserEnabled={setEraserEnabled}
                   isStreaming={isStreaming}
                   setIsStreaming={setIsStreaming}
+                  onMediaSettingsChange={setMediaSettings}
+                  mediaSettings={mediaSettings}
                 />
               </div>
             )}
