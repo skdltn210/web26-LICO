@@ -11,6 +11,8 @@ export interface ChannelCardProps {
   category: string;
   categoryId: number;
   thumbnailUrl: string;
+  isLive?: boolean;
+  createdAt?: string;
 }
 
 export default function ChannelCard({

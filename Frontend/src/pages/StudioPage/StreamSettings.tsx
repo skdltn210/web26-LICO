@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { LuCopy, LuEye, LuEyeOff } from 'react-icons/lu';
-import { useStreamingKey } from '@hooks/useLive';
 import Toast from '@components/common/Toast';
 
-export default function StreamSettings() {
-  const [showStreamKey, setShowStreamKey] = useState(false);
-  const { data } = useStreamingKey();
+interface StreamSettingsProps {
+  streamKey: string;
+}
 
+export default function StreamSettings({ streamKey }: StreamSettingsProps) {
+  const [showStreamKey, setShowStreamKey] = useState(false);
   const [toast, setToast] = useState({
     isOpen: false,
     message: '',
@@ -20,12 +21,9 @@ export default function StreamSettings() {
     });
   };
 
-  const maskStreamKey = (key?: string) => {
-    if (!key) return '';
+  const maskStreamKey = (key: string) => {
     return showStreamKey ? key : '•'.repeat(key.length);
   };
-
-  const streamKey = data?.toString() || '';
 
   return (
     <>
@@ -40,12 +38,12 @@ export default function StreamSettings() {
               type="text"
               readOnly
               className="flex-1 rounded bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1 outline-none"
-              value="rtmp://relay.lico.digital/live"
+              value="rtmp://relay.lico.digital/dev"
               aria-label="스트림 URL"
             />
             <button
               type="button"
-              onClick={() => copyToClipboard('rtmp://relay.lico.digital/live', 'URL이')}
+              onClick={() => copyToClipboard('rtmp://relay.lico.digital/dev', 'URL이')}
               className="flex items-center justify-center rounded bg-lico-gray-3 px-3 text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2"
               aria-label="스트림 URL 복사"
             >
