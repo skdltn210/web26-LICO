@@ -12,14 +12,18 @@ import LoadingSpinner from '@components/common/LoadingSpinner';
 import NotFound from '@components/error/NotFound';
 import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
+import StreamContainer from '@pages/StudioPage/StreamContainer';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
+type VideoMode = 'player' | 'container';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('External');
+  const [videoMode, setVideoMode] = useState<VideoMode>('player');
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+
   const [settingEnabled, setSettingEnabled] = useState(false);
-  const [screenEnabled, setScreenEnabled] = useState(false);
   const [imageEnabled, setImageEnabled] = useState(false);
   const [textEnabled, setTextEnabled] = useState(false);
   const [drawEnabled, setDrawEnabled] = useState(false);
@@ -32,29 +36,53 @@ export default function StudioPage() {
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
 
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    if (tab === 'External') {
+      setVideoMode('player');
+    } else if (tab === 'WebStudio') {
+      setVideoMode('container');
+    }
+  };
+
+  const renderVideoContent = () => {
+    if (videoMode === 'player') {
+      return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
+    }
+    return (
+      <StreamContainer
+        screenStream={screenStream}
+        setScreenStream={setScreenStream}
+        camEnabled={settingEnabled}
+        isStreaming={isStreaming}
+      />
+    );
+  };
+
   if (isLoading)
     return (
       <div className="relative h-full w-full">
         <LoadingSpinner />
       </div>
     );
-  if ((error && error.status === 404) || !liveDetail || !channelId) return <NotFound />;
-  if (error) return <div>에러가 발생했습니다.</div>;
+  if (error) {
+    if (error.status === 404) return <NotFound />;
+    return <div>에러가 발생했습니다.</div>;
+  }
+  if (!channelId || !liveDetail) return <NotFound />;
 
   return (
     <div className="flex h-screen">
       <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
         <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
-        <div className="mt-4 h-3/5">
-          <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail.onAir} />
-        </div>
+        <div className="mt-4 h-3/5">{renderVideoContent()}</div>
 
         <div className="mt-4">
           <div className="flex justify-end">
             <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
               <button
                 type="button"
-                onClick={() => setActiveTab('External')}
+                onClick={() => handleTabChange('External')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
                   activeTab === 'External'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
@@ -68,7 +96,7 @@ export default function StudioPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('WebStudio')}
+                onClick={() => handleTabChange('WebStudio')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
                   activeTab === 'WebStudio'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
@@ -82,7 +110,7 @@ export default function StudioPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('Info')}
+                onClick={() => handleTabChange('Info')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
                   activeTab === 'Info'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
@@ -106,8 +134,8 @@ export default function StudioPage() {
             {activeTab === 'WebStudio' && (
               <div id="WebStudio-panel" role="tabpanel">
                 <WebStreamControls
-                  screenEnabled={screenEnabled}
-                  setScreenEnabled={setScreenEnabled}
+                  screenStream={screenStream}
+                  setScreenStream={setScreenStream}
                   settingEnabled={settingEnabled}
                   setSettingEnabled={setSettingEnabled}
                   imageEnabled={imageEnabled}

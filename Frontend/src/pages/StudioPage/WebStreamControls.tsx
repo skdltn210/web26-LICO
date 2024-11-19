@@ -1,11 +1,10 @@
 import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
-
 import ControlButton from './ControlButton';
 
 interface WebStreamControlsProps {
-  screenEnabled: boolean;
-  setScreenEnabled: (enabled: boolean) => void;
+  screenStream: MediaStream | null;
+  setScreenStream: (stream: MediaStream | null) => void;
   settingEnabled: boolean;
   setSettingEnabled: (enabled: boolean) => void;
   imageEnabled: boolean;
@@ -21,8 +20,6 @@ interface WebStreamControlsProps {
 }
 
 export default function WebStreamControls({
-  screenEnabled,
-  setScreenEnabled,
   settingEnabled,
   setSettingEnabled,
   imageEnabled,
@@ -35,22 +32,41 @@ export default function WebStreamControls({
   setEraserEnabled,
   isStreaming,
   setIsStreaming,
+  screenStream,
+  setScreenStream,
 }: WebStreamControlsProps) {
+  const handleScreenShare = async () => {
+    if (screenStream) {
+      screenStream.getTracks().forEach(track => track.stop());
+      setScreenStream(null);
+    } else {
+      try {
+        const newStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        setScreenStream(newStream);
+
+        newStream.getVideoTracks()[0].addEventListener('ended', () => {
+          setScreenStream(null);
+        });
+      } catch (err) {
+        console.error('Error starting screen share:', err);
+      }
+    }
+  };
+
+  const handleSettingsToggle = () => {
+    setSettingEnabled(!settingEnabled);
+  };
+
   return (
     <>
       <div className="flex items-center gap-4">
         <div className="flex flex-wrap gap-2">
-          <ControlButton
-            icon={LuMonitor}
-            label="화면 공유"
-            isEnabled={screenEnabled}
-            onClick={() => setScreenEnabled(!screenEnabled)}
-          />
+          <ControlButton icon={LuMonitor} label="화면 공유" isEnabled={!!screenStream} onClick={handleScreenShare} />
           <ControlButton
             icon={LuSettings}
             label="카메라 / 마이크 설정"
             isEnabled={settingEnabled}
-            onClick={() => setSettingEnabled(!settingEnabled)}
+            onClick={handleSettingsToggle}
           />
           <ControlButton
             icon={LuImage}
