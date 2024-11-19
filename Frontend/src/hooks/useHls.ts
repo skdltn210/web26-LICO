@@ -103,7 +103,7 @@ const useHls = (
       }
       removeVideoListeners();
     };
-  }, [streamUrl, videoRef]);
+  }, [options.startLevel, streamUrl, videoRef]);
 
   const setQuality = (level: number) => {
     if (hls) {
