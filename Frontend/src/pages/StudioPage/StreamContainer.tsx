@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import CanvasContainer from '@components/common/CanvasContainer';
+import CanvasContainer from '@/pages/StudioPage/StreamCanvas/CanvasContainer';
 import { useMediaStream } from '@hooks/useMediaStream';
 
 interface MediaSettings {
