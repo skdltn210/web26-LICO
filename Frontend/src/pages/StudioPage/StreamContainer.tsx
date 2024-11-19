@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import CanvasContainer from '@components/common/CanvasContainer';
 
 interface StreamContainerProps {
   screenStream: MediaStream | null;
@@ -57,12 +58,15 @@ export default function StreamContainer({
     <div className="relative h-full w-full bg-black">
       <video ref={screenVideoRef} autoPlay playsInline className="absolute left-0 top-0 h-full w-full object-contain" />
       {camEnabled && (
-        <video
-          ref={camVideoRef}
-          autoPlay
-          playsInline
-          className="absolute bottom-4 right-4 h-1/4 w-1/4 rounded-lg object-cover shadow-lg"
-        />
+        <CanvasContainer>
+          <video
+            ref={camVideoRef}
+            autoPlay
+            playsInline
+            className="h-full w-full object-cover"
+            data-drag-handle="true"
+          />
+        </CanvasContainer>
       )}
     </div>
   );
