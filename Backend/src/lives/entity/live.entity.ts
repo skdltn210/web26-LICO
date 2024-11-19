@@ -70,6 +70,7 @@ export class LiveEntity {
       usersProfileImage: this.user.profileImage,
       onAir: this.onAir,
       viewers: this.viewers,
+      streamerId: this.user.id,
     };
   }
 
