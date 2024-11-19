@@ -5,8 +5,8 @@ import type { Live } from '@/types/live';
 
 export const useFollow = () => {
   const queryClient = useQueryClient();
-  const accessToken = useAuthStore(state => state.accessToken);
-  const isLoggedIn = accessToken !== null;
+  const user = useAuthStore(state => state.user);
+  const isLoggedIn = user !== null;
 
   const { data: follows, isLoading: isLoadingFollows } = useQuery({
     queryKey: ['follows'],
@@ -39,8 +39,8 @@ export const useFollow = () => {
     },
   });
 
-  const isFollowed = (streamerId: number) => {
-    return follows?.some((follow: Live) => follow.streamerId === streamerId) ?? false;
+  const isFollowed = (channelId: string) => {
+    return follows?.some((follow: Live) => follow.channelId === channelId) ?? false;
   };
 
   return {

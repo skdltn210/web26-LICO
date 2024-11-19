@@ -72,6 +72,7 @@ export default function LivePage() {
                 title={liveName}
                 createdAt={startedAt}
                 streamerId={streamerId}
+                channelId={id}
               />
               <StreamerInfo streamerName={userNickName} channelDescription={liveDescription} followers={0} />
             </>
