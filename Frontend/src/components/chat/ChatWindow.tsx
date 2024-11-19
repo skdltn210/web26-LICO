@@ -131,9 +131,11 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
     const socket = io(`${config.apiBaseUrl}/chats`, {
       transports: ['websocket'],
-      auth: {
-        token: accessToken,
-      },
+      ...(isLoggedIn && {
+        auth: {
+          token: accessToken,
+        },
+      }),
     });
 
     socket.on('connect', () => {
@@ -148,7 +150,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         socketRef.current = null;
       }
     };
-  }, [onAir, accessToken, id]);
+  }, [onAir, accessToken, id, isLoggedIn]);
 
   useEffect(() => {
     const socket = socketRef.current;
