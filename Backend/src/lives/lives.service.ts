@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { LiveEntity } from './entity/live.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -88,8 +88,20 @@ export class LivesService {
     return live.toLiveDto();
   }
 
-  async updateLive({ channelId, updateLiveDto }: { channelId: UUID; updateLiveDto: UpdateLiveDto }) {
-    // TODO 요청자와 채널 소유자 일치여부 체크(로그인 기능 구현 후)
+  async updateLive({channelId, updateLiveDto, userId}: {channelId: UUID; updateLiveDto: UpdateLiveDto; userId: number;}) {
+    const live = await this.livesRepository.findOne({
+      where: { channelId },
+      relations: ['user'],
+    });
+  
+    if (!live) {
+      throw new NotFoundException(ErrorMessage.LIVE_NOT_FOUND);
+    }
+  
+    if (live.user.id !== userId) {
+      throw new ForbiddenException('권한이 없습니다.');
+    }
+  
     await this.livesRepository.update({ channelId }, updateLiveDto);
   }
 
