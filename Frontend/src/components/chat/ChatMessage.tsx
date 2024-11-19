@@ -1,21 +1,31 @@
 interface ChatMessageProps {
+  id: number;
   content: string;
-  userName: string;
+  nickname: string;
   timestamp?: string;
   color?: string;
+  onUserClick: (userId: number, element: HTMLElement) => void;
 }
 
 export default function ChatMessage({
+  id,
   content,
-  userName,
+  nickname,
   timestamp = '',
   color = 'text-lico-orange-2',
+  onUserClick,
 }: ChatMessageProps) {
   return (
-    <div className="flex items-center gap-1.5 px-1">
-      {timestamp && <span className="font-medium text-xs text-lico-gray-2">{timestamp}</span>}
-      <span className={`font-bold text-base ${color}`}>{userName}</span>
-      <p className="break-all font-medium text-sm text-lico-gray-1">{content}</p>
-    </div>
+    <button
+      type="button"
+      className="z-20 rounded-3xl p-1.5 hover:bg-lico-gray-3"
+      onClick={e => onUserClick(id, e.currentTarget)}
+    >
+      <div className="flex gap-1.5 px-1">
+        {timestamp && <span className="font-medium text-xs text-lico-gray-2">{timestamp}</span>}
+        <span className={`font-bold text-base ${color}`}>{nickname}</span>
+        <p className="flex items-center break-all text-start font-medium text-sm text-lico-gray-1">{content}</p>
+      </div>
+    </button>
   );
 }

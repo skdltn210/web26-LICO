@@ -1,4 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { userApi } from '@/apis/user';
 import { useAuthStore } from '@/store/useAuthStore';
 import type { UserProfileResponse } from '@/types/user';
@@ -29,5 +30,13 @@ export const useUpdateProfile = () => {
         },
       });
     },
+  });
+};
+
+export const useUserProfile = (userId: number) => {
+  return useQuery<UserProfileResponse, AxiosError>({
+    queryKey: userKeys.profile(userId),
+    queryFn: () => userApi.getUserProfile(userId),
+    enabled: !!userId,
   });
 };

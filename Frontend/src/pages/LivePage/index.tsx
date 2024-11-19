@@ -12,23 +12,10 @@ import VideoPlayer from '@components/VideoPlayer';
 import LiveInfo from '@pages/LivePage/LiveInfo';
 import StreamerInfo from '@pages/LivePage/StreamerInfo';
 
-interface CustomError {
-  status?: number;
-  message?: string;
-}
-
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();
   const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
-  const {
-    data: liveDetail,
-    isLoading,
-    error,
-  } = useLiveDetail(id!) as {
-    data: any;
-    isLoading: boolean;
-    error: CustomError | null;
-  };
+  const { data: liveDetail, isLoading, error } = useLiveDetail(id!);
 
   const isLarge = useMediaQuery('(min-width: 1200px)');
   const isMedium = useMediaQuery('(min-width: 700px)');
@@ -92,10 +79,8 @@ export default function LivePage() {
       </div>
 
       {chatState === 'expanded' && (
-        <div
-          className={`border-x border-lico-gray-3 ${isTheaterMode && isVerticalMode ? 'w-full overflow-hidden' : 'w-[360px]'}`}
-        >
-          <ChatWindow />
+        <div className={`${isTheaterMode && isVerticalMode ? 'w-full overflow-hidden' : 'w-[360px]'}`}>
+          <ChatWindow id={id} onAir={onAir} />
         </div>
       )}
 

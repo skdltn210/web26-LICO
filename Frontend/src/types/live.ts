@@ -30,3 +30,10 @@ export interface StreamingKeyResponse {
 }
 
 export type SortType = 'viewers' | 'latest' | 'random';
+
+export interface Message {
+  userId: number;
+  nickname: string;
+  content: string;
+  timestamp: string;
+}
