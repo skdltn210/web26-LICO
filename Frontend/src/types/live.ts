@@ -6,7 +6,7 @@ export interface Live {
   usersNickname: string;
   usersProfileImage: string;
   onAir: boolean;
-  streamerId: string;
+  streamerId: number;
 }
 
 export interface LiveDetail {
@@ -18,7 +18,7 @@ export interface LiveDetail {
   usersProfileImage: string;
   startedAt: string;
   onAir: boolean;
-  streamerId: string;
+  streamerId: number;
 }
 
 export interface UpdateLiveRequest {

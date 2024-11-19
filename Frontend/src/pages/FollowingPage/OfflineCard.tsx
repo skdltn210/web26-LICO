@@ -13,7 +13,7 @@ export default function OfflineCard({ id, profileImgUrl, streamerName }: Offline
         <img
           src={profileImgUrl}
           alt={streamerName}
-          className="mb-2 h-[72px] w-[72px] rounded-full object-cover outline outline-[3px] outline-lico-gray-3 hover:outline-[5px] hover:outline-lico-orange-2"
+          className="mb-2 h-[72px] w-[72px] rounded-full object-cover outline outline-[3px] outline-lico-gray-3 hover:outline-4 hover:outline-lico-orange-2"
         />
         <span className="text-center font-bold text-lico-gray-1">{streamerName}</span>
       </div>

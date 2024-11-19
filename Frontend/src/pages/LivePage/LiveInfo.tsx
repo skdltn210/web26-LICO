@@ -7,7 +7,7 @@ import { formatNumber } from '@utils/format';
 import StreamingTimer from '@pages/LivePage/StreamingTimer';
 
 interface LiveInfoProps {
-  streamerId: string;
+  streamerId: number;
   title: string;
   profileImgUrl: string;
   streamerName: string;
