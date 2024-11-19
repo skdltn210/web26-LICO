@@ -12,23 +12,10 @@ import VideoPlayer from '@components/VideoPlayer';
 import StreamerInfo from '@components/LiveInfo/StreamerInfo';
 import LiveInfo from '@components/LiveInfo';
 
-interface CustomError {
-  status?: number;
-  message?: string;
-}
-
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();
   const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
-  const {
-    data: liveDetail,
-    isLoading,
-    error,
-  } = useLiveDetail(id!) as {
-    data: any;
-    isLoading: boolean;
-    error: CustomError | null;
-  };
+  const { data: liveDetail, isLoading, error } = useLiveDetail(id!);
 
   const isLarge = useMediaQuery('(min-width: 1200px)');
   const isMedium = useMediaQuery('(min-width: 700px)');

@@ -7,6 +7,9 @@ import WebStreamControls from '@pages/StudioPage/WebStreamControls';
 import StreamInfo from '@pages/StudioPage/StreamInfo';
 import ChatWindow from '@components/chat/ChatWindow';
 import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
+import { useLiveDetail } from '@hooks/useLive.ts';
+import LoadingSpinner from '@components/common/LoadingSpinner';
+import NotFound from '@components/error/NotFound';
 
 type TabType = 'OBS' | 'WebOBS' | 'Info';
 
@@ -20,22 +23,25 @@ export default function StudioPage() {
   const [drawEnabled, setDrawEnabled] = useState(false);
   const [arEnabled, setArEnabled] = useState(false);
 
+  const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
+
   const { chatState, toggleChat } = useLayoutStore();
 
-  if (!channelId) {
+  if (isLoading)
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="font-bold text-lg text-lico-gray-1">올바른 주소를 입력해주세요</div>
+      <div className="relative h-full w-full">
+        <LoadingSpinner />
       </div>
     );
-  }
+  if ((error && error.status === 404) || !liveDetail || !channelId) return <NotFound />;
+  if (error) return <div>에러가 발생했습니다.</div>;
 
   return (
     <div className="flex h-screen">
       <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
         <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
         <div className="mt-4 h-3/5">
-          <VideoPlayer streamUrl={`/stream/${channelId}`} onAir />
+          <VideoPlayer streamUrl={`/stream/${channelId}`} onAir={liveDetail.onAir} />
         </div>
 
         <div className="mt-4">
@@ -121,7 +127,7 @@ export default function StudioPage() {
 
       {chatState === 'expanded' && (
         <aside className="min-w-[360px] overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
-          <ChatWindow />
+          <ChatWindow id={channelId} onAir={liveDetail.onAir} />
         </aside>
       )}
       {chatState === 'hidden' && <ChatOpenButton className="text-lico-gray-2" onClick={toggleChat} />}

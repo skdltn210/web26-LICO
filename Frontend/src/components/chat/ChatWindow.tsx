@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Message } from '@mocks/mockMessages.ts';
 import { FaAngleDown } from 'react-icons/fa';
 import ChatHeader from '@components/chat/ChatHeader';
 import ChatInput from '@components/chat/ChatInput';
@@ -10,6 +9,7 @@ import { useAuthStore } from '@store/useAuthStore';
 import { config } from '@config/env';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
 import PendingMessageNotification from '@components/chat/PendingMessageNotification';
+import type { Message } from '@/types/live';
 import ChatMessage from './ChatMessage';
 
 interface ChatWindowProps {
