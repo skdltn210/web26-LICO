@@ -8,4 +8,5 @@ export class LiveDto {
   readonly categoriesName: string | null;
   readonly onAir: boolean | null;
   readonly viewers: number;
+  readonly streamerId: number;
 }
