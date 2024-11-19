@@ -1,12 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { followApi } from '@apis/follow';
+import { useAuthStore } from '@store/useAuthStore';
 import type { Live } from '@/types/live';
+
 export const useFollow = () => {
   const queryClient = useQueryClient();
+  const accessToken = useAuthStore(state => state.accessToken);
+  const isLoggedIn = accessToken !== null;
 
   const { data: follows, isLoading: isLoadingFollows } = useQuery({
     queryKey: ['follows'],
     queryFn: followApi.getFollow,
+    enabled: isLoggedIn,
   });
 
   const { mutate: followChannel, isPending: isFollowing } = useMutation({
