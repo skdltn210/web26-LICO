@@ -10,6 +10,9 @@ import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 import { useLiveDetail } from '@hooks/useLive.ts';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import NotFound from '@components/error/NotFound';
+import { useStreamingKey } from '@hooks/useLive';
+import { config } from '@config/env';
+
 
 type TabType = 'OBS' | 'WebOBS' | 'Info';
 
@@ -26,6 +29,8 @@ export default function StudioPage() {
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
 
   const { chatState, toggleChat } = useLayoutStore();
+  const { data: streamKey } = useStreamingKey();
+  const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
 
   if (isLoading)
     return (
@@ -41,7 +46,7 @@ export default function StudioPage() {
       <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
         <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
         <div className="mt-4 h-3/5">
-          <VideoPlayer streamUrl={`/stream/${channelId}`} onAir={liveDetail.onAir} />
+          <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail.onAir} />
         </div>
 
         <div className="mt-4">
@@ -95,7 +100,7 @@ export default function StudioPage() {
           <div className="mt-4 rounded-lg bg-lico-gray-4 p-6">
             {activeTab === 'OBS' && (
               <div id="obs-panel" role="tabpanel">
-                <StreamSettings />
+                <StreamSettings streamKey={streamKey?.toString() || ''} />
               </div>
             )}
             {activeTab === 'WebOBS' && (

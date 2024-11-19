@@ -52,17 +52,17 @@ export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatew
     const { user, channelId } = socket.data;
 
     if (user instanceof UserEntity) {
-      const newChat = {
+      const newChat = JSON.stringify({
         content: receivedChat,
         nickname: user.nickname,
         userId: user.id,
         timestamp: new Date(),
-      };
+      });
 
       const redisKey = `${channelId}:chats`;
 
       this.server.to(channelId).emit('chat', [newChat]);
-      this.redisClient.rpush(redisKey, JSON.stringify(newChat));
+      this.redisClient.rpush(redisKey, newChat);
       this.redisClient.ltrim(redisKey, -50, -1);
     }
   }

@@ -18,6 +18,7 @@ import { UpdateLiveDto } from './dto/update.live.dto';
 import { UUID } from 'crypto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserEntity } from 'src/users/entity/user.entity';
+import { StatusDto } from './dto/status.dto';
 
 @Controller('lives')
 export class LivesController {
@@ -61,5 +62,10 @@ export class LivesController {
   @HttpCode(202)
   async endLive(@Param('channelId') channelId: UUID) {
     this.livesService.endLive(channelId);
+  }
+
+  @Get('/status/:channelId')
+  async getStatus(@Param('channelId') channelId: UUID): Promise<StatusDto> {
+    return await this.livesService.readStatus(channelId);
   }
 }

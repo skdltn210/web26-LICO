@@ -9,8 +9,8 @@ import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 import NotFound from '@components/error/NotFound';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import VideoPlayer from '@components/VideoPlayer';
-import StreamerInfo from '@components/LiveInfo/StreamerInfo';
-import LiveInfo from '@components/LiveInfo';
+import LiveInfo from '@pages/LivePage/LiveInfo';
+import StreamerInfo from '@pages/LivePage/StreamerInfo';
 
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();

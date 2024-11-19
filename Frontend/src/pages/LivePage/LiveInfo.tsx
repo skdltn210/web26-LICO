@@ -4,7 +4,7 @@ import FollowButton from '@components/common/Buttons/FollowButton';
 import { useState } from 'react';
 
 import { formatNumber } from '@utils/format';
-import StreamingTimer from '@components/LiveInfo/StreamingTimer';
+import StreamingTimer from '@pages/LivePage/StreamingTimer';
 
 interface LiveInfoProps {
   channelId: string;

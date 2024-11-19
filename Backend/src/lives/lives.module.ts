@@ -4,9 +4,10 @@ import { LivesController } from './lives.controller';
 import { LiveEntity } from './entity/live.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatsModule } from 'src/chats/chats.module';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LiveEntity]), ChatsModule],
+  imports: [TypeOrmModule.forFeature([LiveEntity]), ChatsModule, RedisModule],
   providers: [LivesService],
   controllers: [LivesController],
   exports: [LivesService],

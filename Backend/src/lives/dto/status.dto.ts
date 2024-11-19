@@ -1,8 +1,6 @@
-export class LivesDto {
-  readonly channelId: string;
+export class StatusDto {
   readonly livesName: string | null;
-  readonly usersNickname: string;
-  readonly usersProfileImage: string;
+  readonly livesDescription: string | null;
   readonly categoriesId: number | null;
   readonly categoriesName: string | null;
   readonly onAir: boolean | null;
