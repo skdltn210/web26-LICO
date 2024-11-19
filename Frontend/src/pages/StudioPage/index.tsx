@@ -30,7 +30,6 @@ export default function StudioPage() {
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
 
-  const [settingEnabled, setSettingEnabled] = useState(false);
   const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(null);
   const [imageEnabled, setImageEnabled] = useState(false);
   const [textEnabled, setTextEnabled] = useState(false);
@@ -144,8 +143,6 @@ export default function StudioPage() {
                 <WebStreamControls
                   screenStream={screenStream}
                   setScreenStream={setScreenStream}
-                  settingEnabled={settingEnabled}
-                  setSettingEnabled={setSettingEnabled}
                   imageEnabled={imageEnabled}
                   setImageEnabled={setImageEnabled}
                   textEnabled={textEnabled}

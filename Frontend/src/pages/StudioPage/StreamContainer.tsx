@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import CanvasContainer from '@components/common/CanvasContainer';
+import { useMediaStream } from '@hooks/useMediaStream';
 
 interface MediaSettings {
   videoEnabled: boolean;
@@ -25,9 +26,7 @@ export default function StreamContainer({
 }: StreamContainerProps) {
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const camVideoRef = useRef<HTMLVideoElement>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
+  const { mediaStream } = useMediaStream(mediaSettings, isStreaming);
 
   useEffect(() => {
     if (screenVideoRef.current && screenStream) {
@@ -45,69 +44,10 @@ export default function StreamContainer({
   }, [screenStream, setScreenStream]);
 
   useEffect(() => {
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    const setupMediaStream = async () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        setMediaStream(null);
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-
-      if (mediaSettings && !isStreaming && (mediaSettings.videoEnabled || mediaSettings.audioEnabled)) {
-        try {
-          const constraints = {
-            video: mediaSettings.videoEnabled ? { deviceId: mediaSettings.videoDeviceId } : false,
-            audio: mediaSettings.audioEnabled ? { deviceId: mediaSettings.audioDeviceId } : false,
-          };
-
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-          if (mediaSettings.audioEnabled && mediaSettings.volume !== undefined) {
-            audioContextRef.current = new AudioContext();
-            const source = audioContextRef.current.createMediaStreamSource(stream);
-            gainNodeRef.current = audioContextRef.current.createGain();
-
-            gainNodeRef.current.gain.value = mediaSettings.volume / 100;
-
-            source.connect(gainNodeRef.current);
-            gainNodeRef.current.connect(audioContextRef.current.destination);
-          }
-
-          if (camVideoRef.current) {
-            camVideoRef.current.srcObject = stream;
-            setMediaStream(stream);
-          }
-        } catch (err) {
-          console.error('Error accessing media devices:', err);
-        }
-      }
-    };
-
-    setupMediaStream();
-
-    return () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [mediaSettings, isStreaming]);
-
-  useEffect(() => {
-    if (gainNodeRef.current && mediaSettings?.volume !== undefined) {
-      gainNodeRef.current.gain.value = mediaSettings.volume / 100;
+    if (camVideoRef.current) {
+      camVideoRef.current.srcObject = mediaStream;
     }
-  }, [mediaSettings?.volume]);
+  }, [mediaStream]);
 
   return (
     <div className="relative h-full w-full bg-black">

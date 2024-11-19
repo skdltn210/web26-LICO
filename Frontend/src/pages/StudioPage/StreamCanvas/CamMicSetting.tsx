@@ -1,11 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-
-interface CamMicSettingProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: (settings: MediaSettings) => void;
-  initialSettings: MediaSettings | null;
-}
+import { useState, useEffect } from 'react';
+import { useMediaStream } from '@hooks/useMediaStream';
 
 interface MediaSettings {
   videoEnabled: boolean;
@@ -14,6 +8,13 @@ interface MediaSettings {
   audioDeviceId?: string;
   isFlipped?: boolean;
   volume?: number;
+}
+
+interface CamMicSettingProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (settings: MediaSettings) => void;
+  initialSettings: MediaSettings | null;
 }
 
 export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSettings }: CamMicSettingProps) {
@@ -26,9 +27,8 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
     volume: 75,
     ...initialSettings,
   }));
-  const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
+
+  const { mediaStream } = useMediaStream(settings);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,79 +58,8 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
     }
   }, [isOpen, initialSettings]);
 
-  useEffect(() => {
-    const getPreviewStream = async () => {
-      if (previewStream) {
-        previewStream.getTracks().forEach(track => track.stop());
-      }
-
-      if (settings.videoEnabled || settings.audioEnabled) {
-        try {
-          const constraints = {
-            video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
-            audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
-          };
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-          if (settings.audioEnabled) {
-            if (!audioContextRef.current) {
-              audioContextRef.current = new AudioContext();
-              const source = audioContextRef.current.createMediaStreamSource(stream);
-              gainNodeRef.current = audioContextRef.current.createGain();
-              source.connect(gainNodeRef.current);
-              gainNodeRef.current.connect(audioContextRef.current.destination);
-            }
-            if (gainNodeRef.current && settings.volume !== undefined) {
-              gainNodeRef.current.gain.value = settings.volume / 100;
-            }
-          }
-
-          setPreviewStream(stream);
-        } catch (err) {
-          console.error('Error getting media stream:', err);
-        }
-      }
-    };
-
-    getPreviewStream();
-
-    return () => {
-      if (previewStream) {
-        previewStream.getTracks().forEach(track => track.stop());
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-    };
-  }, [settings.videoEnabled, settings.audioEnabled, settings.videoDeviceId, settings.audioDeviceId]);
-
-  useEffect(() => {
-    if (gainNodeRef.current && settings.volume !== undefined) {
-      gainNodeRef.current.gain.value = settings.volume / 100;
-    }
-  }, [settings.volume]);
-
   const handleConfirm = () => {
-    if (previewStream) {
-      previewStream.getTracks().forEach(track => track.stop());
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
     onConfirm(settings);
-    onClose();
-  };
-
-  const handleCancel = () => {
-    if (previewStream) {
-      previewStream.getTracks().forEach(track => track.stop());
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
     onClose();
   };
 
@@ -142,7 +71,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
         <div className="w-[496px] rounded-lg bg-lico-gray-3 p-6">
           <h1 className="mb-2 font-bold text-xl text-lico-gray-1">카메라/마이크 설정</h1>
           <div className="h-64 w-full overflow-hidden rounded-lg bg-black">
-            {settings.videoEnabled && previewStream && (
+            {settings.videoEnabled && mediaStream && (
               <video
                 autoPlay
                 playsInline
@@ -150,7 +79,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                 className={`h-full w-full object-cover ${settings.isFlipped ? 'scale-x-[-1]' : ''}`}
                 ref={video => {
                   if (video) {
-                    video.srcObject = previewStream;
+                    video.srcObject = mediaStream;
                   }
                 }}
               />
@@ -181,7 +110,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                   <select
                     value={settings.audioDeviceId}
                     onChange={e => setSettings(prev => ({ ...prev, audioDeviceId: e.target.value }))}
-                    className="w-full rounded border border-lico-gray-3 bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1"
+                    className="w-full rounded border border-lico-gray-5 bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1"
                   >
                     {audioDevices.map(device => (
                       <option key={device.deviceId} value={device.deviceId}>
@@ -228,7 +157,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                   <select
                     value={settings.videoDeviceId}
                     onChange={e => setSettings(prev => ({ ...prev, videoDeviceId: e.target.value }))}
-                    className="w-full rounded border border-lico-gray-3 bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1"
+                    className="w-full rounded border border-lico-gray-5 bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1"
                   >
                     {videoDevices.map(device => (
                       <option key={device.deviceId} value={device.deviceId}>
@@ -267,7 +196,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
           <div className="mt-8 flex justify-end gap-2">
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={onClose}
               className="rounded-lg bg-lico-gray-2 px-4 py-2 font-bold text-sm text-lico-gray-5 transition-colors hover:bg-lico-gray-1"
             >
               취소

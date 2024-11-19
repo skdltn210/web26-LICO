@@ -9,13 +9,14 @@ interface MediaSettings {
   audioEnabled: boolean;
   videoDeviceId?: string;
   audioDeviceId?: string;
+  isFlipped?: boolean;
+  volume?: number;
 }
 
 interface WebStreamControlsProps {
   screenStream: MediaStream | null;
   setScreenStream: (stream: MediaStream | null) => void;
-  settingEnabled: boolean;
-  setSettingEnabled: (enabled: boolean) => void;
+  mediaSettings: MediaSettings | null;
   imageEnabled: boolean;
   setImageEnabled: (enabled: boolean) => void;
   textEnabled: boolean;
@@ -27,12 +28,10 @@ interface WebStreamControlsProps {
   isStreaming: boolean;
   setIsStreaming: (enabled: boolean) => void;
   onMediaSettingsChange: (settings: MediaSettings | null) => void;
-  mediaSettings: MediaSettings | null; // 추가
 }
 
 export default function WebStreamControls({
-  settingEnabled,
-  setSettingEnabled,
+  mediaSettings,
   imageEnabled,
   setImageEnabled,
   textEnabled,
@@ -46,9 +45,9 @@ export default function WebStreamControls({
   screenStream,
   setScreenStream,
   onMediaSettingsChange,
-  mediaSettings,
 }: WebStreamControlsProps) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const isSettingEnabled = !!mediaSettings && (mediaSettings.videoEnabled || mediaSettings.audioEnabled);
 
   const handleScreenShare = async () => {
     if (screenStream) {
@@ -69,8 +68,7 @@ export default function WebStreamControls({
   };
 
   const handleSettingsClick = () => {
-    if (settingEnabled) {
-      setSettingEnabled(false);
+    if (isSettingEnabled) {
       onMediaSettingsChange(null);
     } else {
       setIsSettingsModalOpen(true);
@@ -78,7 +76,6 @@ export default function WebStreamControls({
   };
 
   const handleSettingsConfirm = (settings: MediaSettings) => {
-    setSettingEnabled(settings.videoEnabled || settings.audioEnabled);
     onMediaSettingsChange(settings);
     setIsSettingsModalOpen(false);
   };
@@ -91,7 +88,7 @@ export default function WebStreamControls({
           <ControlButton
             icon={LuSettings}
             label="카메라 / 마이크 설정"
-            isEnabled={settingEnabled}
+            isEnabled={isSettingEnabled}
             onClick={handleSettingsClick}
           />
           <ControlButton
@@ -139,14 +136,12 @@ export default function WebStreamControls({
         {isStreaming ? '방송 종료하기' : '방송 시작하기'}
       </button>
 
-      {isSettingsModalOpen && (
-        <CamMicSetting
-          isOpen={isSettingsModalOpen}
-          onClose={() => setIsSettingsModalOpen(false)}
-          onConfirm={handleSettingsConfirm}
-          initialSettings={mediaSettings}
-        />
-      )}
+      <CamMicSetting
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onConfirm={handleSettingsConfirm}
+        initialSettings={mediaSettings}
+      />
     </>
   );
 }
