@@ -31,10 +31,6 @@ export default function StudioPage() {
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
 
   const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(null);
-  const [imageEnabled, setImageEnabled] = useState(false);
-  const [textEnabled, setTextEnabled] = useState(false);
-  const [drawEnabled, setDrawEnabled] = useState(false);
-  const [eraserEnabled, setEraserEnabled] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
@@ -143,14 +139,6 @@ export default function StudioPage() {
                 <WebStreamControls
                   screenStream={screenStream}
                   setScreenStream={setScreenStream}
-                  imageEnabled={imageEnabled}
-                  setImageEnabled={setImageEnabled}
-                  textEnabled={textEnabled}
-                  setTextEnabled={setTextEnabled}
-                  drawEnabled={drawEnabled}
-                  setDrawEnabled={setDrawEnabled}
-                  eraserEnabled={eraserEnabled}
-                  setEraserEnabled={setEraserEnabled}
                   isStreaming={isStreaming}
                   setIsStreaming={setIsStreaming}
                   onMediaSettingsChange={setMediaSettings}

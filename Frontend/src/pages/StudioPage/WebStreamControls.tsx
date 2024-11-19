@@ -17,14 +17,6 @@ interface WebStreamControlsProps {
   screenStream: MediaStream | null;
   setScreenStream: (stream: MediaStream | null) => void;
   mediaSettings: MediaSettings | null;
-  imageEnabled: boolean;
-  setImageEnabled: (enabled: boolean) => void;
-  textEnabled: boolean;
-  setTextEnabled: (enabled: boolean) => void;
-  drawEnabled: boolean;
-  setDrawEnabled: (enabled: boolean) => void;
-  eraserEnabled: boolean;
-  setEraserEnabled: (enabled: boolean) => void;
   isStreaming: boolean;
   setIsStreaming: (enabled: boolean) => void;
   onMediaSettingsChange: (settings: MediaSettings | null) => void;
@@ -32,14 +24,6 @@ interface WebStreamControlsProps {
 
 export default function WebStreamControls({
   mediaSettings,
-  imageEnabled,
-  setImageEnabled,
-  textEnabled,
-  setTextEnabled,
-  drawEnabled,
-  setDrawEnabled,
-  eraserEnabled,
-  setEraserEnabled,
   isStreaming,
   setIsStreaming,
   screenStream,
@@ -91,30 +75,10 @@ export default function WebStreamControls({
             isEnabled={isSettingEnabled}
             onClick={handleSettingsClick}
           />
-          <ControlButton
-            icon={LuImage}
-            label="이미지"
-            isEnabled={imageEnabled}
-            onClick={() => setImageEnabled(!imageEnabled)}
-          />
-          <ControlButton
-            icon={LuType}
-            label="텍스트"
-            isEnabled={textEnabled}
-            onClick={() => setTextEnabled(!textEnabled)}
-          />
-          <ControlButton
-            icon={LuPencil}
-            label="그리기"
-            isEnabled={drawEnabled}
-            onClick={() => setDrawEnabled(!drawEnabled)}
-          />
-          <ControlButton
-            icon={LuEraser}
-            label="지우개"
-            isEnabled={eraserEnabled}
-            onClick={() => setEraserEnabled(!eraserEnabled)}
-          />
+          <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
+          <ControlButton icon={LuType} label="텍스트" isEnabled={false} onClick={() => console.log()} />
+          <ControlButton icon={LuPencil} label="그리기" isEnabled={false} onClick={() => console.log()} />
+          <ControlButton icon={LuEraser} label="지우개" isEnabled={false} onClick={() => console.log()} />
         </div>
       </div>
 
