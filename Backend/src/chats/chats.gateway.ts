@@ -31,11 +31,14 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
   async joinChatRoom(@ConnectedSocket() socket: Socket, @MessageBody('channelId') channelId: UUID) {
     socket.join(channelId);
     socket.data.channelId = channelId;
+    const redisKey = `${channelId}:chats`;
 
     this.redisClient.hincrby(`${channelId}:viewers`, socket.data.user.id, 1);
 
-    const oldChats = await this.redisClient.lrange(`${channelId}:chats`, 0, -1);
+    const oldChats = await this.redisClient.lrange(redisKey, -50, -1);
     socket.emit('chat', oldChats);
+
+    this.resizeOldChats({ redisKey, size: 50 });
   }
 
   @SubscribeMessage('chat')
@@ -54,7 +57,6 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
       this.server.to(channelId).emit('chat', [newChat]);
       this.redisClient.rpush(redisKey, newChat);
-      this.redisClient.ltrim(redisKey, -50, -1);
     }
   }
 
@@ -93,6 +95,13 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
     if (parseInt(count) <= 0) {
       this.redisClient.hdel(redisKey, user.id);
+    }
+  }
+
+  async resizeOldChats({ redisKey, size }: { redisKey: string; size: number }) {
+    const currentSize = await this.redisClient.llen(redisKey);
+    if (currentSize >= 100) {
+      this.redisClient.ltrim(redisKey, -50, -1);
     }
   }
 }
