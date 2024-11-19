@@ -8,10 +8,12 @@ export const followApi = {
   },
 
   follow: async (streamerId: string) => {
-    await api.post(`/follow/${streamerId}`);
+    const { data } = await api.post(`/follow/${streamerId}`);
+    return data;
   },
 
   unfollow: async (streamerId: string) => {
-    await api.delete(`/follow/${streamerId}`);
+    const { data } = await api.delete(`/follow/${streamerId}`);
+    return data;
   },
 };
