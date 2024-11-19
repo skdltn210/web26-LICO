@@ -1,7 +1,7 @@
 ---
-name: Fix
-about: 버그 수정
-title: "[Fix] 버그 제목"
+name: Bug
+about: 버그
+title: "[Bug] 버그 제목"
 labels: "\U0001F41BFix\U0001F41B"
 assignees: ''
 
