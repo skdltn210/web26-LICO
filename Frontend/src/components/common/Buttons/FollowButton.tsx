@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useFollow } from '@hooks/useFollow';
 
 interface FollowButtonProps {
-  streamerId: string;
+  streamerId: number;
 }
 
 export default function FollowButton({ streamerId }: FollowButtonProps) {

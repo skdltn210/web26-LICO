@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { followApi } from '@apis/follow';
 import type { Live } from '@/types/live';
-
 export const useFollow = () => {
   const queryClient = useQueryClient();
 
@@ -11,7 +10,7 @@ export const useFollow = () => {
   });
 
   const { mutate: followChannel, isPending: isFollowing } = useMutation({
-    mutationFn: (streamerId: string) => followApi.follow(streamerId),
+    mutationFn: (streamerId: number) => followApi.follow(streamerId),
     onSuccess: (_, streamerId) => {
       queryClient.setQueryData(['follows'], (old: Live[] = []) => {
         if (!old.some(follow => follow.streamerId === streamerId)) {
@@ -25,7 +24,7 @@ export const useFollow = () => {
   });
 
   const { mutate: unfollowChannel, isPending: isUnfollowing } = useMutation({
-    mutationFn: (streamerId: string) => followApi.unfollow(streamerId),
+    mutationFn: (streamerId: number) => followApi.unfollow(streamerId),
     onSuccess: (_, streamerId) => {
       queryClient.setQueryData(['follows'], (old: Live[] = []) => {
         return old.filter(follow => follow.streamerId !== streamerId);
@@ -35,7 +34,7 @@ export const useFollow = () => {
     },
   });
 
-  const isFollowed = (streamerId: string) => {
+  const isFollowed = (streamerId: number) => {
     return follows?.some((follow: Live) => follow.streamerId === streamerId) ?? false;
   };
 
