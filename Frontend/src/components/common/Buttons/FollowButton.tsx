@@ -4,20 +4,20 @@ import { useState } from 'react';
 import { useFollow } from '@hooks/useFollow';
 
 interface FollowButtonProps {
-  channelId: string;
+  streamerId: string;
 }
 
-export default function FollowButton({ channelId }: FollowButtonProps) {
+export default function FollowButton({ streamerId }: FollowButtonProps) {
   const { isFollowed, followChannel, unfollowChannel, isFollowing, isUnfollowing } = useFollow();
   const [isHovered, setIsHovered] = useState(false);
 
-  const isFollowingChannel = isFollowed(channelId);
+  const isFollowingChannel = isFollowed(streamerId);
 
   const handleClick = () => {
     if (isFollowingChannel) {
-      unfollowChannel(channelId);
+      unfollowChannel(streamerId);
     } else {
-      followChannel(channelId);
+      followChannel(streamerId);
     }
   };
 

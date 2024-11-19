@@ -43,12 +43,13 @@ export default function LivePage() {
   const {
     categoriesId: categoryId,
     categoriesName: categoryName,
-    livesDescription: liveDescription,
     livesName: liveName,
-    onAir,
-    startedAt,
+    livesDescription: liveDescription,
     usersNickname: userNickName,
     usersProfileImage: userProfileImage,
+    startedAt,
+    onAir,
+    streamerId,
   } = liveDetail;
 
   const isChatToggleVisible = isMedium && chatState === 'hidden';
@@ -71,6 +72,7 @@ export default function LivePage() {
                 title={liveName}
                 createdAt={startedAt}
                 channelId={id}
+                streamerId={streamerId}
               />
               <StreamerInfo streamerName={userNickName} channelDescription={liveDescription} followers={0} />
             </>

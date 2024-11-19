@@ -7,11 +7,11 @@ export const followApi = {
     return data;
   },
 
-  follow: async (channelId: string) => {
-    await api.post(`/follow/${channelId}`);
+  follow: async (streamerId: string) => {
+    await api.post(`/follow/${streamerId}`);
   },
 
-  unfollow: async (channelId: string) => {
-    await api.delete(`/follow/${channelId}`);
+  unfollow: async (streamerId: string) => {
+    await api.delete(`/follow/${streamerId}`);
   },
 };

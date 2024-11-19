@@ -11,21 +11,21 @@ export const useFollow = () => {
   });
 
   const { mutate: followChannel, isPending: isFollowing } = useMutation({
-    mutationFn: (channelId: string) => followApi.follow(channelId),
+    mutationFn: (streamerId: string) => followApi.follow(streamerId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['follows'] });
     },
   });
 
   const { mutate: unfollowChannel, isPending: isUnfollowing } = useMutation({
-    mutationFn: (channelId: string) => followApi.unfollow(channelId),
+    mutationFn: (streamerId: string) => followApi.unfollow(streamerId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['follows'] });
     },
   });
 
-  const isFollowed = (channelId: string) => {
-    return follows?.some((follow: Live) => follow.channelId === channelId) ?? false;
+  const isFollowed = (streamerId: string) => {
+    return follows?.some((follow: Live) => follow.streamerId === streamerId) ?? false;
   };
 
   return {

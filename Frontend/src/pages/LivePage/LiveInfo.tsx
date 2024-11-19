@@ -8,6 +8,7 @@ import StreamingTimer from '@pages/LivePage/StreamingTimer';
 
 interface LiveInfoProps {
   channelId: string;
+  streamerId: string;
   title: string;
   profileImgUrl: string;
   streamerName: string;
@@ -19,6 +20,7 @@ interface LiveInfoProps {
 
 export default function LiveInfo({
   channelId,
+  streamerId,
   title,
   profileImgUrl,
   streamerName,
@@ -52,7 +54,7 @@ export default function LiveInfo({
             <StreamingTimer startAt={createdAt} />
           </div>
         </div>
-        <FollowButton channelId={channelId} />
+        <FollowButton streamerId={streamerId} />
       </div>
       <div className="mt-2 flex items-center gap-2">
         <CategoryBadge category={categoryName} categoryId={categoryId} className="text-sm text-lico-gray-1" />
