@@ -5,7 +5,6 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -13,12 +12,12 @@ import {
 import Redis from 'ioredis';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
-import { ChatsMiddleware } from './chats.middleware';
+import * as crypto from 'crypto';
 import { UUID } from 'crypto';
 import { UserEntity } from 'src/users/entity/user.entity';
 
 @WebSocketGateway({ namespace: '/chats' })
-export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection {
+export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
@@ -27,14 +26,6 @@ export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatew
     private jwtService: JwtService,
     private usersService: UsersService,
   ) {}
-
-  async afterInit(server: Server) {
-    const middleware = new ChatsMiddleware(this.jwtService, this.usersService);
-
-    server.use((socket: Socket, next) => {
-      middleware.use(socket, next);
-    });
-  }
 
   @SubscribeMessage('join')
   async joinChatRoom(@ConnectedSocket() socket: Socket, @MessageBody('channelId') channelId: UUID) {
@@ -68,13 +59,29 @@ export class ChatsGateway implements OnGatewayInit, OnGatewayDisconnect, OnGatew
   }
 
   async handleConnection(socket: Socket) {
-    const { user, channelId } = socket.data;
-    const redisKey = `${channelId}:viewers`;
+    try {
+      const token = socket.handshake.auth?.token;
 
-    if (channelId) {
-      // channelId가 있다면 채팅방 입장한 상태에서 재연결 된 것
-      this.redisClient.hincrby(redisKey, user.id, 1);
+      if (token) {
+        // 토큰이 있는 경우
+        const payload = this.jwtService.verify(token);
+        const { id } = payload.sub;
+        const user = await this.usersService.findById(id);
+
+        if (user) {
+          socket.data.user = user;
+        }
+      }
+
+      if (!socket.data.user) {
+        socket.data.user = { id: crypto.createHash('sha256').update(socket.handshake.address).digest('hex') };
+      }
+    } catch (error) {
+      // 토큰 검증 실패 등의 경우
+      socket.data.user = { id: crypto.createHash('sha256').update(socket.handshake.address).digest('hex') };
     }
+
+    socket.emit('auth', { message: 'authorization completed' });
   }
 
   async handleDisconnect(socket: Socket) {
