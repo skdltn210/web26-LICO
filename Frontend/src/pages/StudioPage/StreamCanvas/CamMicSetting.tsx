@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface CamMicSettingProps {
   isOpen: boolean;
@@ -27,7 +27,11 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
     ...initialSettings,
   }));
   const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
+  // 디바이스 목록 가져오기
   useEffect(() => {
     if (isOpen) {
       navigator.mediaDevices
@@ -50,12 +54,14 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
     }
   }, [isOpen]);
 
+  // 초기 설정값 적용
   useEffect(() => {
     if (isOpen && initialSettings) {
       setSettings(initialSettings);
     }
   }, [isOpen, initialSettings]);
 
+  // 프리뷰 스트림 설정
   useEffect(() => {
     const getPreviewStream = async () => {
       if (previewStream) {
@@ -69,6 +75,21 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
             audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
           };
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+          // 오디오 컨텍스트 설정
+          if (settings.audioEnabled) {
+            if (!audioContextRef.current) {
+              audioContextRef.current = new AudioContext();
+              const source = audioContextRef.current.createMediaStreamSource(stream);
+              gainNodeRef.current = audioContextRef.current.createGain();
+              source.connect(gainNodeRef.current);
+              gainNodeRef.current.connect(audioContextRef.current.destination);
+            }
+            if (gainNodeRef.current && settings.volume !== undefined) {
+              gainNodeRef.current.gain.value = settings.volume / 100;
+            }
+          }
+
           setPreviewStream(stream);
         } catch (err) {
           console.error('Error getting media stream:', err);
@@ -82,12 +103,27 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
       if (previewStream) {
         previewStream.getTracks().forEach(track => track.stop());
       }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
     };
-  }, [settings]);
+  }, [settings.videoEnabled, settings.audioEnabled, settings.videoDeviceId, settings.audioDeviceId]);
+
+  // 볼륨 변경 처리
+  useEffect(() => {
+    if (gainNodeRef.current && settings.volume !== undefined) {
+      gainNodeRef.current.gain.value = settings.volume / 100;
+    }
+  }, [settings.volume]);
 
   const handleConfirm = () => {
     if (previewStream) {
       previewStream.getTracks().forEach(track => track.stop());
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
     }
     onConfirm(settings);
     onClose();
@@ -96,6 +132,10 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
   const handleCancel = () => {
     if (previewStream) {
       previewStream.getTracks().forEach(track => track.stop());
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
     }
     onClose();
   };
