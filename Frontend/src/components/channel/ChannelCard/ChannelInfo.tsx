@@ -4,7 +4,7 @@ interface ChannelInfoProps {
   title: string;
   streamerName: string;
   category: string;
-  categoryId: number | string;
+  categoryId: number;
   profileImgUrl: string;
 }
 
