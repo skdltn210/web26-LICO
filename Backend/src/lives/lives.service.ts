@@ -52,23 +52,20 @@ export class LivesService {
       .leftJoinAndSelect('live.category', 'category')
       .leftJoinAndSelect('live.user', 'user');
 
-    // 기본 onAir true 상태
     if (typeof onAir === 'boolean') {
       queryBuilder.andWhere('live.onAir = :onAir', { onAir });
     }
 
-    // 카테고리 필터
     if (categoriesId) {
       queryBuilder.andWhere('live.categoriesId = :categoriesId', { categoriesId });
     }
 
     // 정렬 로직 추가
     if (sort === 'recommendation') {
-      queryBuilder.orderBy('RAND()'); // 추천은 랜덤 정렬
+      queryBuilder.orderBy('RAND()');
     } else if (sort === 'viewers') {
-      // viewers 정렬은 아직 구현 X
+      queryBuilder.orderBy('live.viewers', 'DESC');
     } else {
-      // 기본은 최신순
       queryBuilder.orderBy('live.createdAt', 'DESC');
     }
 
