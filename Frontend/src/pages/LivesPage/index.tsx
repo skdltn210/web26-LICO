@@ -5,6 +5,7 @@ import SortButton from '@components/common/Buttons/SortButton';
 import { useLives } from '@hooks/useLive';
 import { useSortStore } from '@store/useSortStore';
 import LoadingSpinner from '@components/common/LoadingSpinner';
+import { config } from '@config/env.ts';
 
 export default function LivesPage() {
   const { sortType, setSortType } = useSortStore();
@@ -52,7 +53,7 @@ export default function LivesPage() {
           viewers: 0,
           category: live.categoriesName,
           categoryId: live.categoriesId,
-          thumbnailUrl: '기본 썸네일 URL 또는 임시 이미지',
+          thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.png`,
           createdAt: new Date().toISOString(),
         }))}
       />
