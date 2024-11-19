@@ -13,6 +13,7 @@ import {
 } from 'typeorm';
 import { LivesDto } from '../dto/lives.dto';
 import { LiveDto } from '../dto/live.dto';
+import { StatusDto } from '../dto/status.dto';
 
 @Entity('lives')
 export class LiveEntity {
@@ -53,6 +54,9 @@ export class LiveEntity {
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
 
+  @Column({ name: 'viewers', type: 'int', default: 0 })
+  viewers: number;
+
   @OneToOne(() => UserEntity, user => user.live)
   user: UserEntity;
 
@@ -65,6 +69,7 @@ export class LiveEntity {
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
       onAir: this.onAir,
+      viewers: this.viewers,
     };
   }
 
@@ -78,6 +83,18 @@ export class LiveEntity {
       usersNickname: this.user.nickname,
       usersProfileImage: this.user.profileImage,
       onAir: this.onAir,
+      viewers: this.viewers,
+    };
+  }
+
+  toStatus(): StatusDto {
+    return {
+      categoriesId: this.category?.id,
+      categoriesName: this.category?.name,
+      livesName: this.name,
+      livesDescription: this.description,
+      onAir: this.onAir,
+      viewers: this.viewers,
     };
   }
 }

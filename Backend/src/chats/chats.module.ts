@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { redisConfig } from 'src/config/redis.config';
 import { ChatsGateway } from './chats.gateway';
 import { ChatsService } from './chats.service';
 import { RedisModule } from '@nestjs-modules/ioredis';
@@ -9,12 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    RedisModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => redisConfig(configService),
-    }),
-
+    RedisModule,
     UsersModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
