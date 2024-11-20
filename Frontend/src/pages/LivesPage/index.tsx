@@ -53,7 +53,7 @@ export default function LivesPage() {
           viewers: live.viewers,
           category: live.categoriesName,
           categoryId: live.categoriesId,
-          thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.png`,
+          thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.jpg`,
           createdAt: new Date().toISOString(),
         }))}
       />
