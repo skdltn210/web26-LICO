@@ -1,71 +1,54 @@
 import { useEffect, useRef } from 'react';
 import CanvasContainer from '@/pages/StudioPage/StreamCanvas/CanvasContainer';
-import { useMediaStream } from '@hooks/useMediaStream';
-
-interface MediaSettings {
-  videoEnabled: boolean;
-  audioEnabled: boolean;
-  videoDeviceId?: string;
-  audioDeviceId?: string;
-  isFlipped?: boolean;
-  volume?: number;
-}
 
 interface StreamContainerProps {
   screenStream: MediaStream | null;
-  setScreenStream: (stream: MediaStream | null) => void;
-  mediaSettings: MediaSettings | null;
+  mediaStream: MediaStream | null;
+  isCamFlipped: boolean;
   isStreaming: boolean;
 }
 
 export default function StreamContainer({
   screenStream,
-  setScreenStream,
-  mediaSettings,
+  mediaStream,
+  isCamFlipped,
   isStreaming,
 }: StreamContainerProps) {
   const screenVideoRef = useRef<HTMLVideoElement>(null);
-  const camVideoRef = useRef<HTMLVideoElement>(null);
-  const { mediaStream } = useMediaStream(mediaSettings, isStreaming);
+  const mediaVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (screenVideoRef.current && screenStream) {
       screenVideoRef.current.srcObject = screenStream;
-    } else if (!screenStream && screenVideoRef.current) {
-      screenVideoRef.current.srcObject = null;
     }
-
-    return () => {
-      if (screenStream && !screenVideoRef.current?.srcObject) {
-        screenStream.getTracks().forEach(track => track.stop());
-        setScreenStream(null);
-      }
-    };
-  }, [screenStream, setScreenStream]);
+  }, [screenStream]);
 
   useEffect(() => {
-    if (camVideoRef.current) {
-      camVideoRef.current.srcObject = mediaStream;
+    if (mediaVideoRef.current && mediaStream) {
+      mediaVideoRef.current.srcObject = mediaStream;
     }
   }, [mediaStream]);
 
   return (
     <div className="relative h-full w-full bg-black">
-      <CanvasContainer>
-        <video
-          ref={screenVideoRef}
-          autoPlay
-          playsInline
-          className="absolute left-0 top-0 h-full w-full object-contain"
-        />
-      </CanvasContainer>
-      {mediaSettings?.videoEnabled && (
+      {screenStream && (
         <CanvasContainer>
           <video
-            ref={camVideoRef}
+            ref={screenVideoRef}
             autoPlay
             playsInline
-            className={`h-full w-full object-cover ${mediaSettings.isFlipped ? 'scale-x-[-1]' : ''}`}
+            className="absolute left-0 top-0 h-full w-full object-contain"
+            data-drag-handle="true"
+          />
+        </CanvasContainer>
+      )}
+      {mediaStream && (
+        <CanvasContainer>
+          <video
+            ref={mediaVideoRef}
+            autoPlay
+            playsInline
+            className={`h-full w-full object-cover ${isCamFlipped ? 'scale-x-[-1]' : ''}`}
             data-drag-handle="true"
           />
         </CanvasContainer>

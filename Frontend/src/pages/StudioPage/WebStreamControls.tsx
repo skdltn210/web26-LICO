@@ -9,59 +9,87 @@ interface MediaSettings {
   audioEnabled: boolean;
   videoDeviceId?: string;
   audioDeviceId?: string;
-  isFlipped?: boolean;
+  isCamFlipped?: boolean;
   volume?: number;
 }
 
 interface WebStreamControlsProps {
   screenStream: MediaStream | null;
-  setScreenStream: (stream: MediaStream | null) => void;
-  mediaSettings: MediaSettings | null;
+  mediaStream: MediaStream | null;
   isStreaming: boolean;
-  setIsStreaming: (enabled: boolean) => void;
-  onMediaSettingsChange: (settings: MediaSettings | null) => void;
+  isCamFlipped: boolean;
+  onScreenStreamChange: (stream: MediaStream | null) => void;
+  onMediaStreamChange: (stream: MediaStream | null) => void;
+  onStreamingChange: (streaming: boolean) => void;
+  onCamFlipChange: (isCamFlipped: boolean) => void;
 }
 
 export default function WebStreamControls({
-  mediaSettings,
-  isStreaming,
-  setIsStreaming,
   screenStream,
-  setScreenStream,
-  onMediaSettingsChange,
+  mediaStream,
+  isStreaming,
+  isCamFlipped,
+  onScreenStreamChange,
+  onMediaStreamChange,
+  onStreamingChange,
+  onCamFlipChange,
 }: WebStreamControlsProps) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const isSettingEnabled = !!mediaSettings && (mediaSettings.videoEnabled || mediaSettings.audioEnabled);
+  const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(() => ({
+    videoEnabled: false,
+    audioEnabled: false,
+    isCamFlipped: isCamFlipped,
+  }));
 
   const handleScreenShare = async () => {
-    if (screenStream) {
-      screenStream.getTracks().forEach(track => track.stop());
-      setScreenStream(null);
-    } else {
-      try {
-        const newStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        setScreenStream(newStream);
-
-        newStream.getVideoTracks()[0].addEventListener('ended', () => {
-          setScreenStream(null);
-        });
-      } catch (err) {
-        console.error('Error starting screen share:', err);
+    try {
+      if (screenStream) {
+        screenStream.getTracks().forEach(track => track.stop());
+        onScreenStreamChange(null);
+        return;
       }
+
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+      onScreenStreamChange(stream);
+    } catch (error) {
+      console.error('Error sharing screen:', error);
     }
   };
 
-  const handleSettingsClick = () => {
-    if (isSettingEnabled) {
-      onMediaSettingsChange(null);
+  const handleMediaSetting = () => {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      onMediaStreamChange(null);
+      setMediaSettings(null);
+      onCamFlipChange(false);
     } else {
       setIsSettingsModalOpen(true);
     }
   };
 
-  const handleSettingsConfirm = (settings: MediaSettings) => {
-    onMediaSettingsChange(settings);
-    setIsSettingsModalOpen(false);
+  const handleSettingsConfirm = async (settings: MediaSettings) => {
+    try {
+      if (!settings.videoEnabled && !settings.audioEnabled) {
+        onMediaStreamChange(null);
+        setMediaSettings(settings);
+        onCamFlipChange(false);
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
+        audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
+      });
+
+      onMediaStreamChange(stream);
+      setMediaSettings(settings);
+      onCamFlipChange(settings.isCamFlipped || false);
+    } catch (error) {
+      console.error('Error setting up media devices:', error);
+    }
   };
 
   return (
@@ -72,8 +100,8 @@ export default function WebStreamControls({
           <ControlButton
             icon={LuSettings}
             label="카메라 / 마이크 설정"
-            isEnabled={isSettingEnabled}
-            onClick={handleSettingsClick}
+            isEnabled={!!mediaStream}
+            onClick={handleMediaSetting}
           />
           <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
           <ControlButton icon={LuType} label="텍스트" isEnabled={false} onClick={() => console.log()} />
@@ -84,7 +112,7 @@ export default function WebStreamControls({
 
       <button
         type="button"
-        onClick={() => setIsStreaming(!isStreaming)}
+        onClick={() => onStreamingChange(!isStreaming)}
         className={`mt-6 flex w-full items-center justify-center gap-2 rounded px-4 py-2.5 font-bold transition-colors ${
           isStreaming
             ? 'bg-lico-gray-3 text-lico-gray-1 hover:bg-lico-gray-2'

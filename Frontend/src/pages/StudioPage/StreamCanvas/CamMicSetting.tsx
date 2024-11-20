@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useMediaStream } from '@hooks/useMediaStream';
 
 interface MediaSettings {
   videoEnabled: boolean;
   audioEnabled: boolean;
   videoDeviceId?: string;
   audioDeviceId?: string;
-  isFlipped?: boolean;
+  isCamFlipped?: boolean;
   volume?: number;
 }
 
@@ -23,13 +22,13 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
   const [settings, setSettings] = useState<MediaSettings>(() => ({
     videoEnabled: false,
     audioEnabled: false,
-    isFlipped: false,
+    isCamFlipped: false,
     volume: 75,
     ...initialSettings,
   }));
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
-  const { mediaStream } = useMediaStream(settings);
-
+  // 장치 목록 가져오기
   useEffect(() => {
     if (isOpen) {
       navigator.mediaDevices
@@ -51,6 +50,40 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
         .catch(err => console.error('Error getting devices:', err));
     }
   }, [isOpen]);
+
+  // mediaStream 관리
+  useEffect(() => {
+    const startMediaStream = async () => {
+      if (!settings.videoEnabled && !settings.audioEnabled) {
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
+          audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
+        });
+        setMediaStream(stream);
+      } catch (err) {
+        console.error('Error getting media stream:', err);
+      }
+    };
+
+    const stopMediaStream = () => {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        setMediaStream(null);
+      }
+    };
+
+    if (isOpen) {
+      startMediaStream();
+    }
+
+    return () => {
+      stopMediaStream();
+    };
+  }, [isOpen, settings.videoEnabled, settings.audioEnabled, settings.videoDeviceId, settings.audioDeviceId]);
 
   useEffect(() => {
     if (isOpen && initialSettings) {
@@ -76,7 +109,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                 autoPlay
                 playsInline
                 muted
-                className={`h-full w-full object-cover ${settings.isFlipped ? 'scale-x-[-1]' : ''}`}
+                className={`h-full w-full object-cover ${settings.isCamFlipped ? 'scale-x-[-1]' : ''}`}
                 ref={video => {
                   if (video) {
                     video.srcObject = mediaStream;
@@ -170,14 +203,14 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                     <span className="font-bold text-sm text-lico-gray-1">좌우반전</span>
                     <button
                       type="button"
-                      onClick={() => setSettings(prev => ({ ...prev, isFlipped: !prev.isFlipped }))}
+                      onClick={() => setSettings(prev => ({ ...prev, isCamFlipped: !prev.isCamFlipped }))}
                       className={`relative h-6 w-11 rounded-full transition-colors ${
-                        settings.isFlipped ? 'bg-lico-orange-2' : 'bg-lico-gray-5'
+                        settings.isCamFlipped ? 'bg-lico-orange-2' : 'bg-lico-gray-5'
                       }`}
                     >
                       <span
                         className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-                          settings.isFlipped ? 'translate-x-5' : 'translate-x-0'
+                          settings.isCamFlipped ? 'translate-x-5' : 'translate-x-0'
                         }`}
                       />
                     </button>

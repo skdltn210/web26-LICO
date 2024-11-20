@@ -14,13 +14,6 @@ import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 
-interface MediaSettings {
-  videoEnabled: boolean;
-  audioEnabled: boolean;
-  videoDeviceId?: string;
-  audioDeviceId?: string;
-}
-
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
 
@@ -28,9 +21,10 @@ export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('External');
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
 
-  const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(null);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [isCamFlipped, setIsCamFlipped] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
@@ -43,9 +37,30 @@ export default function StudioPage() {
     setActiveTab(tab);
     if (tab === 'External') {
       setVideoMode('player');
+      if (screenStream) {
+        screenStream.getTracks().forEach(track => track.stop());
+        setScreenStream(null);
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        setMediaStream(null);
+      }
+      setIsStreaming(false);
     } else if (tab === 'WebStudio') {
       setVideoMode('container');
     }
+  };
+
+  const handleScreenStreamChange = (stream: MediaStream | null) => {
+    setScreenStream(stream);
+  };
+
+  const handleMediaStreamChange = (stream: MediaStream | null) => {
+    setMediaStream(stream);
+  };
+
+  const handleStreamingChange = (streaming: boolean) => {
+    setIsStreaming(streaming);
   };
 
   const renderVideoContent = () => {
@@ -55,8 +70,8 @@ export default function StudioPage() {
     return (
       <StreamContainer
         screenStream={screenStream}
-        setScreenStream={setScreenStream}
-        mediaSettings={mediaSettings}
+        mediaStream={mediaStream}
+        isCamFlipped={isCamFlipped}
         isStreaming={isStreaming}
       />
     );
@@ -138,11 +153,13 @@ export default function StudioPage() {
               <div id="WebStudio-panel" role="tabpanel">
                 <WebStreamControls
                   screenStream={screenStream}
-                  setScreenStream={setScreenStream}
+                  mediaStream={mediaStream}
                   isStreaming={isStreaming}
-                  setIsStreaming={setIsStreaming}
-                  onMediaSettingsChange={setMediaSettings}
-                  mediaSettings={mediaSettings}
+                  isCamFlipped={isCamFlipped}
+                  onScreenStreamChange={handleScreenStreamChange}
+                  onMediaStreamChange={handleMediaStreamChange}
+                  onStreamingChange={handleStreamingChange}
+                  onCamFlipChange={setIsCamFlipped}
                 />
               </div>
             )}
