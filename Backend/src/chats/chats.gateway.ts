@@ -21,6 +21,9 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
+  private readonly OLD_CHATS_RESIZE_TRIGGER = 100;
+  private readonly OLD_CHATS_MAXIMUM_SIZE = 50;
+
   constructor(
     @InjectRedis() private redisClient: Redis,
     private jwtService: JwtService,
@@ -35,10 +38,10 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
     this.redisClient.hincrby(`${channelId}:viewers`, socket.data.user.id, 1);
 
-    const oldChats = await this.redisClient.lrange(redisKey, -50, -1);
+    const oldChats = await this.redisClient.lrange(redisKey, -this.OLD_CHATS_MAXIMUM_SIZE, -1);
     socket.emit('chat', oldChats);
 
-    this.resizeOldChats({ redisKey, size: 50 });
+    this.resizeOldChats(redisKey);
   }
 
   @SubscribeMessage('chat')
@@ -98,10 +101,10 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
     }
   }
 
-  async resizeOldChats({ redisKey, size }: { redisKey: string; size: number }) {
+  async resizeOldChats(redisKey: string) {
     const currentSize = await this.redisClient.llen(redisKey);
-    if (currentSize >= 100) {
-      this.redisClient.ltrim(redisKey, -50, -1);
+    if (currentSize >= this.OLD_CHATS_RESIZE_TRIGGER) {
+      this.redisClient.ltrim(redisKey, -this.OLD_CHATS_MAXIMUM_SIZE, -1);
     }
   }
 }
