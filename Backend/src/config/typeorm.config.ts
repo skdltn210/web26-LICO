@@ -10,6 +10,6 @@ export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOption
     ...dbConfig,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: configService.get<boolean>('DB_SYNCHRONIZE'),
-    logging: configService.get<boolean>('DB_SYNCHRONIZE'),
+    logging: configService.get<boolean>('DB_LOGGING'),
   };
 };
