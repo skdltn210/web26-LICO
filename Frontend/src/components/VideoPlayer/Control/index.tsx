@@ -18,6 +18,7 @@ interface ControlsProps {
   onShowControls: () => void;
   qualities: HLSQuality[];
   setQuality: (level: number) => void;
+  currentQuality: number;
 }
 
 const CONTROL_ICON_SIZE = 24;
@@ -37,6 +38,7 @@ export default function Controls({
   onShowControls,
   qualities,
   setQuality,
+  currentQuality,
 }: ControlsProps) {
   return (
     <div
@@ -71,6 +73,7 @@ export default function Controls({
             onShowControls={onShowControls}
             qualities={qualities}
             setQuality={setQuality}
+            currentQuality={currentQuality}
             iconSize={CONTROL_ICON_SIZE}
           />
 

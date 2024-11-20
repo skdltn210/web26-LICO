@@ -24,7 +24,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const { isBuffering, error, setQuality, qualities } = useHls(streamUrl, videoRef);
+  const { isBuffering, error, setQuality, qualities, currentQuality } = useHls(streamUrl, videoRef);
 
   const handlePlay = () => {
     setIsPlaying(true);
@@ -169,6 +169,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
         onShowControls={handleShowControls}
         qualities={qualities}
         setQuality={setQuality}
+        currentQuality={currentQuality}
       />
     </div>
   );

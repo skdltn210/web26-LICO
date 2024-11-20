@@ -6,12 +6,19 @@ interface SettingsControlProps {
   onShowControls: () => void;
   qualities: HLSQuality[];
   setQuality: (level: number) => void;
+  currentQuality: number;
   iconSize: number;
 }
 
 const AUTO_LEVEL = -1;
 
-export default function SettingsControl({ onShowControls, qualities, setQuality, iconSize }: SettingsControlProps) {
+export default function SettingsControl({
+  onShowControls,
+  qualities,
+  setQuality,
+  currentQuality,
+  iconSize,
+}: SettingsControlProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [currentSettingLevel, setCurrentSettingLevel] = useState<number | null>(AUTO_LEVEL);
   const settingsControlRef = useRef<HTMLDivElement>(null);
@@ -27,6 +34,12 @@ export default function SettingsControl({ onShowControls, qualities, setQuality,
       handleQualityChange(level);
     }
   };
+
+  const getQualityLabel = (height: number) => {
+    return `${height}p`;
+  };
+
+  const currentHeight = qualities.find(quality => quality.level === currentQuality)?.height;
 
   return (
     <div ref={settingsControlRef} className="relative flex items-center">
@@ -46,21 +59,30 @@ export default function SettingsControl({ onShowControls, qualities, setQuality,
       {showSettings && (
         <div
           id="quality-menu"
-          className="absolute bottom-8 right-0 min-w-[120px] rounded-md bg-lico-gray-4 py-2 text-sm text-lico-gray-2"
+          className="absolute bottom-8 right-0 min-w-[160px] rounded-md bg-lico-gray-4 py-2 text-sm text-lico-gray-2"
           role="menu"
         >
           <div
-            className="flex cursor-pointer items-center justify-between px-2 py-1 hover:bg-lico-orange-1 hover:text-lico-gray-4"
+            className="flex cursor-pointer items-center px-2 py-2 hover:bg-lico-orange-1 hover:text-lico-gray-4"
             onClick={() => handleQualityChange(AUTO_LEVEL)}
             onKeyDown={event => handleKeyDown(event, AUTO_LEVEL)}
             role="menuitem"
             tabIndex={0}
           >
-            <span>자동</span>
-            {currentSettingLevel === AUTO_LEVEL && <LuCheck size={iconSize} />}
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col">
+                <span className="font-medium">자동</span>
+                {currentSettingLevel === AUTO_LEVEL && currentHeight && (
+                  <span className="text-xs opacity-75">현재 {getQualityLabel(currentHeight)} 재생 중</span>
+                )}
+              </div>
+            </div>
+            {currentSettingLevel === AUTO_LEVEL && <LuCheck size={iconSize} className="ml-auto" />}
           </div>
 
-          {qualities.map(quality => (
+          <div className="my-1 border-t border-lico-gray-3" />
+
+          {[...qualities].reverse().map(quality => (
             <div
               key={quality.level}
               className="flex cursor-pointer items-center justify-between px-2 py-1 hover:bg-lico-orange-1 hover:text-lico-gray-4"
@@ -69,7 +91,7 @@ export default function SettingsControl({ onShowControls, qualities, setQuality,
               role="menuitem"
               tabIndex={0}
             >
-              <span>{quality.height}</span>
+              <span>{quality.height}p</span>
               {currentSettingLevel === quality.level && <LuCheck size={iconSize} />}
             </div>
           ))}
