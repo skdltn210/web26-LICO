@@ -150,7 +150,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
       {onAir && (
         <Badge
           text="LIVE"
-          className={`absolute right-2 top-2 bg-red-600 text-lico-gray-1 transition-opacity duration-300 ${showControls ? 'opacity-90' : 'pointer-events-none opacity-0'}`}
+          className={`absolute right-4 top-4 bg-red-600 font-bold text-base text-lico-gray-1 transition-opacity duration-300 ${showControls ? 'opacity-90' : 'pointer-events-none opacity-0'}`}
         />
       )}
 
