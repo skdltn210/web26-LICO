@@ -23,7 +23,7 @@ jobs:
         id: deploy
         continue-on-error: true
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.API_SERVER_PORT }} ${{ secrets.API_USER_NAME }}@${{ secrets.API_SERVER_ADDRESS }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.API_USER_NAME }}@${{ secrets.API_SERVER_ADDRESS }} << 'EOF'
             cd ~/lico/Backend/server/api || exit 1
             chmod +x deploy.sh || exit 1
             deploy.sh main || exit 1
