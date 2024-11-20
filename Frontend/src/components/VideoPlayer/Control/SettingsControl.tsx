@@ -36,7 +36,7 @@ export default function SettingsControl({ onShowControls, qualities, setQuality,
           setShowSettings(!showSettings);
           onShowControls();
         }}
-        className="hover:text-lico-orange-1"
+        className="hover:text-lico-orange-2"
         aria-label="화질 설정"
         aria-expanded={showSettings}
         aria-controls="settings-menu"

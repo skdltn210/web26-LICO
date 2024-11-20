@@ -40,7 +40,7 @@ export default function Controls({
 }: ControlsProps) {
   return (
     <div
-      className={`absolute bottom-0 left-0 right-0 p-4 text-lico-orange-2 transition-opacity duration-300 ${
+      className={`absolute bottom-0 left-0 right-0 p-4 text-lico-orange-1 transition-opacity duration-300 ${
         showControls ? 'opacity-100' : 'pointer-events-none opacity-0'
       }`}
       role="toolbar"
@@ -50,7 +50,7 @@ export default function Controls({
         <button
           type="button"
           onClick={onPlayToggle}
-          className="hover:text-lico-orange-1"
+          className="hover:text-lico-orange-2"
           aria-label={isPlaying ? '일시정지' : '재생'}
           aria-pressed={isPlaying}
         >
@@ -77,7 +77,7 @@ export default function Controls({
           <button
             type="button"
             onClick={onVideoPlayerToggle}
-            className="hover:text-lico-orange-1"
+            className="hover:text-lico-orange-2"
             aria-label={isFullScreen ? '극장모드 종료' : '극장모드'}
             aria-pressed={isFullScreen}
           >
@@ -87,7 +87,7 @@ export default function Controls({
           <button
             type="button"
             onClick={onFullScreenToggle}
-            className="hover:text-lico-orange-1"
+            className="hover:text-lico-orange-2"
             aria-label={videoPlayerState === 'theater' ? '전체화면 종료' : '전체화면'}
             aria-pressed={videoPlayerState === 'theater'}
           >

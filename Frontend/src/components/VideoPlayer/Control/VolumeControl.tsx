@@ -38,7 +38,7 @@ export default function VolumeControl({
       <button
         type="button"
         onClick={onMuteToggle}
-        className="hover:text-lico-orange-1"
+        className="hover:text-lico-orange-2"
         aria-label={isMuted ? '음소거 해제' : '음소거'}
         aria-pressed={isMuted}
       >
@@ -60,7 +60,7 @@ export default function VolumeControl({
           onChange={handleVolume}
           className="h-1 w-32 cursor-pointer appearance-none bg-transparent"
           style={{
-            background: `linear-gradient(to right, #FF6B34 0%, #FF6B34 ${
+            background: `linear-gradient(to right, #FF9F1C 0%, #FF6B34 ${
               (isMuted ? 0 : volume) * 100
             }%, #B0B0B0 ${(isMuted ? 0 : volume) * 100}%, #B0B0B0 100%)`,
             outline: 'none',
