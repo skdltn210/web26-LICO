@@ -82,7 +82,6 @@ export default function WebStreamControls({
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
       (stream as any).isCamFlipped = settings.isCamFlipped;
 
       onMediaStreamChange(stream);
@@ -90,6 +89,10 @@ export default function WebStreamControls({
     } catch (error) {
       console.error('Error setting up media devices:', error);
     }
+  };
+
+  const handleStreaming = () => {
+    onStreamingChange(!isStreaming);
   };
 
   return (
@@ -112,7 +115,7 @@ export default function WebStreamControls({
 
       <button
         type="button"
-        onClick={() => onStreamingChange(!isStreaming)}
+        onClick={handleStreaming}
         className={`mt-6 flex w-full items-center justify-center gap-2 rounded px-4 py-2.5 font-bold transition-colors ${
           isStreaming
             ? 'bg-lico-gray-3 text-lico-gray-1 hover:bg-lico-gray-2'

@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCanvasElement } from '@hooks/useCanvasElement';
+import { WebRTCStream } from './WebRTCStream';
 
 interface StreamContainerProps {
   screenStream: MediaStream | null;
   mediaStream: MediaStream | null;
   isStreaming: boolean;
+  webrtcUrl: string;
+  streamKey: string;
+  onStreamError?: (error: Error) => void;
 }
 
 interface Position {
@@ -16,14 +20,22 @@ interface Position {
 
 type SelectedElement = 'screen' | 'camera' | null;
 
-export default function StreamContainer({ screenStream, mediaStream, isStreaming }: StreamContainerProps) {
+export default function StreamContainer({
+  screenStream,
+  mediaStream,
+  isStreaming,
+  webrtcUrl,
+  streamKey,
+  onStreamError,
+}: StreamContainerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const mediaVideoRef = useRef<HTMLVideoElement>(null);
+  const webrtcRef = useRef<WebRTCStream | null>(null);
   const animationFrameRef = useRef<number>();
+
   const [screenAspectRatio, setScreenAspectRatio] = useState(16 / 9);
   const [cameraAspectRatio, setCameraAspectRatio] = useState(4 / 3);
-
   const [screenPosition, setScreenPosition] = useState<Position>({ x: 0, y: 0, width: 100, height: 100 });
   const [camPosition, setCamPosition] = useState<Position>({ x: 20, y: 20, width: 240, height: 180 });
   const [selectedElement, setSelectedElement] = useState<SelectedElement>(null);
@@ -51,6 +63,38 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
   });
 
   useEffect(() => {
+    if (!webrtcRef.current && webrtcUrl && streamKey) {
+      webrtcRef.current = new WebRTCStream(webrtcUrl, streamKey);
+    }
+
+    return () => {
+      if (webrtcRef.current) {
+        webrtcRef.current.stop();
+        webrtcRef.current = null;
+      }
+    };
+  }, [webrtcUrl, streamKey]);
+
+  useEffect(() => {
+    const startStreaming = async () => {
+      if (!canvasRef.current || !webrtcRef.current) return;
+
+      try {
+        await webrtcRef.current.start(canvasRef.current, screenStream, mediaStream);
+      } catch (error) {
+        console.error('Streaming failed:', error);
+        onStreamError?.(error as Error);
+      }
+    };
+
+    if (isStreaming) {
+      startStreaming();
+    } else {
+      webrtcRef.current?.stop();
+    }
+  }, [isStreaming, screenStream, mediaStream, onStreamError]);
+
+  useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -70,10 +114,7 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
     };
 
     window.addEventListener('mousedown', handleGlobalClick);
-
-    return () => {
-      window.removeEventListener('mousedown', handleGlobalClick);
-    };
+    return () => window.removeEventListener('mousedown', handleGlobalClick);
   }, [mediaStream, screenStream, camPosition, screenPosition, handleResizeEnd]);
 
   useEffect(() => {
@@ -165,6 +206,7 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
       };
     }
   }, [screenStream]);
+
   useEffect(() => {
     if (mediaVideoRef.current && mediaStream) {
       mediaVideoRef.current.srcObject = mediaStream;
@@ -261,7 +303,7 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [screenStream, mediaStream, camPosition, screenPosition, selectedElement, drawResizeHandles]);
+  }, [screenStream, mediaStream, camPosition, screenPosition, selectedElement, drawResizeHandles, getIsCamFlipped]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
