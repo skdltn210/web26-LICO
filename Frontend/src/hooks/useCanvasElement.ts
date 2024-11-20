@@ -22,7 +22,7 @@ export const useCanvasElement = ({ minSize = 100, canvasWidth, canvasHeight }: U
   const [originalPosition, setOriginalPosition] = useState<Position | null>(null);
 
   const drawResizeHandles = useCallback((ctx: CanvasRenderingContext2D, position: Position) => {
-    const handleSize = 8;
+    const handleSize = 7;
     const halfHandle = handleSize / 2;
     const handles = [
       { x: position.x - halfHandle, y: position.y - halfHandle },
@@ -34,7 +34,7 @@ export const useCanvasElement = ({ minSize = 100, canvasWidth, canvasHeight }: U
     ctx.fillStyle = 'white';
     handles.forEach(handle => {
       ctx.fillRect(handle.x, handle.y, handleSize, handleSize);
-      ctx.strokeStyle = '#666';
+      ctx.strokeStyle = 'red';
       ctx.strokeRect(handle.x, handle.y, handleSize, handleSize);
     });
   }, []);

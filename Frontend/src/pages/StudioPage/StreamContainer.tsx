@@ -44,6 +44,32 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
     });
 
   useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const isClickedCamera = mediaStream && isPointInElement(x, y, camPosition);
+      const isClickedScreen = screenStream && isPointInElement(x, y, screenPosition);
+
+      if (!isClickedCamera && !isClickedScreen) {
+        setSelectedElement(null);
+        setIsDragging(false);
+        handleResizeEnd();
+      }
+    };
+
+    window.addEventListener('mousedown', handleGlobalClick);
+
+    return () => {
+      window.removeEventListener('mousedown', handleGlobalClick);
+    };
+  }, [mediaStream, screenStream, camPosition, screenPosition, handleResizeEnd]);
+
+  useEffect(() => {
     if (screenVideoRef.current && screenStream) {
       screenVideoRef.current.srcObject = screenStream;
       screenVideoRef.current.onloadedmetadata = () => {
@@ -250,8 +276,6 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
         x: x - screenPosition.x,
         y: y - screenPosition.y,
       });
-    } else {
-      setSelectedElement(null);
     }
   };
 
