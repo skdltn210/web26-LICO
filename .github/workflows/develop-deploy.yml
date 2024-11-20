@@ -23,8 +23,18 @@ jobs:
         id: deploy
         continue-on-error: true
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEV_API_USER_NAME }}@${{ secrets.DEV_API_SERVER_ADDRESS }} << 'EOF'
+          set -o pipefail
+          result=$(ssh -o StrictHostKeyChecking=no ${{ secrets.DEV_API_USER_NAME }}@${{ secrets.DEV_API_SERVER_ADDRESS }} << 'EOF'
             cd ~/lico/Backend/server/api || exit 1
             chmod +x deploy.sh || exit 1
-            deploy.sh develop || exit 1
+            ./deploy.sh main || exit 1
           EOF
+          )
+          echo "DEPLOY_RESULT=${result}" >> $GITHUB_ENV
+
+      - name: 결과 전송
+        run: |
+          curl -X POST -H "Content-Type: application/json" -d '{
+            "server": "develop",
+            "result": "${{ env.DEPLOY_RESULT }}"
+          }' ${{ secrets.WEBHOOK_URL }}
