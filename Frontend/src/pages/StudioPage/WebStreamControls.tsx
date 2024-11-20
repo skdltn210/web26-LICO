@@ -72,6 +72,10 @@ export default function WebStreamControls({
 
   const handleSettingsConfirm = async (settings: MediaSettings) => {
     try {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+      }
+
       if (!settings.videoEnabled && !settings.audioEnabled) {
         onMediaStreamChange(null);
         setMediaSettings(settings);
@@ -79,10 +83,24 @@ export default function WebStreamControls({
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const constraints: MediaStreamConstraints = {
         video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
         audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
-      });
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      if (mediaStream) {
+        const videoTracks = mediaStream.getVideoTracks();
+        const audioTracks = mediaStream.getAudioTracks();
+
+        if (!settings.videoEnabled && videoTracks.length > 0) {
+          videoTracks.forEach(track => track.stop());
+        }
+        if (!settings.audioEnabled && audioTracks.length > 0) {
+          audioTracks.forEach(track => track.stop());
+        }
+      }
 
       onMediaStreamChange(stream);
       setMediaSettings(settings);

@@ -114,7 +114,7 @@ export default function StreamContainer({
           <video ref={screenVideoRef} autoPlay playsInline className="h-full w-full object-contain" />
         </Rnd>
       )}
-      {mediaStream && (
+      {mediaStream && mediaStream.getVideoTracks().length > 0 && (
         <Rnd
           default={{
             x: 20,
