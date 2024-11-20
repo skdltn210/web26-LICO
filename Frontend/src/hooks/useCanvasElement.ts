@@ -43,7 +43,7 @@ export const useCanvasElement = ({ minSize = 100, canvasWidth, canvasHeight }: U
     (x: number, y: number, position: Position): ResizeHandle => {
       if (isResizing) return isResizing;
 
-      const handleSize = 8;
+      const handleSize = 7;
       const halfHandle = handleSize / 2;
       const handles: Record<ResizeCorner, { x: number; y: number }> = {
         topLeft: {
@@ -105,7 +105,7 @@ export const useCanvasElement = ({ minSize = 100, canvasWidth, canvasHeight }: U
   );
 
   const handleResize = useCallback(
-    (x: number, y: number, position: Position): Position | null => {
+    (x: number, y: number, _position: Position): Position | null => {
       if (!isResizing || !originalPosition) return null;
 
       const dx = x - dragStart.x;

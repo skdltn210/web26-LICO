@@ -36,12 +36,19 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
   };
 
   const canvas = canvasRef.current;
-  const { drawResizeHandles, getResizeHandle, getResizeCursor, handleResizeStart, handleResize, handleResizeEnd } =
-    useCanvasElement({
-      minSize: selectedElement === 'camera' ? 100 : 200,
-      canvasWidth: canvas?.width || 0,
-      canvasHeight: canvas?.height || 0,
-    });
+  const {
+    drawResizeHandles,
+    getResizeHandle,
+    getResizeCursor,
+    handleResizeStart,
+    handleResize,
+    handleResizeEnd,
+    isResizing,
+  } = useCanvasElement({
+    minSize: selectedElement === 'camera' ? 100 : 200,
+    canvasWidth: canvas?.width || 0,
+    canvasHeight: canvas?.height || 0,
+  });
 
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
@@ -68,6 +75,62 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
       window.removeEventListener('mousedown', handleGlobalClick);
     };
   }, [mediaStream, screenStream, camPosition, screenPosition, handleResizeEnd]);
+
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isDragging && !isResizing) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const maxWidth = canvas.width / 2;
+      const maxHeight = canvas.height / 2;
+
+      if (selectedElement) {
+        if (isResizing) {
+          const newPosition = handleResize(x, y, selectedElement === 'camera' ? camPosition : screenPosition);
+          if (newPosition) {
+            const adjustedPosition = maintainAspectRatio(newPosition, selectedElement === 'camera');
+            const setPosition = selectedElement === 'camera' ? setCamPosition : setScreenPosition;
+            setPosition({
+              ...adjustedPosition,
+              x: Math.max(0, Math.min(adjustedPosition.x, maxWidth - adjustedPosition.width)),
+              y: Math.max(0, Math.min(adjustedPosition.y, maxHeight - adjustedPosition.height)),
+              width: Math.min(adjustedPosition.width, maxWidth),
+              height: Math.min(adjustedPosition.height, maxHeight),
+            });
+          }
+        } else if (isDragging) {
+          const setPosition = selectedElement === 'camera' ? setCamPosition : setScreenPosition;
+          const newX = x - dragStart.x;
+          const newY = y - dragStart.y;
+
+          setPosition(prev => ({
+            ...prev,
+            x: Math.max(0, Math.min(maxWidth - prev.width, newX)),
+            y: Math.max(0, Math.min(maxHeight - prev.height, newY)),
+          }));
+        }
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+      handleResizeEnd();
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, isResizing, selectedElement, handleResize, handleResizeEnd, camPosition, screenPosition, dragStart]);
 
   useEffect(() => {
     if (screenVideoRef.current && screenStream) {
@@ -102,7 +165,6 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
       };
     }
   }, [screenStream]);
-
   useEffect(() => {
     if (mediaVideoRef.current && mediaStream) {
       mediaVideoRef.current.srcObject = mediaStream;
@@ -203,53 +265,20 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !selectedElement) return;
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const maxWidth = canvas.width / 2;
-    const maxHeight = canvas.height / 2;
-
     const currentPosition = selectedElement === 'camera' ? camPosition : screenPosition;
-    const setPosition = selectedElement === 'camera' ? setCamPosition : setScreenPosition;
 
-    if (selectedElement) {
-      const resizeHandle = getResizeHandle(x, y, currentPosition);
-      canvas.style.cursor = resizeHandle
-        ? getResizeCursor(resizeHandle)
-        : isPointInElement(x, y, currentPosition)
-          ? 'move'
-          : 'default';
-
-      if (resizeHandle) {
-        const newPosition = handleResize(x, y, currentPosition);
-        if (newPosition) {
-          const adjustedPosition = maintainAspectRatio(newPosition, selectedElement === 'camera');
-          setPosition({
-            ...adjustedPosition,
-            x: Math.max(0, Math.min(adjustedPosition.x, maxWidth - adjustedPosition.width)),
-            y: Math.max(0, Math.min(adjustedPosition.y, maxHeight - adjustedPosition.height)),
-            width: Math.min(adjustedPosition.width, maxWidth),
-            height: Math.min(adjustedPosition.height, maxHeight),
-          });
-          return;
-        }
-      }
-    }
-
-    if (isDragging && selectedElement) {
-      const currentPosition = selectedElement === 'camera' ? camPosition : screenPosition;
-      const newX = Math.max(0, Math.min(maxWidth - currentPosition.width, x - dragStart.x));
-      const newY = Math.max(0, Math.min(maxHeight - currentPosition.height, y - dragStart.y));
-
-      setPosition(prev => ({
-        ...prev,
-        x: newX,
-        y: newY,
-      }));
-    }
+    const resizeHandle = getResizeHandle(x, y, currentPosition);
+    canvas.style.cursor = resizeHandle
+      ? getResizeCursor(resizeHandle)
+      : isPointInElement(x, y, currentPosition)
+        ? 'move'
+        : 'default';
   };
 
   const isPointInElement = (x: number, y: number, position: Position): boolean => {
@@ -288,21 +317,9 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
     }
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    handleResizeEnd();
-  };
-
   return (
     <div className="relative h-full w-full bg-black">
-      <canvas
-        ref={canvasRef}
-        className="h-full w-full"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      />
+      <canvas ref={canvasRef} className="h-full w-full" onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} />
       <video ref={screenVideoRef} autoPlay playsInline className="hidden" />
       <video ref={mediaVideoRef} autoPlay playsInline className="hidden" />
     </div>
