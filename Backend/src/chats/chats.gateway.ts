@@ -21,7 +21,6 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  private readonly OLD_CHATS_RESIZE_TRIGGER = 100;
   private readonly OLD_CHATS_MAXIMUM_SIZE = 50;
 
   constructor(
@@ -40,8 +39,6 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
     const oldChats = await this.redisClient.lrange(redisKey, -this.OLD_CHATS_MAXIMUM_SIZE, -1);
     socket.emit('chat', oldChats);
-
-    this.resizeOldChats(redisKey);
   }
 
   @SubscribeMessage('chat')
@@ -98,13 +95,6 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
     if (parseInt(count) <= 0) {
       this.redisClient.hdel(redisKey, user.id);
-    }
-  }
-
-  async resizeOldChats(redisKey: string) {
-    const currentSize = await this.redisClient.llen(redisKey);
-    if (currentSize >= this.OLD_CHATS_RESIZE_TRIGGER) {
-      this.redisClient.ltrim(redisKey, -this.OLD_CHATS_MAXIMUM_SIZE, -1);
     }
   }
 }
