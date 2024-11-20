@@ -20,6 +20,8 @@ interface ControlsProps {
   setQuality: (level: number) => void;
 }
 
+const CONTROL_ICON_SIZE = 24;
+
 export default function Controls({
   isPlaying,
   isFullScreen,
@@ -38,7 +40,7 @@ export default function Controls({
 }: ControlsProps) {
   return (
     <div
-      className={`absolute bottom-0 left-0 right-0 p-4 text-lico-gray-1 transition-opacity duration-300 ${
+      className={`absolute bottom-0 left-0 right-0 p-4 text-lico-orange-2 transition-opacity duration-300 ${
         showControls ? 'opacity-100' : 'pointer-events-none opacity-0'
       }`}
       role="toolbar"
@@ -48,11 +50,11 @@ export default function Controls({
         <button
           type="button"
           onClick={onPlayToggle}
-          className="hover:text-lico-gray-2"
+          className="hover:text-lico-orange-1"
           aria-label={isPlaying ? '일시정지' : '재생'}
           aria-pressed={isPlaying}
         >
-          {isPlaying ? <LuPause size={18} /> : <LuPlay size={18} />}
+          {isPlaying ? <LuPause size={CONTROL_ICON_SIZE} /> : <LuPlay size={CONTROL_ICON_SIZE} />}
         </button>
 
         <VolumeControl
@@ -61,29 +63,35 @@ export default function Controls({
           onVolumeChange={onVolumeChange}
           onMuteToggle={onMuteToggle}
           onShowControls={onShowControls}
+          iconSize={CONTROL_ICON_SIZE}
         />
 
         <div className="relative ml-auto flex items-center gap-4">
-          <SettingsControl onShowControls={onShowControls} qualities={qualities} setQuality={setQuality} />
+          <SettingsControl
+            onShowControls={onShowControls}
+            qualities={qualities}
+            setQuality={setQuality}
+            iconSize={CONTROL_ICON_SIZE}
+          />
 
           <button
             type="button"
             onClick={onVideoPlayerToggle}
-            className="hover:text-lico-gray-2"
+            className="hover:text-lico-orange-1"
             aria-label={isFullScreen ? '극장모드 종료' : '극장모드'}
             aria-pressed={isFullScreen}
           >
-            <LuTv2 size={18} />
+            <LuTv2 size={CONTROL_ICON_SIZE} />
           </button>
 
           <button
             type="button"
             onClick={onFullScreenToggle}
-            className="hover:text-lico-gray-2"
+            className="hover:text-lico-orange-1"
             aria-label={videoPlayerState === 'theater' ? '전체화면 종료' : '전체화면'}
             aria-pressed={videoPlayerState === 'theater'}
           >
-            {isFullScreen ? <LuMinimize size={18} /> : <LuMaximize size={18} />}
+            {isFullScreen ? <LuMinimize size={CONTROL_ICON_SIZE} /> : <LuMaximize size={CONTROL_ICON_SIZE} />}
           </button>
         </div>
       </div>

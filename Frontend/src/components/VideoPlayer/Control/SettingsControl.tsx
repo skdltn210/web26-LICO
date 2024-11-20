@@ -6,11 +6,12 @@ interface SettingsControlProps {
   onShowControls: () => void;
   qualities: HLSQuality[];
   setQuality: (level: number) => void;
+  iconSize: number;
 }
 
 const AUTO_LEVEL = -1;
 
-export default function SettingsControl({ onShowControls, qualities, setQuality }: SettingsControlProps) {
+export default function SettingsControl({ onShowControls, qualities, setQuality, iconSize }: SettingsControlProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [currentSettingLevel, setCurrentSettingLevel] = useState<number | null>(AUTO_LEVEL);
   const settingsControlRef = useRef<HTMLDivElement>(null);
@@ -35,12 +36,12 @@ export default function SettingsControl({ onShowControls, qualities, setQuality 
           setShowSettings(!showSettings);
           onShowControls();
         }}
-        className="hover:text-lico-gray-2"
+        className="hover:text-lico-orange-1"
         aria-label="화질 설정"
         aria-expanded={showSettings}
         aria-controls="settings-menu"
       >
-        <LuSettings size={18} />
+        <LuSettings size={iconSize} />
       </button>
       {showSettings && (
         <div
@@ -56,7 +57,7 @@ export default function SettingsControl({ onShowControls, qualities, setQuality 
             tabIndex={0}
           >
             <span>자동</span>
-            {currentSettingLevel === AUTO_LEVEL && <LuCheck size={16} />}
+            {currentSettingLevel === AUTO_LEVEL && <LuCheck size={iconSize} />}
           </div>
 
           {qualities.map(quality => (
@@ -69,7 +70,7 @@ export default function SettingsControl({ onShowControls, qualities, setQuality 
               tabIndex={0}
             >
               <span>{quality.height}</span>
-              {currentSettingLevel === quality.level && <LuCheck size={16} />}
+              {currentSettingLevel === quality.level && <LuCheck size={iconSize} />}
             </div>
           ))}
         </div>
