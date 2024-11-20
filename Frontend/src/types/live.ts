@@ -7,6 +7,7 @@ export interface Live {
   usersProfileImage: string;
   onAir: boolean;
   streamerId: number;
+  viewers: number;
 }
 
 export interface LiveDetail {
