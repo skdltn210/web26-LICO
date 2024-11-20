@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
-import CamMicSetting from './StreamCanvas/CamMicSetting';
+import CamMicSetting from './Modals/CamMicSetting';
 
 interface MediaSettings {
   videoEnabled: boolean;
@@ -17,28 +17,23 @@ interface WebStreamControlsProps {
   screenStream: MediaStream | null;
   mediaStream: MediaStream | null;
   isStreaming: boolean;
-  isCamFlipped: boolean;
   onScreenStreamChange: (stream: MediaStream | null) => void;
   onMediaStreamChange: (stream: MediaStream | null) => void;
   onStreamingChange: (streaming: boolean) => void;
-  onCamFlipChange: (isCamFlipped: boolean) => void;
 }
 
 export default function WebStreamControls({
   screenStream,
   mediaStream,
   isStreaming,
-  isCamFlipped,
   onScreenStreamChange,
   onMediaStreamChange,
   onStreamingChange,
-  onCamFlipChange,
 }: WebStreamControlsProps) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(() => ({
     videoEnabled: false,
     audioEnabled: false,
-    isCamFlipped: isCamFlipped,
   }));
 
   const handleScreenShare = async () => {
@@ -64,7 +59,6 @@ export default function WebStreamControls({
       mediaStream.getTracks().forEach(track => track.stop());
       onMediaStreamChange(null);
       setMediaSettings(null);
-      onCamFlipChange(false);
     } else {
       setIsSettingsModalOpen(true);
     }
@@ -79,7 +73,6 @@ export default function WebStreamControls({
       if (!settings.videoEnabled && !settings.audioEnabled) {
         onMediaStreamChange(null);
         setMediaSettings(settings);
-        onCamFlipChange(false);
         return;
       }
 
@@ -90,21 +83,10 @@ export default function WebStreamControls({
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-      if (mediaStream) {
-        const videoTracks = mediaStream.getVideoTracks();
-        const audioTracks = mediaStream.getAudioTracks();
-
-        if (!settings.videoEnabled && videoTracks.length > 0) {
-          videoTracks.forEach(track => track.stop());
-        }
-        if (!settings.audioEnabled && audioTracks.length > 0) {
-          audioTracks.forEach(track => track.stop());
-        }
-      }
+      (stream as any).isCamFlipped = settings.isCamFlipped;
 
       onMediaStreamChange(stream);
       setMediaSettings(settings);
-      onCamFlipChange(settings.isCamFlipped || false);
     } catch (error) {
       console.error('Error setting up media devices:', error);
     }

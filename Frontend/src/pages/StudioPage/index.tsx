@@ -24,7 +24,6 @@ export default function StudioPage() {
 
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [isCamFlipped, setIsCamFlipped] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
@@ -67,14 +66,7 @@ export default function StudioPage() {
     if (videoMode === 'player') {
       return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
     }
-    return (
-      <StreamContainer
-        screenStream={screenStream}
-        mediaStream={mediaStream}
-        isCamFlipped={isCamFlipped}
-        isStreaming={isStreaming}
-      />
-    );
+    return <StreamContainer screenStream={screenStream} mediaStream={mediaStream} isStreaming={isStreaming} />;
   };
 
   if (isLoading)
@@ -155,11 +147,9 @@ export default function StudioPage() {
                   screenStream={screenStream}
                   mediaStream={mediaStream}
                   isStreaming={isStreaming}
-                  isCamFlipped={isCamFlipped}
                   onScreenStreamChange={handleScreenStreamChange}
                   onMediaStreamChange={handleMediaStreamChange}
                   onStreamingChange={handleStreamingChange}
-                  onCamFlipChange={setIsCamFlipped}
                 />
               </div>
             )}

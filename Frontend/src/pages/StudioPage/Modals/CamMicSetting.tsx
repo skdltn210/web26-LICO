@@ -28,7 +28,6 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
   }));
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
-  // 장치 목록 가져오기
   useEffect(() => {
     if (isOpen) {
       navigator.mediaDevices
@@ -51,7 +50,6 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
     }
   }, [isOpen]);
 
-  // mediaStream 관리
   useEffect(() => {
     const startMediaStream = async () => {
       if (!settings.videoEnabled && !settings.audioEnabled) {
