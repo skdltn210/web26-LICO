@@ -46,9 +46,14 @@ export class LivesController {
   }
 
   @Patch('/:channelId')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(204)
-  async setLive(@Param('channelId') channelId: UUID, @Body(ValidationPipe) updateLiveDto: UpdateLiveDto) {
-    await this.livesService.updateLive({ channelId, updateLiveDto });
+  async setLive(
+    @Param('channelId') channelId: UUID,
+    @Body(ValidationPipe) updateLiveDto: UpdateLiveDto,
+    @Req() req: Request & { user: UserEntity },
+  ) {
+    await this.livesService.updateLive({channelId, updateLiveDto, userId: req.user.id});
   }
 
   @Get('/channel-id/:streamingKey')

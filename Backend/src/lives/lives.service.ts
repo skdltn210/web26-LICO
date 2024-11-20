@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { LiveEntity } from './entity/live.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -52,23 +52,20 @@ export class LivesService {
       .leftJoinAndSelect('live.category', 'category')
       .leftJoinAndSelect('live.user', 'user');
 
-    // 기본 onAir true 상태
     if (typeof onAir === 'boolean') {
       queryBuilder.andWhere('live.onAir = :onAir', { onAir });
     }
 
-    // 카테고리 필터
     if (categoriesId) {
       queryBuilder.andWhere('live.categoriesId = :categoriesId', { categoriesId });
     }
 
     // 정렬 로직 추가
     if (sort === 'recommendation') {
-      queryBuilder.orderBy('RAND()'); // 추천은 랜덤 정렬
+      queryBuilder.orderBy('RAND()');
     } else if (sort === 'viewers') {
-      // viewers 정렬은 아직 구현 X
+      queryBuilder.orderBy('live.viewers', 'DESC');
     } else {
-      // 기본은 최신순
       queryBuilder.orderBy('live.createdAt', 'DESC');
     }
 
@@ -91,8 +88,20 @@ export class LivesService {
     return live.toLiveDto();
   }
 
-  async updateLive({ channelId, updateLiveDto }: { channelId: UUID; updateLiveDto: UpdateLiveDto }) {
-    // TODO 요청자와 채널 소유자 일치여부 체크(로그인 기능 구현 후)
+  async updateLive({channelId, updateLiveDto, userId}: {channelId: UUID; updateLiveDto: UpdateLiveDto; userId: number;}) {
+    const live = await this.livesRepository.findOne({
+      where: { channelId },
+      relations: ['user'],
+    });
+  
+    if (!live) {
+      throw new NotFoundException(ErrorMessage.LIVE_NOT_FOUND);
+    }
+  
+    if (live.user.id !== userId) {
+      throw new ForbiddenException('권한이 없습니다.');
+    }
+  
     await this.livesRepository.update({ channelId }, updateLiveDto);
   }
 
