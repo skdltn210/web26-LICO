@@ -51,7 +51,14 @@ export default function StreamContainer({
 
   return (
     <div className="relative h-full w-full bg-black">
-      <video ref={screenVideoRef} autoPlay playsInline className="absolute left-0 top-0 h-full w-full object-contain" />
+      <CanvasContainer>
+        <video
+          ref={screenVideoRef}
+          autoPlay
+          playsInline
+          className="absolute left-0 top-0 h-full w-full object-contain"
+        />
+      </CanvasContainer>
       {mediaSettings?.videoEnabled && (
         <CanvasContainer>
           <video

@@ -15,7 +15,6 @@ interface CanvasContainerProps {
   initialSize?: Size;
   initialPosition?: Position;
   minSize?: Size;
-  maxSize?: Size;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -26,8 +25,7 @@ export default function CanvasContainer({
   children,
   initialSize = { width: 25, height: 25 },
   initialPosition = { x: 20, y: 20 },
-  minSize = { width: 10, height: 10 },
-  maxSize = { width: 50, height: 50 },
+  minSize = { width: 5, height: 5 },
   className = '',
   style = {},
 }: CanvasContainerProps) {
@@ -124,8 +122,8 @@ export default function CanvasContainer({
           break;
       }
 
-      const clampedWidth = Math.min(Math.max(minSize.width, newWidth), maxSize.width);
-      const clampedHeight = Math.min(Math.max(minSize.height, newHeight), maxSize.height);
+      const clampedWidth = Math.min(Math.max(minSize.width, newWidth), 100);
+      const clampedHeight = Math.min(Math.max(minSize.height, newHeight), 100);
 
       if (resizeDirection === 'nw' || resizeDirection === 'sw') {
         const widthDiff = clampedWidth - newWidth;
