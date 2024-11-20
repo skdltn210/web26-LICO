@@ -1,0 +1,30 @@
+name: Deploy Develop API-Server
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Backend/src/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: SSH 에이전트 설정
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.API_SERVER_SSH }}
+
+      - name: 서버 배포
+        id: deploy
+        continue-on-error: true
+        run: |
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.API_SERVER_PORT }} ${{ secrets.API_USER_NAME }}@${{ secrets.API_SERVER_ADDRESS }} << 'EOF'
+            cd ~/lico/Backend/server/api || exit 1
+            chmod +x deploy.sh || exit 1
+            deploy.sh main || exit 1
+          EOF
