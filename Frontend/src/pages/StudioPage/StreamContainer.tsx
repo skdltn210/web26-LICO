@@ -209,6 +209,9 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    const maxWidth = canvas.width / 2;
+    const maxHeight = canvas.height / 2;
+
     const currentPosition = selectedElement === 'camera' ? camPosition : screenPosition;
     const setPosition = selectedElement === 'camera' ? setCamPosition : setScreenPosition;
 
@@ -224,7 +227,13 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
         const newPosition = handleResize(x, y, currentPosition);
         if (newPosition) {
           const adjustedPosition = maintainAspectRatio(newPosition, selectedElement === 'camera');
-          setPosition(adjustedPosition);
+          setPosition({
+            ...adjustedPosition,
+            x: Math.max(0, Math.min(adjustedPosition.x, maxWidth - adjustedPosition.width)),
+            y: Math.max(0, Math.min(adjustedPosition.y, maxHeight - adjustedPosition.height)),
+            width: Math.min(adjustedPosition.width, maxWidth),
+            height: Math.min(adjustedPosition.height, maxHeight),
+          });
           return;
         }
       }
@@ -232,8 +241,8 @@ export default function StreamContainer({ screenStream, mediaStream, isStreaming
 
     if (isDragging && selectedElement) {
       const currentPosition = selectedElement === 'camera' ? camPosition : screenPosition;
-      const newX = Math.max(0, Math.min(canvas.width - currentPosition.width, x - dragStart.x));
-      const newY = Math.max(0, Math.min(canvas.height - currentPosition.height, y - dragStart.y));
+      const newX = Math.max(0, Math.min(maxWidth - currentPosition.width, x - dragStart.x));
+      const newY = Math.max(0, Math.min(maxHeight - currentPosition.height, y - dragStart.y));
 
       setPosition(prev => ({
         ...prev,

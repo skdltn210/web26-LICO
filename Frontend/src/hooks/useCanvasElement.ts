@@ -113,11 +113,14 @@ export const useCanvasElement = ({ minSize = 100, canvasWidth, canvasHeight }: U
       let newPosition = { ...originalPosition };
 
       const applyResizeWithConstraints = (proposed: Position): Position => {
+        const maxWidth = canvasWidth / 2;
+        const maxHeight = canvasHeight / 2;
+
         return {
-          x: Math.max(0, Math.min(proposed.x, canvasWidth - proposed.width)),
-          y: Math.max(0, Math.min(proposed.y, canvasHeight - proposed.height)),
-          width: Math.max(minSize, Math.min(proposed.width, canvasWidth - proposed.x)),
-          height: Math.max(minSize, Math.min(proposed.height, canvasHeight - proposed.y)),
+          x: Math.max(0, Math.min(proposed.x, maxWidth - proposed.width)),
+          y: Math.max(0, Math.min(proposed.y, maxHeight - proposed.height)),
+          width: Math.max(minSize, Math.min(proposed.width, maxWidth - proposed.x)),
+          height: Math.max(minSize, Math.min(proposed.height, maxHeight - proposed.y)),
         };
       };
 
