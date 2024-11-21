@@ -67,7 +67,7 @@ export class WebRTCStream {
       const offer = await this.pc.createOffer();
       await this.pc.setLocalDescription(offer);
 
-      const whipEndpoint = `${this.baseUrl}/rtc/v1/publish/`;
+      const whipEndpoint = 'https://rtc.lico.digital/rtc/v1/publish/';
       const streamUrl = `${this.originUrl}/dev/${this.streamKey}`;
 
       const requestBody = {
