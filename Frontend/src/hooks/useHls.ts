@@ -2,7 +2,15 @@ import React, { useEffect, useState } from 'react';
 import Hls, { LevelSwitchedData } from 'hls.js';
 import type { HLSQuality } from '@/types/hlsQuality';
 
-const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVideoElement>) => {
+interface HlsOptions {
+  startLevel?: number;
+}
+
+const useHls = (
+  streamUrl: string | undefined,
+  videoRef: React.RefObject<HTMLVideoElement>,
+  options: HlsOptions = {},
+) => {
   const [isBuffering, setIsBuffering] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [currentQuality, setCurrentQuality] = useState<number>(-1);
@@ -37,7 +45,14 @@ const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVid
       setError(null);
 
       if (Hls.isSupported()) {
-        hlsInstance = new Hls();
+        hlsInstance = new Hls({
+          startLevel: options.startLevel ?? -1,
+          backBufferLength: 0,
+          liveSyncDuration: 1,
+          liveMaxLatencyDuration: 2,
+          liveDurationInfinity: true,
+          maxBufferHole: 1,
+        });
         setHls(hlsInstance);
 
         hlsInstance.loadSource(streamUrl);
@@ -93,7 +108,7 @@ const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVid
       }
       removeVideoListeners();
     };
-  }, [streamUrl, videoRef]);
+  }, [options.startLevel, streamUrl, videoRef]);
 
   const setQuality = (level: number) => {
     if (hls) {
@@ -101,7 +116,38 @@ const useHls = (streamUrl: string | undefined, videoRef: React.RefObject<HTMLVid
     }
   };
 
-  return { isBuffering, error, qualities, currentQuality, setQuality };
+  const stopStream = () => {
+    if (hls) {
+      hls.stopLoad();
+    }
+  };
+
+  const startStream = () => {
+    if (hls) {
+      hls.startLoad();
+    }
+  };
+
+  const playFromLiveEdge = () => {
+    if (hls) {
+      hls.startLoad(-1); // 최신 LiveEdge로 이동
+      return;
+    }
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+    videoElement.currentTime = videoElement.duration;
+  };
+
+  return {
+    isBuffering,
+    error,
+    qualities,
+    currentQuality,
+    setQuality,
+    stopStream,
+    startStream,
+    playFromLiveEdge,
+  };
 };
 
 export default useHls;

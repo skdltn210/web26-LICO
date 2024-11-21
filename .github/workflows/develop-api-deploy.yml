@@ -1,0 +1,44 @@
+name: Deploy Develop API-Server
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "Backend/src/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: SSH 에이전트 설정
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_API_SERVER_SSH }}
+
+      - name: 브랜치 이름 저장
+        run: echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: 서버 배포
+        id: deploy
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DEV_API_USER_NAME }}@${{ secrets.DEV_API_SERVER_ADDRESS }} << 'EOF'
+            chmod +x /lico/Backend/server/api/deploy.sh || exit 2
+            /lico-deploy/Backend/server/api/deploy.sh "$BRANCH_NAME"
+          EOF
+          ssh_exit_code=$?
+          echo "DEPLOY_RESULT=$ssh_exit_code" >> $GITHUB_ENV
+          exit "$ssh_exit_code"
+
+      - name: 결과 전송
+        run: |
+          curl -X POST -H "Content-Type: application/json" -d '{
+            "server": "${{ env.BRANCH_NAME }}",
+            "result": "${{ env.DEPLOY_RESULT }}"
+          }' ${{ secrets.WEBHOOK_URL }}

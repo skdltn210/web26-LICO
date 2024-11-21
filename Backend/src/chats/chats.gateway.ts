@@ -1,43 +1,100 @@
 import { InjectRedis } from '@nestjs-modules/ioredis';
+import { JwtService } from '@nestjs/jwt';
 import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 import Redis from 'ioredis';
 import { Server, Socket } from 'socket.io';
+import { UsersService } from 'src/users/users.service';
+import * as crypto from 'crypto';
+import { UUID } from 'crypto';
+import { UserEntity } from 'src/users/entity/user.entity';
 
-const NAMESPACE_REGEX = /^\/chats\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-@WebSocketGateway({ namespace: NAMESPACE_REGEX })
-export class ChatsGateway implements OnGatewayConnection {
+@WebSocketGateway({ namespace: '/chats' })
+export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  constructor(@InjectRedis() private redisClient: Redis) {}
+  private readonly OLD_CHATS_MAXIMUM_SIZE = 50;
 
-  @SubscribeMessage('chat')
-  async publishChat(@ConnectedSocket() client: Socket, @MessageBody() receivedChat: string) {
-    const namespace = client.nsp;
-    const newChat = JSON.stringify({
-      content: receivedChat,
-      nickname: '유저이름',
-      userId: 1,
-      timestamp: new Date(),
-    });
-    const redisKey = `${namespace.name}:chats`;
+  constructor(
+    @InjectRedis() private redisClient: Redis,
+    private jwtService: JwtService,
+    private usersService: UsersService,
+  ) {}
 
-    namespace.emit('chat', newChat); // 해당 네임스페이스의 모든 클라이언트에게 메시지 전송
-    this.redisClient.rpush(redisKey, newChat);
-    this.redisClient.ltrim(redisKey, -50, -1);
+  @SubscribeMessage('join')
+  async joinChatRoom(@ConnectedSocket() socket: Socket, @MessageBody('channelId') channelId: UUID) {
+    socket.join(channelId);
+    socket.data.channelId = channelId;
+    const redisKey = `${channelId}:chats`;
+
+    this.redisClient.hincrby(`${channelId}:viewers`, socket.data.user.id, 1);
+
+    const oldChats = await this.redisClient.lrange(redisKey, -this.OLD_CHATS_MAXIMUM_SIZE, -1);
+    socket.emit('chat', oldChats);
   }
 
-  async handleConnection(@ConnectedSocket() client: Socket) {
-    const oldChats = await this.redisClient.lrange(`${client.nsp.name}:chats`, 0, -1);
+  @SubscribeMessage('chat')
+  async publishChat(@ConnectedSocket() socket: Socket, @MessageBody() receivedChat: { message }) {
+    const { user, channelId } = socket.data;
 
-    client.emit('chat', JSON.stringify({ oldChats, type: 'old' }));
+    if (user instanceof UserEntity) {
+      const newChat = JSON.stringify({
+        content: receivedChat,
+        nickname: user.nickname,
+        userId: user.id,
+        timestamp: new Date(),
+      });
+
+      const redisKey = `${channelId}:chats`;
+
+      this.server.to(channelId).emit('chat', [newChat]);
+      this.redisClient.rpush(redisKey, newChat);
+    }
+  }
+
+  async handleConnection(socket: Socket) {
+    try {
+      const token = socket.handshake.auth?.token;
+
+      if (token) {
+        // 토큰이 있는 경우
+        const payload = this.jwtService.verify(token);
+        const { id } = payload.sub;
+        const user = await this.usersService.findById(id);
+
+        if (user) {
+          socket.data.user = user;
+        }
+      }
+
+      if (!socket.data.user) {
+        socket.data.user = { id: crypto.createHash('sha256').update(socket.handshake.address).digest('hex') };
+      }
+    } catch (error) {
+      // 토큰 검증 실패 등의 경우
+      socket.data.user = { id: crypto.createHash('sha256').update(socket.handshake.address).digest('hex') };
+    }
+
+    socket.emit('auth', { message: 'authorization completed' });
+  }
+
+  async handleDisconnect(socket: Socket) {
+    const { user, channelId } = socket.data;
+    const redisKey = `${channelId}:viewers`;
+
+    await this.redisClient.hincrby(redisKey, user.id, -1);
+    const count = await this.redisClient.hget(redisKey, user.id);
+
+    if (parseInt(count) <= 0) {
+      this.redisClient.hdel(redisKey, user.id);
+    }
   }
 }

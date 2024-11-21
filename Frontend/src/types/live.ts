@@ -5,6 +5,9 @@ export interface Live {
   channelId: string;
   usersNickname: string;
   usersProfileImage: string;
+  onAir: boolean;
+  streamerId: number;
+  viewers: number;
 }
 
 export interface LiveDetail {
@@ -16,6 +19,16 @@ export interface LiveDetail {
   usersProfileImage: string;
   startedAt: string;
   onAir: boolean;
+  streamerId: number;
+}
+
+export interface LiveStatus {
+  categoriesId: number;
+  categoriesName: string;
+  livesName: string;
+  livesDescription: string;
+  onAir: boolean;
+  viewers: number;
 }
 
 export interface UpdateLiveRequest {
@@ -29,3 +42,10 @@ export interface StreamingKeyResponse {
 }
 
 export type SortType = 'viewers' | 'latest' | 'random';
+
+export interface Message {
+  userId: number;
+  nickname: string;
+  content: string;
+  timestamp: string;
+}

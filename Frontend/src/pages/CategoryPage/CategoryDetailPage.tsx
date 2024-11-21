@@ -1,17 +1,47 @@
 import { useParams } from 'react-router-dom';
 import ChannelGrid from '@components/channel/ChannelGrid';
-import { useCategoryDetail } from '@hooks/useCategory';
+import { useCategoryLives, useCategoryDetail } from '@hooks/useCategory';
 import { formatUnit } from '@utils/format';
-import mockChannels from '@mocks/mockChannels';
+import LoadingSpinner from '@components/common/LoadingSpinner';
 
 export default function CategoryDetailPage() {
   const { categoryId } = useParams();
-  const { data: category, isLoading, error } = useCategoryDetail(categoryId!);
 
-  const categoryChannels = mockChannels.filter(channel => channel.categoryId === Number(categoryId));
-  if (isLoading) return <div>로딩 중...</div>;
-  if (error) return <div>에러가 발생했습니다</div>;
-  if (!category) return null;
+  if (!categoryId) {
+    return <div>잘못된 접근입니다.</div>;
+  }
+
+  const { data: category, isLoading: categoryLoading, error: categoryError } = useCategoryDetail(categoryId);
+  const { data: lives, isLoading: livesLoading, error: livesError } = useCategoryLives(categoryId);
+
+  console.log('lives data:', lives); // 데이터 구조 확인
+
+  if (categoryLoading || livesLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (categoryError || livesError) {
+    return <div>데이터를 불러오는데 실패했습니다.</div>;
+  }
+
+  if (!category || !lives) {
+    return null;
+  }
+
+  const channelsData = lives.map(live => ({
+    id: live.channelId,
+    title: live.livesName,
+    streamerName: live.usersNickname,
+    profileImgUrl: live.usersProfileImage,
+    viewers: 0,
+    category: live.categoriesName,
+    categoryId: live.categoriesId,
+    streamerId: live.streamerId,
+    thumbnailUrl: '/default-thumbnail.png',
+    createdAt: new Date().toISOString(),
+  }));
+
+  const totalViewers = channelsData.reduce((sum, channel) => sum + channel.viewers, 0);
 
   return (
     <div className="min-w-[752px] overflow-auto p-12">
@@ -22,12 +52,12 @@ export default function CategoryDetailPage() {
         <div className="p-8">
           <h1 className="font-bold text-2xl text-lico-gray-1">{category.name}</h1>
           <p className="mt-2 font-medium text-sm text-lico-gray-2">
-            시청자 {formatUnit(0)}명 · 라이브 {0}개
+            시청자 {formatUnit(totalViewers)}명 · 라이브 {lives.length}개
           </p>
         </div>
       </div>
       <div className="mb-6 h-[1px] bg-lico-gray-3" />
-      <ChannelGrid channels={categoryChannels} />
+      <ChannelGrid channels={channelsData} />
     </div>
   );
 }

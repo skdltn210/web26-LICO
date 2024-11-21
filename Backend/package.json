@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "22": "^0.0.0",
+    "@aws-sdk/client-s3": "^3.691.0",
+    "@aws-sdk/lib-storage": "^3.691.0",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
@@ -55,6 +57,7 @@
     "@nestjs/testing": "^10.0.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.2",
+    "@types/multer": "^1.4.12",
     "@types/node": "^20.3.1",
     "@types/passport-github2": "^1.2.9",
     "@types/passport-google-oauth20": "^2.0.16",

@@ -24,13 +24,18 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const { isBuffering, error, setQuality, qualities } = useHls(streamUrl, videoRef);
+  const { isBuffering, error, qualities, currentQuality, setQuality, stopStream, playFromLiveEdge } = useHls(
+    streamUrl,
+    videoRef,
+  );
 
   const handlePlay = () => {
+    playFromLiveEdge();
     setIsPlaying(true);
   };
 
   const handlePause = () => {
+    stopStream();
     setIsPlaying(false);
   };
 
@@ -150,7 +155,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
       {onAir && (
         <Badge
           text="LIVE"
-          className={`absolute right-2 top-2 bg-red-600 text-lico-gray-1 transition-opacity duration-300 ${showControls ? 'opacity-90' : 'pointer-events-none opacity-0'}`}
+          className={`absolute right-4 top-4 bg-red-600 font-bold text-base text-lico-gray-1 transition-opacity duration-300 ${showControls ? 'opacity-90' : 'pointer-events-none opacity-0'}`}
         />
       )}
 
@@ -169,6 +174,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
         onShowControls={handleShowControls}
         qualities={qualities}
         setQuality={setQuality}
+        currentQuality={currentQuality}
       />
     </div>
   );

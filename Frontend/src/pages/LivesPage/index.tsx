@@ -4,13 +4,20 @@ import ChannelGrid from '@components/channel/ChannelGrid';
 import SortButton from '@components/common/Buttons/SortButton';
 import { useLives } from '@hooks/useLive';
 import { useSortStore } from '@store/useSortStore';
+import LoadingSpinner from '@components/common/LoadingSpinner';
+import { config } from '@config/env.ts';
 
 export default function LivesPage() {
   const { sortType, setSortType } = useSortStore();
 
   const { data: lives, isLoading, error } = useLives(sortType);
 
-  if (isLoading) return <div>로딩 중...</div>;
+  if (isLoading)
+    return (
+      <div className="relative h-full w-full">
+        <LoadingSpinner />
+      </div>
+    );
   if (error) return <div>에러가 발생했습니다</div>;
   if (!lives) return null;
 
@@ -43,10 +50,10 @@ export default function LivesPage() {
           title: live.livesName,
           streamerName: live.usersNickname,
           profileImgUrl: live.usersProfileImage,
-          viewers: 0,
+          viewers: live.viewers,
           category: live.categoriesName,
           categoryId: live.categoriesId,
-          thumbnailUrl: '기본 썸네일 URL 또는 임시 이미지',
+          thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.jpg`,
           createdAt: new Date().toISOString(),
         }))}
       />

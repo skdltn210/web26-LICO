@@ -16,14 +16,6 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth/:provider/callback" element={<LoginCallback />} />
-      <Route
-        path="/studio/:channelId"
-        element={
-          <ProtectedRoute>
-            <StudioPage />
-          </ProtectedRoute>
-        }
-      />
 
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
@@ -37,6 +29,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <FollowingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/studio/:channelId"
+          element={
+            <ProtectedRoute>
+              <StudioPage />
             </ProtectedRoute>
           }
         />

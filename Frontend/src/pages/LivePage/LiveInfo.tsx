@@ -4,9 +4,10 @@ import FollowButton from '@components/common/Buttons/FollowButton';
 import { useState } from 'react';
 
 import { formatNumber } from '@utils/format';
-import StreamingTimer from '@components/LiveInfo/StreamingTimer';
+import StreamingTimer from '@pages/LivePage/StreamingTimer';
 
 interface LiveInfoProps {
+  streamerId: number;
   channelId: string;
   title: string;
   profileImgUrl: string;
@@ -18,6 +19,7 @@ interface LiveInfoProps {
 }
 
 export default function LiveInfo({
+  streamerId,
   channelId,
   title,
   profileImgUrl,
@@ -52,7 +54,7 @@ export default function LiveInfo({
             <StreamingTimer startAt={createdAt} />
           </div>
         </div>
-        <FollowButton channelId={channelId} />
+        <FollowButton streamerId={streamerId} channelId={channelId} />
       </div>
       <div className="mt-2 flex items-center gap-2">
         <CategoryBadge category={categoryName} categoryId={categoryId} className="text-sm text-lico-gray-1" />

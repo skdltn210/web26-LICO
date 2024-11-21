@@ -10,4 +10,9 @@ export const userApi = {
     });
     return data;
   },
+
+  getUserProfile: async (userId: number) => {
+    const { data } = await api.get<UserProfileResponse>(`/users/${userId}`);
+    return data;
+  },
 };

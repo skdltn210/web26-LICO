@@ -5,10 +5,12 @@ import { CategoryEntity } from './entity/category.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { ErrorMessage } from './error/error.message.enum';
+import { LivesService } from '../lives/lives.service';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
   let repository: Repository<CategoryEntity>;
+  let livesService: LivesService;
 
   const mockCategories = [
     {
@@ -31,6 +33,11 @@ describe('CategoriesService', () => {
     findOne: jest.fn(),
   };
 
+  const mockLivesService = {
+    getCategoryStats: jest.fn(),
+    getCategoryStatsById: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -39,11 +46,16 @@ describe('CategoriesService', () => {
           provide: getRepositoryToken(CategoryEntity),
           useValue: mockCategoryRepository,
         },
+        {
+          provide: LivesService,
+          useValue: mockLivesService,
+        },
       ],
     }).compile();
 
     service = module.get<CategoriesService>(CategoriesService);
     repository = module.get<Repository<CategoryEntity>>(getRepositoryToken(CategoryEntity));
+    livesService = module.get<LivesService>(LivesService);
   });
 
   afterEach(() => {
@@ -54,22 +66,32 @@ describe('CategoriesService', () => {
     it('카테고리 서비스가 카테고리 목록을 반환합니다.', async () => {
       // Given
       mockCategoryRepository.find.mockResolvedValue(mockCategories);
+      const mockStats = [
+        { categoriesId: 1, liveCount: 3, viewerCount: 50 },
+        { categoriesId: 2, liveCount: 5, viewerCount: 100 },
+      ];
+      mockLivesService.getCategoryStats.mockResolvedValue(mockStats);
 
       // When
       const categories = await service.readCategories();
 
       // Then
       expect(repository.find).toHaveBeenCalledTimes(1);
+      expect(livesService.getCategoryStats).toHaveBeenCalledTimes(1);
       expect(categories).toEqual([
         {
           id: 1,
           name: '게임',
           image: 'https://example.com/game.jpg',
+          liveCount: 3,
+          viewerCount: 50,
         },
         {
           id: 2,
           name: '음악',
           image: 'https://example.com/music.jpg',
+          liveCount: 5,
+          viewerCount: 100,
         },
       ]);
     });
@@ -78,17 +100,24 @@ describe('CategoriesService', () => {
   describe('readCategory', () => {
     it('카테고리 서비스가 단일 카테고리 정보를 반환합니다.', async () => {
       // Given
+      const categoryId = 2;
       mockCategoryRepository.findOne.mockResolvedValue(mockCategories[1]);
+      const mockStat = { liveCount: 5, viewerCount: 100 };
+      mockLivesService.getCategoryStatsById.mockResolvedValue(mockStat);
 
       // When
-      const category = await service.readCategory(2);
+      const category = await service.readCategory(categoryId);
 
       // Then
       expect(repository.findOne).toHaveBeenCalledTimes(1);
-      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: 2 } });
+      expect(repository.findOne).toHaveBeenCalledWith({ where: { id: categoryId } });
+      expect(livesService.getCategoryStatsById).toHaveBeenCalledTimes(1);
+      expect(livesService.getCategoryStatsById).toHaveBeenCalledWith(categoryId);
       expect(category).toEqual({
         name: '음악',
         image: 'https://example.com/music.jpg',
+        liveCount: 5,
+        viewerCount: 100,
       });
     });
 

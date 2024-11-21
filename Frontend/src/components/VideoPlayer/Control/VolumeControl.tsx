@@ -7,6 +7,7 @@ interface VolumeControlProps {
   onVolumeChange: (volume: number) => void;
   onMuteToggle: () => void;
   onShowControls: () => void;
+  iconSize: number;
 }
 
 export default function VolumeControl({
@@ -15,6 +16,7 @@ export default function VolumeControl({
   onVolumeChange,
   onMuteToggle,
   onShowControls,
+  iconSize,
 }: VolumeControlProps) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const volumeControlRef = useRef<HTMLDivElement>(null);
@@ -36,14 +38,14 @@ export default function VolumeControl({
       <button
         type="button"
         onClick={onMuteToggle}
-        className="hover:text-lico-gray-2"
+        className="hover:text-lico-orange-2"
         aria-label={isMuted ? '음소거 해제' : '음소거'}
         aria-pressed={isMuted}
       >
-        {isMuted ? <LuVolumeX size={18} /> : <LuVolume2 size={18} />}
+        {isMuted ? <LuVolumeX size={iconSize} /> : <LuVolume2 size={iconSize} />}
       </button>
       <div
-        className={`absolute bottom-[1px] left-6 transition-opacity duration-200 ${
+        className={`absolute bottom-1 left-7 transition-opacity duration-200 ${
           showVolumeSlider ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         role="group"
@@ -58,7 +60,7 @@ export default function VolumeControl({
           onChange={handleVolume}
           className="h-1 w-32 cursor-pointer appearance-none bg-transparent"
           style={{
-            background: `linear-gradient(to right, #FF6B34 0%, #FF6B34 ${
+            background: `linear-gradient(to right, #FF9F1C 0%, #FF6B34 ${
               (isMuted ? 0 : volume) * 100
             }%, #B0B0B0 ${(isMuted ? 0 : volume) * 100}%, #B0B0B0 100%)`,
             outline: 'none',

@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
   ValidationPipe,
+  Query
 } from '@nestjs/common';
 import { LivesService } from './lives.service';
 import { LivesDto } from './dto/lives.dto';
@@ -18,14 +19,25 @@ import { UpdateLiveDto } from './dto/update.live.dto';
 import { UUID } from 'crypto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserEntity } from 'src/users/entity/user.entity';
+import { StatusDto } from './dto/status.dto';
 
 @Controller('lives')
 export class LivesController {
   constructor(private readonly livesService: LivesService) {}
 
-  @Get()
-  async getOnAirLives(): Promise<LivesDto[]> {
-    return await this.livesService.readLives({ onAir: true });
+  @Get() // 새로운 live 요청
+  async getOnAirLives(
+    @Query('sort') sort: 'latest' | 'viewers' | 'recommendation' = 'latest',
+    @Query('limit') limit = 20,
+    @Query('offset') offset = 0,
+  ): Promise<LivesDto[]> {
+    return await this.livesService.readLives({ sort, limit, offset });
+  }
+
+  @Get('/streaming-key')
+  @UseGuards(JwtAuthGuard)
+  async getStreamingKey(@Req() req: Request & { user: UserEntity }) {
+    return req.user.live.streamingKey;
   }
 
   @Get('/:channelId')
@@ -34,9 +46,14 @@ export class LivesController {
   }
 
   @Patch('/:channelId')
+  @UseGuards(JwtAuthGuard)
   @HttpCode(204)
-  async setLive(@Param('channelId') channelId: UUID, @Body(ValidationPipe) updateLiveDto: UpdateLiveDto) {
-    await this.livesService.updateLive({ channelId, updateLiveDto });
+  async setLive(
+    @Param('channelId') channelId: UUID,
+    @Body(ValidationPipe) updateLiveDto: UpdateLiveDto,
+    @Req() req: Request & { user: UserEntity },
+  ) {
+    await this.livesService.updateLive({channelId, updateLiveDto, userId: req.user.id});
   }
 
   @Get('/channel-id/:streamingKey')
@@ -57,8 +74,8 @@ export class LivesController {
     this.livesService.endLive(channelId);
   }
 
-  @Get('/streaming-key/:livesId')
-  async getStreamingKey(@Param('livesId') livesId: number) {
-    return this.livesService.readStreamingKey(livesId);
+  @Get('/status/:channelId')
+  async getStatus(@Param('channelId') channelId: UUID): Promise<StatusDto> {
+    return await this.livesService.readStatus(channelId);
   }
 }

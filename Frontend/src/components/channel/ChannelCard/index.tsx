@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import ChannelThumbnail from '@components/channel/ChannelCard/ChannelThumbnail';
+import HoverPreviewPlayer from '@components/channel/ChannelCard/HoverPreviewPlayer';
+import { useRef, useState } from 'react';
 import ChannelInfo from './ChannelInfo';
 
 export interface ChannelCardProps {
@@ -23,14 +25,43 @@ export default function ChannelCard({
   profileImgUrl,
   thumbnailUrl,
 }: ChannelCardProps) {
+  const [showPreview, setShowPreview] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout>();
+
+  const handleMouseEnter = () => {
+    timerRef.current = setTimeout(() => {
+      setShowPreview(true);
+    }, 2000);
+  };
+
+  const handleMouseLeave = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    setShowPreview(false);
+  };
+
   return (
-    <Link to={`/live/${id}`} className="mb-4 block min-w-60" aria-label={`${streamerName}의 ${title} 스트림으로 이동`}>
-      <ChannelThumbnail title={title} thumbnailUrl={thumbnailUrl} viewers={viewers} />
+    <Link
+      to={`/live/${id}`}
+      className="relative mb-4 block min-w-60"
+      aria-label={`${streamerName}의 ${title} 스트림으로 이동`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div className="relative aspect-video">
+        <ChannelThumbnail title={title} thumbnailUrl={thumbnailUrl} viewers={viewers} />
+        {showPreview && (
+          <div className="absolute inset-0 overflow-hidden rounded-xl">
+            <HoverPreviewPlayer channelId={id} />
+          </div>
+        )}
+      </div>
       <ChannelInfo
         title={title}
         streamerName={streamerName}
         category={category}
-        categoryId={categoryId.toString()}
+        categoryId={categoryId}
         profileImgUrl={profileImgUrl}
       />
     </Link>

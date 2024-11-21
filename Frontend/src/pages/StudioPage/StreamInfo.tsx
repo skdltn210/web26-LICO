@@ -100,9 +100,9 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
 
   return (
     <>
-      <form className="flex flex-col gap-6" aria-label="방송 정보 설정" onSubmit={handleSubmit} autoComplete="off">
+      <form className="flex flex-col gap-2" aria-label="방송 정보 설정" onSubmit={handleSubmit} autoComplete="off">
         <div>
-          <label htmlFor="title" className="mb-2 block font-bold text-lico-gray-1">
+          <label htmlFor="title" className="mb-2 block font-bold text-sm text-lico-gray-1">
             방송 제목
           </label>
           <input
@@ -110,26 +110,30 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="w-full rounded bg-lico-gray-5 p-2 font-medium text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
+            className="w-full rounded bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
             aria-label="방송 제목"
           />
         </div>
 
         <div>
-          <label htmlFor="description" className="mb-2 block font-bold text-lico-gray-1">
+          <label htmlFor="description" className="mb-2 block font-bold text-sm text-lico-gray-1">
             방송 설명
           </label>
           <textarea
             id="description"
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="h-24 w-full resize-none overflow-y-auto rounded bg-lico-gray-5 p-2 font-medium text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
+            className="h-20 w-full resize-none rounded bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
             aria-label="방송 설명"
           />
         </div>
 
         <div id="category-container" ref={containerRef} className="relative">
-          <label htmlFor="category" className="mb-2 block font-bold text-lico-gray-1" onClick={e => e.preventDefault()}>
+          <label
+            htmlFor="category"
+            className="mb-2 block font-bold text-sm text-lico-gray-1"
+            onClick={e => e.preventDefault()}
+          >
             카테고리
           </label>
           <div className="flex flex-col gap-2">
@@ -154,7 +158,7 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
                 <button
                   type="button"
                   onClick={() => setSelectedCategory(null)}
-                  className="rounded p-0.5 hover:bg-lico-gray-4"
+                  className="rounded p-0.5 hover:bg-lico-gray-3"
                   aria-label="카테고리 삭제"
                 >
                   <LuX className="h-4 w-4 text-lico-gray-2" />
@@ -199,16 +203,21 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
           </button>
         </div>
       </div> */}
-
         <button
           type="submit"
-          className="flex items-center justify-center rounded bg-lico-orange-2 px-4 py-2 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
+          className="mt-2 flex items-center justify-center rounded bg-lico-orange-2 px-4 py-2 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
           aria-label="방송 정보 업데이트"
         >
           업데이트
         </button>
       </form>
-      <Toast message={toastMessage} isOpen={showToast} onClose={() => setShowToast(false)} />
+      <Toast
+        message={toastMessage}
+        isOpen={showToast}
+        onClose={() => setShowToast(false)}
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 transform"
+        toastClassName="rounded-md bg-lico-gray-4 px-4 py-2 text-center font-medium text-lico-gray-1"
+      />
     </>
   );
 }
