@@ -137,8 +137,8 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
       }),
     });
 
-    socket.on('connect', () => {
-      socket.emit('join', { channelId: id });
+    socket.on('auth', ({ message }) => {
+      if (message === 'authorization completed') socket.emit('join', { channelId: id });
     });
 
     socketRef.current = socket;
@@ -146,6 +146,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     return () => {
       if (!onAir) {
         socket.disconnect();
+        socket.removeAllListeners();
         socketRef.current = null;
       }
     };
