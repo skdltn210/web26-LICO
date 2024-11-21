@@ -1,6 +1,7 @@
 import Badge from '@components/common/Badges/Badge';
 import { formatNumber } from '@utils/format';
 import { useState, useEffect } from 'react';
+import ThumbnailSkeleton from '@components/channel/ChannelCard/ThumbnailSkeleton';
 
 interface ChannelThumbnailProps {
   title: string;
@@ -46,18 +47,9 @@ function ChannelThumbnail({ title, thumbnailUrl, viewers }: ChannelThumbnailProp
     }
   };
 
-  function SkeletonUI() {
-    return (
-      <div className="absolute inset-0 animate-pulse bg-lico-gray-4">
-        <div className="absolute left-2 top-2 h-6 w-12 rounded-full bg-lico-gray-3" />
-        <div className="absolute bottom-2 left-2 h-6 w-10 rounded-full bg-lico-gray-3" />
-      </div>
-    );
-  }
-
   return (
     <div className="relative aspect-video cursor-pointer overflow-hidden rounded-xl">
-      {isLoading && <SkeletonUI />}
+      {isLoading && <ThumbnailSkeleton />}
       <img
         key={retryCount}
         src={thumbnailUrl}
