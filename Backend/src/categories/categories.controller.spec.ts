@@ -11,8 +11,8 @@ describe('CategoriesController', () => {
   let livesService: LivesService;
 
   const mockCategories = [
-    { id: 1, name: '게임', image: 'https://example.com/game.jpg' },
-    { id: 2, name: '음악', image: 'https://example.com/music.jpg' },
+    { id: 1, name: '게임', image: 'https://example.com/game.jpg', liveCount: 3, viewerCount: 50 },
+    { id: 2, name: '음악', image: 'https://example.com/music.jpg', liveCount: 5, viewerCount: 100 },
   ];
 
   const mockCategoriesService = {
@@ -66,7 +66,7 @@ describe('CategoriesController', () => {
     it('카테고리 컨트롤러가 단일 카테고리 정보를 반환합니다.', async () => {
       // Given
       const categoryId = 2;
-      const expectedCategory = { name: '음악', image: 'https://example.com/music.jpg' };
+      const expectedCategory = { name: '음악', image: 'https://example.com/music.jpg', liveCount: 5, viewerCount: 100 };
       mockCategoriesService.readCategory.mockResolvedValue(expectedCategory);
 
       // When
@@ -92,7 +92,7 @@ describe('CategoriesController', () => {
     });
   });
 
-  describe('getLivesByCategory', () => {
+  describe('getOnAirLivesByCategory', () => {
     it('카테고리 컨트롤러가 해당 카테고리의 방송중인 라이브 목록을 반환합니다.', async () => {
       // Given
       const categoriesId = 1;
@@ -111,7 +111,13 @@ describe('CategoriesController', () => {
 
       // Then
       expect(livesService.readLives).toHaveBeenCalledTimes(1);
-      expect(livesService.readLives).toHaveBeenCalledWith({ categoriesId, onAir: true });
+      expect(livesService.readLives).toHaveBeenCalledWith({
+        categoriesId,
+        onAir: true,
+        sort: 'latest',
+        limit: 20,
+        offset: 0,
+      });
       expect(lives).toEqual(mockLives);
     });
   });
