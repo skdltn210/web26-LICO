@@ -11,8 +11,8 @@ export class WebRTCStream {
   constructor(url: string, streamKey: string) {
     this.canvas = null;
     this.originUrl = url;
-    const serverUrl = new URL(url.replace('webrtc://', 'http://'));
-    this.baseUrl = `http://${serverUrl.hostname}:1985`;
+    const serverUrl = new URL(url.replace('webrtc://', 'https://'));
+    this.baseUrl = `https://${serverUrl.hostname}`;
     this.streamKey = streamKey;
     this.pc = null;
     this.mediaStream = null;
