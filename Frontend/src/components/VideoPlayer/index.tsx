@@ -24,13 +24,18 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const { isBuffering, error, setQuality, qualities, currentQuality } = useHls(streamUrl, videoRef);
+  const { isBuffering, error, qualities, currentQuality, setQuality, stopStream, playFromLiveEdge } = useHls(
+    streamUrl,
+    videoRef,
+  );
 
   const handlePlay = () => {
+    playFromLiveEdge();
     setIsPlaying(true);
   };
 
   const handlePause = () => {
+    stopStream();
     setIsPlaying(false);
   };
 

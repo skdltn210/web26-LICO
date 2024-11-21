@@ -115,7 +115,38 @@ const useHls = (
     }
   };
 
-  return { isBuffering, error, qualities, currentQuality, setQuality };
+  const stopStream = () => {
+    if (hls) {
+      hls.stopLoad();
+    }
+  };
+
+  const startStream = () => {
+    if (hls) {
+      hls.startLoad();
+    }
+  };
+
+  const playFromLiveEdge = () => {
+    if (hls) {
+      hls.startLoad(-1); // 최신 LiveEdge로 이동
+      return;
+    }
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+    videoElement.currentTime = videoElement.duration;
+  };
+
+  return {
+    isBuffering,
+    error,
+    qualities,
+    currentQuality,
+    setQuality,
+    stopStream,
+    startStream,
+    playFromLiveEdge,
+  };
 };
 
 export default useHls;
