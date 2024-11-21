@@ -23,7 +23,7 @@ export default function ChatMessage({
     >
       <div className="flex gap-1.5 px-1">
         {timestamp && <span className="font-medium text-xs text-lico-gray-2">{timestamp}</span>}
-        <span className={`font-bold text-base ${color}`}>{nickname}</span>
+        <span className={`whitespace-nowrap font-bold text-base ${color}`}>{nickname}</span>
         <p className="flex items-center break-all text-start font-medium text-sm text-lico-gray-1">{content}</p>
       </div>
     </button>
