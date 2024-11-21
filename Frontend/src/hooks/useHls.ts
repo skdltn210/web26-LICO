@@ -51,6 +51,7 @@ const useHls = (
           liveSyncDuration: 1,
           liveMaxLatencyDuration: 2,
           liveDurationInfinity: true,
+          maxBufferHole: 1,
         });
         setHls(hlsInstance);
 
