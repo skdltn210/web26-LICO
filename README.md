@@ -1,4 +1,4 @@
-# web26-LICO
+![image](https://github.com/user-attachments/assets/a4043c9a-b760-4c05-9770-78e863d1e04a)# web26-LICO
 
 ## 프로젝트소개
 
@@ -45,7 +45,7 @@
 
 ## 개발일지
 
-📚 [개발일지](https://far-woodwind-e60.notion.site/12daf9f4d256808f8c3ed26e0a4ab309)
+📚 [개발일지](https://far-woodwind-e60.notion.site/12daf9f4d256808f8c3ed26e0a4ab309) | 🔥[트러블슈팅](https://far-woodwind-e60.notion.site/12daf9f4d256802985dce28210c4f062?pvs=4)
 
 ## 주요기능
 
