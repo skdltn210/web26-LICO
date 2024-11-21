@@ -22,6 +22,15 @@ export interface LiveDetail {
   streamerId: number;
 }
 
+export interface LiveStatus {
+  categoriesId: number;
+  categoriesName: string;
+  livesName: string;
+  livesDescription: string;
+  onAir: boolean;
+  viewers: number;
+}
+
 export interface UpdateLiveRequest {
   categoriesId?: number;
   name?: string;
