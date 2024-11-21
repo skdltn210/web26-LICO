@@ -3,7 +3,7 @@ import { liveApi } from '@apis/live';
 import { AxiosError } from 'axios';
 import type { Live, LiveDetail, UpdateLiveRequest, SortType, LiveStatus } from '@/types/live';
 
-const POLLING_INTERVAL = 30000;
+const POLLING_INTERVAL = 60000;
 
 export const liveKeys = {
   all: ['lives'] as const,
