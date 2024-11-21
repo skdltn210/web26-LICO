@@ -5,14 +5,11 @@ export class WebRTCStream {
   private mediaStream: MediaStream | null;
   private screenAudioStream: MediaStream | null;
   private micAudioStream: MediaStream | null;
-  private baseUrl: string;
   private originUrl: string;
 
   constructor(url: string, streamKey: string) {
     this.canvas = null;
     this.originUrl = url;
-    const serverUrl = new URL(url.replace('webrtc://', 'https://'));
-    this.baseUrl = `https://${serverUrl.hostname}`;
     this.streamKey = streamKey;
     this.pc = null;
     this.mediaStream = null;
@@ -68,7 +65,7 @@ export class WebRTCStream {
       await this.pc.setLocalDescription(offer);
 
       const whipEndpoint = 'https://rtc.lico.digital/rtc/v1/publish/';
-      const streamUrl = `${this.originUrl}/dev/${this.streamKey}`;
+      const streamUrl = `${this.originUrl}/live/${this.streamKey}`;
 
       const requestBody = {
         api: whipEndpoint,
