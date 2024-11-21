@@ -205,7 +205,7 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
       </div> */}
         <button
           type="submit"
-          className="mt-2 flex items-center justify-center rounded bg-lico-orange-2 px-4 py-2 font-bold text-white transition-colors hover:bg-lico-orange-1"
+          className="mt-2 flex items-center justify-center rounded bg-lico-orange-2 px-4 py-2 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
           aria-label="방송 정보 업데이트"
         >
           업데이트

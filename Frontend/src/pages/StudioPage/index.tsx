@@ -10,27 +10,73 @@ import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 import { useLiveDetail } from '@hooks/useLive.ts';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import NotFound from '@components/error/NotFound';
-import { useStreamingKey } from '@hooks/useLive';
 import { config } from '@config/env';
+import { useStreamingKey } from '@hooks/useLive';
+import StreamContainer from '@pages/StudioPage/StreamContainer';
 
-
-type TabType = 'OBS' | 'WebOBS' | 'Info';
+type TabType = 'External' | 'WebStudio' | 'Info';
+type VideoMode = 'player' | 'container';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
-  const [activeTab, setActiveTab] = useState<TabType>('OBS');
-  const [webcamEnabled, setWebcamEnabled] = useState(false);
-  const [screenEnabled, setScreenEnabled] = useState(false);
-  const [imageEnabled, setImageEnabled] = useState(false);
-  const [textEnabled, setTextEnabled] = useState(false);
-  const [drawEnabled, setDrawEnabled] = useState(false);
-  const [arEnabled, setArEnabled] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('External');
+  const [videoMode, setVideoMode] = useState<VideoMode>('player');
+
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
-
-  const { chatState, toggleChat } = useLayoutStore();
   const { data: streamKey } = useStreamingKey();
+  const { chatState, toggleChat } = useLayoutStore();
+
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
+  const WebRTC_URL = 'webrtc://relay.lico.digital/dev';
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    if (tab === 'External') {
+      setVideoMode('player');
+      if (screenStream) {
+        screenStream.getTracks().forEach(track => track.stop());
+        setScreenStream(null);
+      }
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        setMediaStream(null);
+      }
+      setIsStreaming(false);
+    } else if (tab === 'WebStudio') {
+      setVideoMode('container');
+    }
+  };
+
+  const handleScreenStreamChange = (stream: MediaStream | null) => {
+    setScreenStream(stream);
+  };
+
+  const handleMediaStreamChange = (stream: MediaStream | null) => {
+    setMediaStream(stream);
+  };
+
+  const handleStreamingChange = (streaming: boolean) => {
+    setIsStreaming(streaming);
+  };
+
+  const renderVideoContent = () => {
+    if (videoMode === 'player') {
+      return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
+    }
+    return (
+      <StreamContainer
+        screenStream={screenStream}
+        mediaStream={mediaStream}
+        isStreaming={isStreaming}
+        webrtcUrl={WebRTC_URL}
+        streamKey={streamKey?.toString() || ''}
+      />
+    );
+  };
 
   if (isLoading)
     return (
@@ -38,51 +84,52 @@ export default function StudioPage() {
         <LoadingSpinner />
       </div>
     );
-  if ((error && error.status === 404) || !liveDetail || !channelId) return <NotFound />;
-  if (error) return <div>에러가 발생했습니다.</div>;
+  if (error) {
+    if (error.status === 404) return <NotFound />;
+    return <div>에러가 발생했습니다.</div>;
+  }
+  if (!channelId || !liveDetail) return <NotFound />;
 
   return (
     <div className="flex h-screen">
       <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
         <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
-        <div className="mt-4 h-3/5">
-          <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail.onAir} />
-        </div>
+        <div className="mt-4 h-3/5">{renderVideoContent()}</div>
 
         <div className="mt-4">
           <div className="flex justify-end">
             <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
               <button
                 type="button"
-                onClick={() => setActiveTab('OBS')}
+                onClick={() => handleTabChange('External')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
-                  activeTab === 'OBS'
+                  activeTab === 'External'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
                     : 'text-lico-gray-1 hover:text-lico-orange-2'
                 }`}
                 role="tab"
-                aria-selected={activeTab === 'OBS'}
-                aria-controls="obs-panel"
+                aria-selected={activeTab === 'External'}
+                aria-controls="External-panel"
               >
-                OBS
+                외부 스트림
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('WebOBS')}
+                onClick={() => handleTabChange('WebStudio')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
-                  activeTab === 'WebOBS'
+                  activeTab === 'WebStudio'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
                     : 'text-lico-gray-1 hover:text-lico-orange-2'
                 }`}
                 role="tab"
-                aria-selected={activeTab === 'WebOBS'}
-                aria-controls="webobs-panel"
+                aria-selected={activeTab === 'WebStudio'}
+                aria-controls="WebStudio-panel"
               >
-                WebOBS
+                웹 스튜디오
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('Info')}
+                onClick={() => handleTabChange('Info')}
                 className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
                   activeTab === 'Info'
                     ? 'bg-lico-orange-2 text-lico-gray-5'
@@ -98,26 +145,20 @@ export default function StudioPage() {
           </div>
 
           <div className="mt-4 rounded-lg bg-lico-gray-4 p-6">
-            {activeTab === 'OBS' && (
-              <div id="obs-panel" role="tabpanel">
+            {activeTab === 'External' && (
+              <div id="External-panel" role="tabpanel">
                 <StreamSettings streamKey={streamKey?.toString() || ''} />
               </div>
             )}
-            {activeTab === 'WebOBS' && (
-              <div id="webobs-panel" role="tabpanel">
+            {activeTab === 'WebStudio' && (
+              <div id="WebStudio-panel" role="tabpanel">
                 <WebStreamControls
-                  screenEnabled={screenEnabled}
-                  setScreenEnabled={setScreenEnabled}
-                  webcamEnabled={webcamEnabled}
-                  setWebcamEnabled={setWebcamEnabled}
-                  imageEnabled={imageEnabled}
-                  setImageEnabled={setImageEnabled}
-                  textEnabled={textEnabled}
-                  setTextEnabled={setTextEnabled}
-                  drawEnabled={drawEnabled}
-                  setDrawEnabled={setDrawEnabled}
-                  arEnabled={arEnabled}
-                  setArEnabled={setArEnabled}
+                  screenStream={screenStream}
+                  mediaStream={mediaStream}
+                  isStreaming={isStreaming}
+                  onScreenStreamChange={handleScreenStreamChange}
+                  onMediaStreamChange={handleMediaStreamChange}
+                  onStreamingChange={handleStreamingChange}
                 />
               </div>
             )}
