@@ -1,19 +1,20 @@
 export class WebRTCStream {
   private canvas: HTMLCanvasElement | null;
-  private url: string;
   private streamKey: string;
   private pc: RTCPeerConnection | null;
-  private ws: WebSocket | null;
   private mediaStream: MediaStream | null;
   private screenAudioStream: MediaStream | null;
   private micAudioStream: MediaStream | null;
+  private baseUrl: string;
+  private originUrl: string;
 
   constructor(url: string, streamKey: string) {
     this.canvas = null;
-    this.url = url;
+    this.originUrl = url;
+    const serverUrl = new URL(url.replace('webrtc://', 'http://'));
+    this.baseUrl = `http://${serverUrl.hostname}:1985`;
     this.streamKey = streamKey;
     this.pc = null;
-    this.ws = null;
     this.mediaStream = null;
     this.screenAudioStream = null;
     this.micAudioStream = null;
@@ -41,58 +42,17 @@ export class WebRTCStream {
         });
       }
 
-      await this.connectSignaling();
+      await this.connectWHIP();
     } catch (error) {
-      console.error('Streaming failed:', error);
       this.cleanup();
       throw error;
     }
   }
 
-  private getStreamInfo(): string {
-    return (
-      `Canvas: ${this.canvas ? 'active' : 'inactive'}, ` +
-      `Screen Audio: ${this.screenAudioStream?.getAudioTracks().length || 0} tracks, ` +
-      `Mic Audio: ${this.micAudioStream?.getAudioTracks().length || 0} tracks`
-    );
-  }
-
-  private async connectSignaling() {
-    return new Promise((resolve, reject) => {
-      const wsUrl = this.url.replace('webrtc://', 'wss://');
-      this.ws = new WebSocket(wsUrl);
-
-      this.ws.onopen = () => {
-        console.log('Stream configuration:', this.getStreamInfo());
-        this.sendSignaling({
-          type: 'connect',
-          streamKey: this.streamKey,
-        });
-        resolve(null);
-      };
-
-      this.ws.onmessage = async e => {
-        const message = JSON.parse(e.data);
-        await this.handleSignalingMessage(message);
-      };
-
-      this.ws.onerror = reject;
+  private async connectWHIP() {
+    this.pc = new RTCPeerConnection({
+      iceServers: [],
     });
-  }
-
-  private async handleSignalingMessage(message: any) {
-    switch (message.type) {
-      case 'offer':
-        await this.handleOffer(message.sdp);
-        break;
-      case 'candidate':
-        await this.handleCandidate(message.candidate);
-        break;
-    }
-  }
-
-  private async handleOffer(sdp: string) {
-    this.pc = new RTCPeerConnection();
 
     if (this.mediaStream) {
       const tracks = this.mediaStream.getTracks();
@@ -103,40 +63,43 @@ export class WebRTCStream {
       });
     }
 
-    this.pc.onicecandidate = event => {
-      if (event.candidate) {
-        this.sendSignaling({
-          type: 'candidate',
-          candidate: event.candidate,
-        });
+    try {
+      const offer = await this.pc.createOffer();
+      await this.pc.setLocalDescription(offer);
+
+      const whipEndpoint = `${this.baseUrl}/rtc/v1/publish/`;
+      const streamUrl = `${this.originUrl}/dev/${this.streamKey}`;
+
+      const requestBody = {
+        api: whipEndpoint,
+        streamurl: streamUrl,
+        sdp: offer.sdp,
+      };
+
+      const response = await fetch(whipEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const jsonResponse = await response.json();
+      console.log(jsonResponse);
+
+      if (jsonResponse.code !== 0 || !jsonResponse.sdp) {
+        throw new Error(`SRS Error: ${JSON.stringify(jsonResponse)}`);
       }
-    };
 
-    await this.pc.setRemoteDescription(
-      new RTCSessionDescription({
-        type: 'offer',
-        sdp: sdp,
-      }),
-    );
-
-    const answer = await this.pc.createAnswer();
-    await this.pc.setLocalDescription(answer);
-
-    this.sendSignaling({
-      type: 'answer',
-      sdp: answer.sdp,
-    });
-  }
-
-  private async handleCandidate(candidate: RTCIceCandidateInit) {
-    if (this.pc && candidate) {
-      await this.pc.addIceCandidate(new RTCIceCandidate(candidate));
-    }
-  }
-
-  private sendSignaling(message: object) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
+      await this.pc.setRemoteDescription(
+        new RTCSessionDescription({
+          type: 'answer',
+          sdp: jsonResponse.sdp,
+        }),
+      );
+    } catch (error) {
+      this.cleanup();
+      throw error;
     }
   }
 
@@ -149,10 +112,7 @@ export class WebRTCStream {
       this.pc.close();
       this.pc = null;
     }
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
+
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
@@ -162,6 +122,7 @@ export class WebRTCStream {
       this.screenAudioStream.getTracks().forEach(track => track.stop());
       this.screenAudioStream = null;
     }
+
     if (this.micAudioStream) {
       this.micAudioStream.getTracks().forEach(track => track.stop());
       this.micAudioStream = null;

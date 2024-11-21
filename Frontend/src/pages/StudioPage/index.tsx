@@ -31,7 +31,7 @@ export default function StudioPage() {
   const { chatState, toggleChat } = useLayoutStore();
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
-  const WebRTC_URL = 'webrtc://relay.lico.digital/dev';
+  const WebRTC_URL = 'webrtc://relay.lico.digital';
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
