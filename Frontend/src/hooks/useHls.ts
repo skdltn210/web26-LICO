@@ -47,6 +47,10 @@ const useHls = (
       if (Hls.isSupported()) {
         hlsInstance = new Hls({
           startLevel: options.startLevel ?? -1,
+          backBufferLength: 0,
+          liveSyncDuration: 1,
+          liveMaxLatencyDuration: 2,
+          liveDurationInfinity: true,
         });
         setHls(hlsInstance);
 
