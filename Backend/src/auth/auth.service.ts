@@ -52,8 +52,8 @@ export class AuthService {
         id: user.id,
         nickname: user.nickname,
         profileImage: user.profileImage,
-        channelId: user.live ? user.live.channelId : null, // channelId 추가
-        liveId: user.live ? user.live.id : null, // liveId 추가
+        channelId: user.live ? user.live.channelId : null,
+        liveId: user.live ? user.live.id : null,
       },
     };
   }
@@ -102,8 +102,8 @@ export class AuthService {
           id: user.id,
           nickname: user.nickname,
           profileImage: user.profileImage,
-          channelId: user.live.channelId, // channelId 추가
-          liveId: user.live.id, // liveId 추가
+          channelId: user.live ? user.live.channelId : null,
+          liveId: user.live ? user.live.id : null,
         },
       };
     } catch (error) {
