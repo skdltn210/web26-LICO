@@ -33,6 +33,7 @@ export default function ChatInput({ onSubmit, isLoggedIn = false }: ChatInputPro
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.nativeEvent.isComposing) return;
     if (event.key !== 'Enter') return;
 
     event.preventDefault();
