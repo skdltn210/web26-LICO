@@ -22,7 +22,12 @@ interface SelectedMessage {
   element: HTMLElement;
 }
 
-const MESSAGE_LIMIT = 150;
+const MESSAGE_LIMIT = 200;
+
+const updateMessagesWithLimit = (prevMessages: Message[], newMessages: Message[]) => {
+  const updatedMessages = [...prevMessages, ...newMessages];
+  return updatedMessages.slice(-MESSAGE_LIMIT);
+};
 
 export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -81,10 +86,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         setShowPendingMessages(true);
         setPendingMessages(prev => [...prev, ...newMessages]);
       } else {
-        setMessages(prevMessages => {
-          const updatedMessages = [...prevMessages, ...newMessages];
-          return updatedMessages.slice(-MESSAGE_LIMIT);
-        });
+        setMessages(prevMessages => updateMessagesWithLimit(prevMessages, newMessages));
       }
     },
     [isScrollPaused],
@@ -103,10 +105,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         setShowScrollButton(isScrolled);
         setIsScrollPaused(isScrolled);
         if (!isScrolled && pendingMessages.length > 0) {
-          setMessages(prevMessages => {
-            const updatedMessages = [...prevMessages, ...pendingMessages];
-            return updatedMessages.slice(-MESSAGE_LIMIT);
-          });
+          setMessages(prevMessages => updateMessagesWithLimit(prevMessages, pendingMessages));
           setPendingMessages([]);
           setShowPendingMessages(false);
         }
