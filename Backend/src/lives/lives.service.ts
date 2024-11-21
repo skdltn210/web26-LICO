@@ -151,4 +151,39 @@ export class LivesService {
     await this.redisClient.set(redisKey, JSON.stringify(status), 'EX', 60);
     return status;
   }
+
+  // 카테고리 통계
+  async getCategoryStats(): Promise<
+    { categoriesId: number; liveCount: number; viewerCount: number }[]
+  > {
+    const stats = await this.livesRepository
+      .createQueryBuilder('live')
+      .select('live.categoriesId', 'categoriesId')
+      .addSelect('COUNT(live.id)', 'liveCount')
+      .addSelect('SUM(live.viewers)', 'viewerCount')
+      .where('live.onAir = :onAir', { onAir: true })
+      .groupBy('live.categoriesId')
+      .getRawMany();
+
+    return stats.map((stat) => ({
+      categoriesId: Number(stat.categoriesId),
+      liveCount: Number(stat.liveCount),
+      viewerCount: Number(stat.viewerCount) || 0,
+    }));
+  }
+
+  async getCategoryStatsById(categoriesId: number): Promise<{ liveCount: number; viewerCount: number }> {
+    const stats = await this.livesRepository
+      .createQueryBuilder('live')
+      .select('COUNT(live.id)', 'liveCount')
+      .addSelect('SUM(live.viewers)', 'viewerCount')
+      .where('live.onAir = :onAir', { onAir: true })
+      .andWhere('live.categoriesId = :categoriesId', { categoriesId })
+      .getRawOne();
+
+    return {
+      liveCount: Number(stats.liveCount) || 0,
+      viewerCount: Number(stats.viewerCount) || 0,
+    };
+  }
 }
