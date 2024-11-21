@@ -38,12 +38,12 @@ export default function StreamSettings({ streamKey }: StreamSettingsProps) {
               type="text"
               readOnly
               className="flex-1 rounded bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1 outline-none"
-              value="rtmp://relay.lico.digital/dev"
+              value="rtmp://relay.lico.digital/live"
               aria-label="스트림 URL"
             />
             <button
               type="button"
-              onClick={() => copyToClipboard('rtmp://relay.lico.digital/dev', 'URL이')}
+              onClick={() => copyToClipboard('rtmp://relay.lico.digital/live', 'URL이')}
               className="flex items-center justify-center rounded bg-lico-gray-3 px-3 text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2"
               aria-label="스트림 URL 복사"
             >
