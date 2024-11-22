@@ -1,3 +1,5 @@
+import { config } from '@config/env';
+
 export class WebRTCStream {
   private canvas: HTMLCanvasElement | null;
   private streamKey: string;
@@ -5,11 +7,11 @@ export class WebRTCStream {
   private mediaStream: MediaStream | null;
   private screenAudioStream: MediaStream | null;
   private micAudioStream: MediaStream | null;
-  private originUrl: string;
+  private webrtcUrl: string;
 
   constructor(url: string, streamKey: string) {
     this.canvas = null;
-    this.originUrl = url;
+    this.webrtcUrl = url;
     this.streamKey = streamKey;
     this.pc = null;
     this.mediaStream = null;
@@ -64,8 +66,8 @@ export class WebRTCStream {
       const offer = await this.pc.createOffer();
       await this.pc.setLocalDescription(offer);
 
-      const whipEndpoint = 'https://rtc.lico.digital/rtc/v1/publish/';
-      const streamUrl = `${this.originUrl}/live/${this.streamKey}`;
+      const whipEndpoint = config.whipUrl;
+      const streamUrl = `${this.webrtcUrl}/${this.streamKey}`;
 
       const requestBody = {
         api: whipEndpoint,
