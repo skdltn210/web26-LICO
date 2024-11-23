@@ -4,9 +4,9 @@ export class WebRTCStream {
   private canvas: HTMLCanvasElement | null;
   private streamKey: string;
   private pc: RTCPeerConnection | null;
-  private mediaStream: MediaStream | null;
-  private screenAudioStream: MediaStream | null;
-  private micAudioStream: MediaStream | null;
+  private screenStream: MediaStream | null;
+  private camStream: MediaStream | null;
+  private audioStream: MediaStream | null;
   private webrtcUrl: string;
 
   constructor(url: string, streamKey: string) {
@@ -14,30 +14,30 @@ export class WebRTCStream {
     this.webrtcUrl = url;
     this.streamKey = streamKey;
     this.pc = null;
-    this.mediaStream = null;
-    this.screenAudioStream = null;
-    this.micAudioStream = null;
+    this.camStream = null;
+    this.screenStream = null;
+    this.audioStream = null;
   }
 
-  async start(canvas: HTMLCanvasElement, screenStream: MediaStream | null, mediaStream: MediaStream | null) {
+  async start(canvas: HTMLCanvasElement, screenStream: MediaStream | null, camStream: MediaStream | null) {
     try {
       this.canvas = canvas;
       const videoStream = this.canvas.captureStream(30);
-      this.mediaStream = new MediaStream([...videoStream.getVideoTracks()]);
+      this.camStream = new MediaStream([...videoStream.getVideoTracks()]);
 
       if (screenStream) {
-        this.screenAudioStream = screenStream;
-        const screenAudioTracks = this.screenAudioStream.getAudioTracks();
+        this.screenStream = screenStream;
+        const screenAudioTracks = this.screenStream.getAudioTracks();
         screenAudioTracks.forEach(track => {
-          this.mediaStream?.addTrack(track.clone());
+          this.camStream?.addTrack(track.clone());
         });
       }
 
-      if (mediaStream) {
-        this.micAudioStream = mediaStream;
-        const micAudioTracks = this.micAudioStream.getAudioTracks();
+      if (camStream) {
+        this.audioStream = camStream;
+        const micAudioTracks = this.audioStream.getAudioTracks();
         micAudioTracks.forEach(track => {
-          this.mediaStream?.addTrack(track.clone());
+          this.camStream?.addTrack(track.clone());
         });
       }
 
@@ -53,11 +53,11 @@ export class WebRTCStream {
       iceServers: [],
     });
 
-    if (this.mediaStream) {
-      const tracks = this.mediaStream.getTracks();
+    if (this.camStream) {
+      const tracks = this.camStream.getTracks();
       tracks.forEach(track => {
-        if (this.mediaStream) {
-          this.pc?.addTrack(track, this.mediaStream);
+        if (this.camStream) {
+          this.pc?.addTrack(track, this.camStream);
         }
       });
     }
@@ -112,19 +112,19 @@ export class WebRTCStream {
       this.pc = null;
     }
 
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach(track => track.stop());
-      this.mediaStream = null;
+    if (this.camStream) {
+      this.camStream.getTracks().forEach(track => track.stop());
+      this.camStream = null;
     }
 
-    if (this.screenAudioStream) {
-      this.screenAudioStream.getTracks().forEach(track => track.stop());
-      this.screenAudioStream = null;
+    if (this.screenStream) {
+      this.screenStream.getTracks().forEach(track => track.stop());
+      this.screenStream = null;
     }
 
-    if (this.micAudioStream) {
-      this.micAudioStream.getTracks().forEach(track => track.stop());
-      this.micAudioStream = null;
+    if (this.audioStream) {
+      this.audioStream.getTracks().forEach(track => track.stop());
+      this.audioStream = null;
     }
 
     this.canvas = null;
