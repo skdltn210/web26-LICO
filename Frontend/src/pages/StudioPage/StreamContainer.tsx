@@ -1,22 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCanvasElement } from '@hooks/useCanvasElement';
 import { WebRTCStream } from './WebRTCStream';
-
-interface StreamContainerProps {
-  screenStream: MediaStream | null;
-  mediaStream: MediaStream | null;
-  isStreaming: boolean;
-  webrtcUrl: string;
-  streamKey: string;
-  onStreamError?: (error: Error) => void;
-}
-
-interface Position {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import { Position, StreamContainerProps } from '@/types/canvas';
 
 type SelectedElement = 'screen' | 'camera' | null;
 
