@@ -10,16 +10,16 @@ import {
   Req,
   UseGuards,
   ValidationPipe,
-  Query
+  Query,
 } from '@nestjs/common';
 import { LivesService } from './lives.service';
 import { LivesDto } from './dto/lives.dto';
 import { LiveDto } from './dto/live.dto';
 import { UpdateLiveDto } from './dto/update.live.dto';
 import { UUID } from 'crypto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserEntity } from 'src/users/entity/user.entity';
 import { StatusDto } from './dto/status.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserEntity } from '../users/entity/user.entity';
 
 @Controller('lives')
 export class LivesController {
@@ -53,7 +53,7 @@ export class LivesController {
     @Body(ValidationPipe) updateLiveDto: UpdateLiveDto,
     @Req() req: Request & { user: UserEntity },
   ) {
-    await this.livesService.updateLive({channelId, updateLiveDto, userId: req.user.id});
+    await this.livesService.updateLive({ channelId, updateLiveDto, userId: req.user.id });
   }
 
   @Get('/channel-id/:streamingKey')
