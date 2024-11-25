@@ -3,6 +3,8 @@ import { useCanvasElement } from '@hooks/useCanvasElement';
 import { useDrawing } from '@hooks/useDrawing';
 import { WebRTCStream } from './WebRTCStream';
 import { Position, StreamContainerProps, Point } from '@/types/canvas';
+import pencilCursor from '@assets/icons/pencilCursor.svg';
+import eraserCursor from '@assets/icons/eraserCursor.svg';
 
 type SelectedElement = 'screen' | 'camera' | null;
 
@@ -15,6 +17,7 @@ export default function StreamContainer({
   onStreamError,
   drawingState,
 }: StreamContainerProps) {
+  const videoCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const mediaVideoRef = useRef<HTMLVideoElement>(null);
@@ -66,10 +69,10 @@ export default function StreamContainer({
 
   useEffect(() => {
     const startStreaming = async () => {
-      if (!canvasRef.current || !webrtcRef.current) return;
+      if (!videoCanvasRef.current || !canvasRef.current || !webrtcRef.current) return;
 
       try {
-        await webrtcRef.current.start(canvasRef.current, screenStream, mediaStream);
+        await webrtcRef.current.start(videoCanvasRef.current, canvasRef.current, screenStream, mediaStream);
       } catch (error) {
         console.error('Streaming failed:', error);
         onStreamError?.(error as Error);
@@ -229,45 +232,63 @@ export default function StreamContainer({
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const videoCanvas = videoCanvasRef.current;
     const ctx = canvas?.getContext('2d', { alpha: true });
+    const videoCtx = videoCanvas?.getContext('2d', { alpha: false });
     const screenVideo = screenVideoRef.current;
     const mediaVideo = mediaVideoRef.current;
 
-    if (!canvas || !ctx) return;
+    if (!canvas || !ctx || !videoCanvas || !videoCtx) return;
 
     ctx.imageSmoothingEnabled = false;
+    videoCtx.imageSmoothingEnabled = false;
 
     const updateCanvas = () => {
       const container = canvas.parentElement;
       if (container) {
         const scale = window.devicePixelRatio;
+
         canvas.width = container.clientWidth * scale;
         canvas.height = container.clientHeight * scale;
+        videoCanvas.width = container.clientWidth * scale;
+        videoCanvas.height = container.clientHeight * scale;
+
         ctx.scale(scale, scale);
+        videoCtx.scale(scale, scale);
 
         canvas.style.width = `${container.clientWidth}px`;
         canvas.style.height = `${container.clientHeight}px`;
+        videoCanvas.style.width = `${container.clientWidth}px`;
+        videoCanvas.style.height = `${container.clientHeight}px`;
       }
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      videoCtx.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+      videoCtx.fillStyle = 'black';
+      videoCtx.fillRect(0, 0, videoCanvas.width, videoCanvas.height);
 
       if (screenVideo && screenStream) {
-        ctx.drawImage(screenVideo, screenPosition.x, screenPosition.y, screenPosition.width, screenPosition.height);
+        videoCtx.drawImage(
+          screenVideo,
+          screenPosition.x,
+          screenPosition.y,
+          screenPosition.width,
+          screenPosition.height,
+        );
       }
 
       if (mediaVideo && mediaStream && mediaStream.getVideoTracks().length > 0) {
-        ctx.save();
+        videoCtx.save();
         if (getIsCamFlipped()) {
-          ctx.translate(camPosition.x + camPosition.width, camPosition.y);
-          ctx.scale(-1, 1);
-          ctx.drawImage(mediaVideo, 0, 0, camPosition.width, camPosition.height);
+          videoCtx.translate(camPosition.x + camPosition.width, camPosition.y);
+          videoCtx.scale(-1, 1);
+          videoCtx.drawImage(mediaVideo, 0, 0, camPosition.width, camPosition.height);
         } else {
-          ctx.drawImage(mediaVideo, camPosition.x, camPosition.y, camPosition.width, camPosition.height);
+          videoCtx.drawImage(mediaVideo, camPosition.x, camPosition.y, camPosition.width, camPosition.height);
         }
-        ctx.restore();
+        videoCtx.restore();
       }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (!drawingState.isDrawing && !drawingState.isErasing) {
         if (selectedElement === 'screen') {
@@ -363,7 +384,14 @@ export default function StreamContainer({
 
     const point = getCanvasPoint(e);
 
-    if (drawingState.isDrawing || drawingState.isErasing) {
+    if (drawingState.isDrawing) {
+      canvas.style.cursor = `url(${pencilCursor}) 0 24, crosshair`;
+      continueDrawing(point);
+      return;
+    }
+
+    if (drawingState.isErasing) {
+      canvas.style.cursor = `url(${eraserCursor}) 8 24, cell`;
       continueDrawing(point);
       return;
     }
@@ -382,7 +410,6 @@ export default function StreamContainer({
         ? 'move'
         : 'default';
   };
-
   const handleMouseUp = () => {
     if (drawingState.isDrawing || drawingState.isErasing) {
       endDrawing();
@@ -423,13 +450,15 @@ export default function StreamContainer({
 
   return (
     <div className="relative h-full w-full bg-black">
+      <canvas ref={videoCanvasRef} className="absolute left-0 top-0 h-full w-full" />
       <canvas
         ref={canvasRef}
-        className="h-full w-full"
+        className="absolute left-0 top-0 h-full w-full"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        style={{ background: 'transparent' }}
       />
       <video ref={screenVideoRef} autoPlay playsInline className="hidden" />
       <video ref={mediaVideoRef} autoPlay playsInline className="hidden" />
