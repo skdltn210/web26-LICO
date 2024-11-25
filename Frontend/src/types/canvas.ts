@@ -23,11 +23,18 @@ export interface DrawingPath {
   type: 'draw' | 'erase';
 }
 
+export interface ToolState {
+  color: string;
+  width: number;
+}
+
 export interface DrawingState {
   isDrawing: boolean;
   isErasing: boolean;
-  color: string;
-  width: number;
+  isTexting: boolean;
+  drawTool: ToolState;
+  eraseTool: ToolState;
+  textTool: ToolState;
 }
 
 export interface MediaSettings {

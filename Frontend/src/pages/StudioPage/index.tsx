@@ -29,8 +29,19 @@ export default function StudioPage() {
   const [drawingState, setDrawingState] = useState<DrawingState>({
     isDrawing: false,
     isErasing: false,
-    color: '#ffffff',
-    width: 5,
+    isTexting: false,
+    drawTool: {
+      color: '#ffffff',
+      width: 5,
+    },
+    eraseTool: {
+      color: '#ffffff',
+      width: 20,
+    },
+    textTool: {
+      color: '#ffffff',
+      width: 10,
+    },
   });
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
@@ -53,7 +64,23 @@ export default function StudioPage() {
         setMediaStream(null);
       }
       setIsStreaming(false);
-      setDrawingState({ isDrawing: false, isErasing: false, color: '#FF0000', width: 5 });
+      setDrawingState({
+        isDrawing: false,
+        isErasing: false,
+        isTexting: false,
+        drawTool: {
+          color: '#ffffff',
+          width: 5,
+        },
+        eraseTool: {
+          color: '#ffffff',
+          width: 20,
+        },
+        textTool: {
+          color: '#ffffff',
+          width: 10,
+        },
+      });
     } else if (tab === 'WebStudio') {
       setVideoMode('container');
     }

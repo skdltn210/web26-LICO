@@ -1,12 +1,13 @@
 import { ChangeEvent } from 'react';
-import { DrawingState } from '@/types/canvas';
+import { ToolState } from '@/types/canvas';
 
-interface PaletteProps {
-  drawingState: DrawingState;
-  onStateChange: (state: DrawingState) => void;
+interface ToolSettingProps {
+  toolState: ToolState;
+  onStateChange: (state: Partial<ToolState>) => void;
+  isErasing?: boolean;
 }
 
-export default function Palette({ drawingState, onStateChange }: PaletteProps) {
+export default function Palette({ toolState, onStateChange, isErasing = false }: ToolSettingProps) {
   const presetColors = [
     { color: '#FFFFFF', label: '흰색' },
     { color: '#000000', label: '검정' },
@@ -25,29 +26,20 @@ export default function Palette({ drawingState, onStateChange }: PaletteProps) {
   ];
 
   const handleColorClick = (color: string) => {
-    onStateChange({
-      ...drawingState,
-      color,
-    });
+    onStateChange({ color });
   };
 
   const handleSizeClick = (width: number) => {
-    onStateChange({
-      ...drawingState,
-      width,
-    });
+    onStateChange({ width });
   };
 
   const handleCustomColorChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onStateChange({
-      ...drawingState,
-      color: e.target.value,
-    });
+    onStateChange({ color: e.target.value });
   };
 
   return (
     <div className="absolute left-0 top-full z-50 mt-1 space-y-4 rounded-lg bg-lico-gray-3 p-3 shadow-lg">
-      {!drawingState.isErasing && (
+      {!isErasing && (
         <div className="space-y-2">
           <span className="block text-sm text-lico-gray-1">색상</span>
           <div className="flex items-center gap-2">
@@ -57,7 +49,7 @@ export default function Palette({ drawingState, onStateChange }: PaletteProps) {
                 type="button"
                 onClick={() => handleColorClick(color)}
                 className={`h-6 w-6 rounded-full border ${
-                  drawingState.color === color ? 'ring-2 ring-lico-orange-2 ring-offset-2' : ''
+                  toolState.color === color ? 'ring-2 ring-lico-orange-2 ring-offset-2' : ''
                 }`}
                 style={{ backgroundColor: color }}
                 title={label}
@@ -65,7 +57,7 @@ export default function Palette({ drawingState, onStateChange }: PaletteProps) {
             ))}
             <input
               type="color"
-              value={drawingState.color}
+              value={toolState.color}
               onChange={handleCustomColorChange}
               className="h-6 w-6 cursor-pointer rounded-full"
               title="커스텀 색상"
@@ -82,7 +74,7 @@ export default function Palette({ drawingState, onStateChange }: PaletteProps) {
               type="button"
               onClick={() => handleSizeClick(size)}
               className={`relative flex h-8 w-8 items-center justify-center rounded-lg ${
-                drawingState.width === size ? 'bg-lico-orange-2' : 'bg-lico-gray-4 hover:bg-lico-gray-2'
+                toolState.width === size ? 'bg-lico-orange-2' : 'bg-lico-gray-4 hover:bg-lico-gray-2'
               } `}
               title={`${size}px`}
             >
@@ -91,7 +83,7 @@ export default function Palette({ drawingState, onStateChange }: PaletteProps) {
                 style={{
                   width: `${dimension}px`,
                   height: `${dimension}px`,
-                  backgroundColor: drawingState.isErasing ? 'white' : drawingState.color,
+                  backgroundColor: isErasing ? 'white' : toolState.color,
                 }}
               />
             </button>

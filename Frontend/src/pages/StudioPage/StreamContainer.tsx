@@ -343,6 +343,28 @@ export default function StreamContainer({
     return { x, y };
   };
 
+  const getDrawingColor = (): string => {
+    if (drawingState.isErasing) {
+      return drawingState.eraseTool.color;
+    } else if (drawingState.isDrawing) {
+      return drawingState.drawTool.color;
+    } else if (drawingState.isTexting) {
+      return drawingState.textTool.color;
+    }
+    return '#ffffff';
+  };
+
+  const getDrawingWidth = (): number => {
+    if (drawingState.isErasing) {
+      return drawingState.eraseTool.width;
+    } else if (drawingState.isDrawing) {
+      return drawingState.drawTool.width;
+    } else if (drawingState.isTexting) {
+      return drawingState.textTool.width;
+    }
+    return 5;
+  };
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -350,7 +372,7 @@ export default function StreamContainer({
     const point = getCanvasPoint(e);
 
     if (drawingState.isDrawing || drawingState.isErasing) {
-      startDrawing(point, drawingState.color, drawingState.width, drawingState.isErasing ? 'erase' : 'draw');
+      startDrawing(point, getDrawingColor(), getDrawingWidth(), drawingState.isErasing ? 'erase' : 'draw');
       return;
     }
 
@@ -396,6 +418,11 @@ export default function StreamContainer({
       return;
     }
 
+    if (drawingState.isTexting) {
+      canvas.style.cursor = 'text';
+      return;
+    }
+
     if (!selectedElement) {
       canvas.style.cursor = 'default';
       return;
@@ -410,6 +437,7 @@ export default function StreamContainer({
         ? 'move'
         : 'default';
   };
+
   const handleMouseUp = () => {
     if (drawingState.isDrawing || drawingState.isErasing) {
       endDrawing();

@@ -4,7 +4,8 @@ import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
 import Palette from './Modals/Palette';
-import { MediaSettings, WebStreamControlsProps, DrawingState } from '@/types/canvas';
+import TextSetting from './Modals/TextSetting';
+import { MediaSettings, WebStreamControlsProps, DrawingState, ToolState } from '@/types/canvas';
 import { useFinishLive } from '@/hooks/useLive';
 
 export default function WebStreamControls({
@@ -22,14 +23,26 @@ export default function WebStreamControls({
     videoEnabled: false,
     audioEnabled: false,
   }));
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [isErasing, setIsErasing] = useState(false);
+
+  const [activeTool, setActiveTool] = useState<'text' | 'draw' | 'erase' | null>(null);
   const [drawingState, setDrawingState] = useState<DrawingState>({
     isDrawing: false,
     isErasing: false,
-    color: '#ffffff',
-    width: 5,
+    isTexting: false,
+    drawTool: {
+      color: '#ffffff',
+      width: 5,
+    },
+    eraseTool: {
+      color: '#ffffff',
+      width: 20,
+    },
+    textTool: {
+      color: '#000000',
+      width: 10,
+    },
   });
+
   const { mutateAsync: finishLive } = useFinishLive();
 
   const handleScreenShare = async () => {
@@ -99,42 +112,42 @@ export default function WebStreamControls({
     onStreamingChange(!isStreaming);
   };
 
-  const handleDrawing = () => {
-    const newIsDrawing = !isDrawing;
-    setIsDrawing(newIsDrawing);
-    if (newIsDrawing) {
-      setIsErasing(false);
+  const handleToolSelect = (tool: 'text' | 'draw' | 'erase' | null) => {
+    if (activeTool === tool) {
+      setActiveTool(null);
+      const newState: DrawingState = {
+        ...drawingState,
+        isDrawing: false,
+        isErasing: false,
+        isTexting: false,
+      };
+      setDrawingState(newState);
+      onDrawingStateChange(newState);
+      return;
     }
+
+    setActiveTool(tool);
 
     const newState: DrawingState = {
       ...drawingState,
-      isDrawing: newIsDrawing,
-      isErasing: false,
+      isDrawing: tool === 'draw',
+      isErasing: tool === 'erase',
+      isTexting: tool === 'text',
     };
     setDrawingState(newState);
     onDrawingStateChange(newState);
   };
 
-  const handleErasing = () => {
-    const newIsErasing = !isErasing;
-    setIsErasing(newIsErasing);
-    if (newIsErasing) {
-      setIsDrawing(false);
-    }
-
-    const newState: DrawingState = {
+  const handleDrawingStateChange = (newState: Partial<ToolState>, tool: 'text' | 'draw' | 'erase') => {
+    const updatedState: DrawingState = {
       ...drawingState,
-      isDrawing: false,
-      isErasing: newIsErasing,
-      width: newIsErasing ? 20 : drawingState.width,
+      [tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool']: {
+        ...drawingState[tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool'],
+        ...newState,
+      },
     };
-    setDrawingState(newState);
-    onDrawingStateChange(newState);
-  };
-
-  const handleDrawingStateChange = (newState: DrawingState) => {
-    setDrawingState(newState);
-    onDrawingStateChange(newState);
+    setDrawingState(updatedState);
+    onDrawingStateChange(updatedState);
   };
 
   return (
@@ -150,14 +163,49 @@ export default function WebStreamControls({
               onClick={handleMediaSetting}
             />
             <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
-            <ControlButton icon={LuType} label="텍스트" isEnabled={false} onClick={() => console.log()} />
             <div className="relative">
-              <ControlButton icon={LuPencil} label="그리기" isEnabled={isDrawing} onClick={handleDrawing} />
-              {isDrawing && <Palette drawingState={drawingState} onStateChange={handleDrawingStateChange} />}
+              <ControlButton
+                icon={LuType}
+                label="텍스트"
+                isEnabled={activeTool === 'text'}
+                onClick={() => handleToolSelect('text')}
+              />
+              {activeTool === 'text' && (
+                <TextSetting
+                  toolState={drawingState.textTool}
+                  onStateChange={state => handleDrawingStateChange(state, 'text')}
+                />
+              )}
             </div>
             <div className="relative">
-              <ControlButton icon={LuEraser} label="지우개" isEnabled={isErasing} onClick={handleErasing} />
-              {isErasing && <Palette drawingState={drawingState} onStateChange={handleDrawingStateChange} />}
+              <ControlButton
+                icon={LuPencil}
+                label="그리기"
+                isEnabled={activeTool === 'draw'}
+                onClick={() => handleToolSelect('draw')}
+              />
+              {activeTool === 'draw' && (
+                <Palette
+                  toolState={drawingState.drawTool}
+                  onStateChange={state => handleDrawingStateChange(state, 'draw')}
+                  isErasing={false}
+                />
+              )}
+            </div>
+            <div className="relative">
+              <ControlButton
+                icon={LuEraser}
+                label="지우개"
+                isEnabled={activeTool === 'erase'}
+                onClick={() => handleToolSelect('erase')}
+              />
+              {activeTool === 'erase' && (
+                <Palette
+                  toolState={drawingState.eraseTool}
+                  onStateChange={state => handleDrawingStateChange(state, 'erase')}
+                  isErasing={true}
+                />
+              )}
             </div>
           </div>
         </div>
