@@ -5,6 +5,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatsController } from './chats.controller';
 import { UsersModule } from '../users/users.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UsersModule } from '../users/users.module';
       }),
       inject: [ConfigService],
     }),
+    HttpModule,
   ],
   providers: [ChatsService],
   exports: [ChatsService],
