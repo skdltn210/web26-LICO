@@ -25,7 +25,7 @@ export default function WebStreamControls({
   const [drawingState, setDrawingState] = useState<DrawingState>({
     isDrawing: false,
     isErasing: false,
-    color: '#000000',
+    color: '#ffffff',
     width: 5,
   });
 
@@ -128,47 +128,54 @@ export default function WebStreamControls({
 
   return (
     <>
-      <div className="flex items-center gap-4">
-        <div className="flex flex-wrap gap-2">
-          <ControlButton icon={LuMonitor} label="화면 공유" isEnabled={!!screenStream} onClick={handleScreenShare} />
-          <ControlButton
-            icon={LuSettings}
-            label="카메라 / 마이크 설정"
-            isEnabled={!!mediaStream}
-            onClick={handleMediaSetting}
-          />
-          <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
-          <ControlButton icon={LuType} label="텍스트" isEnabled={false} onClick={() => console.log()} />
-          <ControlButton icon={LuPencil} label="그리기" isEnabled={isDrawing} onClick={handleDrawing} />
-          <ControlButton icon={LuEraser} label="지우개" isEnabled={isErasing} onClick={handleErasing} />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start gap-2">
+          <div className="flex flex-wrap gap-2">
+            <ControlButton icon={LuMonitor} label="화면 공유" isEnabled={!!screenStream} onClick={handleScreenShare} />
+            <ControlButton
+              icon={LuSettings}
+              label="카메라 / 마이크 설정"
+              isEnabled={!!mediaStream}
+              onClick={handleMediaSetting}
+            />
+            <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
+            <ControlButton icon={LuType} label="텍스트" isEnabled={false} onClick={() => console.log()} />
+            <div className="relative">
+              <ControlButton icon={LuPencil} label="그리기" isEnabled={isDrawing} onClick={handleDrawing} />
+              {isDrawing && <Palette drawingState={drawingState} onStateChange={handleDrawingStateChange} />}
+            </div>
+            <div className="relative">
+              <ControlButton icon={LuEraser} label="지우개" isEnabled={isErasing} onClick={handleErasing} />
+              {isErasing && <Palette drawingState={drawingState} onStateChange={handleDrawingStateChange} />}
+            </div>
+          </div>
         </div>
-        {(isDrawing || isErasing) && <Palette drawingState={drawingState} onStateChange={handleDrawingStateChange} />}
+
+        <button
+          type="button"
+          onClick={handleStreaming}
+          className={`flex w-full items-center justify-center gap-2 rounded px-4 py-2.5 font-bold transition-colors ${
+            isStreaming
+              ? 'bg-lico-gray-3 text-lico-gray-1 hover:bg-lico-gray-2'
+              : 'bg-lico-orange-2 text-lico-gray-5 hover:bg-lico-orange-1'
+          }`}
+          aria-label={isStreaming ? '방송 중지하기' : '방송 시작하기'}
+        >
+          {isStreaming ? (
+            <FaSquare className="h-4 w-4 text-red-600" aria-hidden="true" />
+          ) : (
+            <LuPlay className="h-5 w-5" aria-hidden="true" />
+          )}
+          {isStreaming ? '방송 종료하기' : '방송 시작하기'}
+        </button>
+
+        <CamMicSetting
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          onConfirm={handleSettingsConfirm}
+          initialSettings={mediaSettings}
+        />
       </div>
-
-      <button
-        type="button"
-        onClick={handleStreaming}
-        className={`mt-6 flex w-full items-center justify-center gap-2 rounded px-4 py-2.5 font-bold transition-colors ${
-          isStreaming
-            ? 'bg-lico-gray-3 text-lico-gray-1 hover:bg-lico-gray-2'
-            : 'bg-lico-orange-2 text-lico-gray-5 hover:bg-lico-orange-1'
-        }`}
-        aria-label={isStreaming ? '방송 중지하기' : '방송 시작하기'}
-      >
-        {isStreaming ? (
-          <FaSquare className="h-4 w-4 text-red-600" aria-hidden="true" />
-        ) : (
-          <LuPlay className="h-5 w-5" aria-hidden="true" />
-        )}
-        {isStreaming ? '방송 종료하기' : '방송 시작하기'}
-      </button>
-
-      <CamMicSetting
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        onConfirm={handleSettingsConfirm}
-        initialSettings={mediaSettings}
-      />
     </>
   );
 }

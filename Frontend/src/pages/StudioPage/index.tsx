@@ -29,7 +29,7 @@ export default function StudioPage() {
   const [drawingState, setDrawingState] = useState<DrawingState>({
     isDrawing: false,
     isErasing: false,
-    color: '#ff0000',
+    color: '#ffffff',
     width: 5,
   });
 
