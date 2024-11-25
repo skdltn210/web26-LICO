@@ -29,7 +29,7 @@ export default function StudioPage() {
   const [drawingState, setDrawingState] = useState<DrawingState>({
     isDrawing: false,
     isErasing: false,
-    color: '#FF0000',
+    color: '#ff0000',
     width: 5,
   });
 
@@ -72,12 +72,7 @@ export default function StudioPage() {
   };
 
   const handleDrawingStateChange = (newState: DrawingState) => {
-    setDrawingState(prev => ({
-      ...prev,
-      ...newState,
-      color: newState.isDrawing ? prev.color || '#FF0000' : prev.color,
-      width: newState.isDrawing || newState.isErasing ? prev.width || 5 : prev.width,
-    }));
+    setDrawingState(newState);
   };
 
   const renderVideoContent = () => {

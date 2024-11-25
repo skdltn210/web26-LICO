@@ -3,6 +3,7 @@ import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } fr
 import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
+import Palette from './Modals/Palette';
 import { MediaSettings, WebStreamControlsProps, DrawingState } from '@/types/canvas';
 
 export default function WebStreamControls({
@@ -21,6 +22,12 @@ export default function WebStreamControls({
   }));
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
+  const [drawingState, setDrawingState] = useState<DrawingState>({
+    isDrawing: false,
+    isErasing: false,
+    color: '#000000',
+    width: 5,
+  });
 
   const handleScreenShare = async () => {
     try {
@@ -88,13 +95,13 @@ export default function WebStreamControls({
       setIsErasing(false);
     }
 
-    const drawingState: DrawingState = {
+    const newState: DrawingState = {
+      ...drawingState,
       isDrawing: newIsDrawing,
       isErasing: false,
-      color: '#FF0000',
-      width: 5,
     };
-    onDrawingStateChange(drawingState);
+    setDrawingState(newState);
+    onDrawingStateChange(newState);
   };
 
   const handleErasing = () => {
@@ -104,13 +111,19 @@ export default function WebStreamControls({
       setIsDrawing(false);
     }
 
-    const drawingState: DrawingState = {
+    const newState: DrawingState = {
+      ...drawingState,
       isDrawing: false,
       isErasing: newIsErasing,
-      color: '#FF0000',
-      width: 5,
+      width: newIsErasing ? 20 : drawingState.width,
     };
-    onDrawingStateChange(drawingState);
+    setDrawingState(newState);
+    onDrawingStateChange(newState);
+  };
+
+  const handleDrawingStateChange = (newState: DrawingState) => {
+    setDrawingState(newState);
+    onDrawingStateChange(newState);
   };
 
   return (
@@ -129,6 +142,7 @@ export default function WebStreamControls({
           <ControlButton icon={LuPencil} label="그리기" isEnabled={isDrawing} onClick={handleDrawing} />
           <ControlButton icon={LuEraser} label="지우개" isEnabled={isErasing} onClick={handleErasing} />
         </div>
+        {(isDrawing || isErasing) && <Palette drawingState={drawingState} onStateChange={handleDrawingStateChange} />}
       </div>
 
       <button
