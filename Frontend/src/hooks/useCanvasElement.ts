@@ -1,20 +1,8 @@
 import { useState, useCallback } from 'react';
-
-interface Position {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import { Position, UseCanvasElementProps } from '@/types/canvas';
 
 type ResizeCorner = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 type ResizeHandle = ResizeCorner | null;
-
-interface UseCanvasElementProps {
-  minSize?: number;
-  canvasWidth: number;
-  canvasHeight: number;
-}
 
 export const useCanvasElement = ({ minSize = 100, canvasWidth, canvasHeight }: UseCanvasElementProps) => {
   const [isResizing, setIsResizing] = useState<ResizeHandle>(null);

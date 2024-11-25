@@ -3,24 +3,7 @@ import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } fr
 import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
-
-interface MediaSettings {
-  videoEnabled: boolean;
-  audioEnabled: boolean;
-  videoDeviceId?: string;
-  audioDeviceId?: string;
-  isCamFlipped?: boolean;
-  volume?: number;
-}
-
-interface WebStreamControlsProps {
-  screenStream: MediaStream | null;
-  mediaStream: MediaStream | null;
-  isStreaming: boolean;
-  onScreenStreamChange: (stream: MediaStream | null) => void;
-  onMediaStreamChange: (stream: MediaStream | null) => void;
-  onStreamingChange: (streaming: boolean) => void;
-}
+import { MediaSettings, WebStreamControlsProps } from '@/types/canvas';
 
 export default function WebStreamControls({
   screenStream,

@@ -20,6 +20,9 @@ export const config = {
       redirectUri: `${import.meta.env.VITE_AUTH_REDIRECT_BASE_URL}/auth/github/callback`,
     },
   },
+  webrtcUrl: import.meta.env.VITE_WEBRTC_URL,
+  whipUrl: import.meta.env.VITE_WHIP_URL,
+  streamUrl: import.meta.env.VITE_STREAM_URL,
 } as const;
 
 export const urls = {
