@@ -253,7 +253,6 @@ export default function StreamContainer({
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw videos
       if (screenVideo && screenStream) {
         ctx.drawImage(screenVideo, screenPosition.x, screenPosition.y, screenPosition.width, screenPosition.height);
       }
@@ -270,7 +269,6 @@ export default function StreamContainer({
         ctx.restore();
       }
 
-      // Draw selection handles
       if (!drawingState.isDrawing && !drawingState.isErasing) {
         if (selectedElement === 'screen') {
           ctx.strokeStyle = 'white';
@@ -285,7 +283,6 @@ export default function StreamContainer({
         }
       }
 
-      // Draw paths
       drawPaths(ctx);
 
       animationFrameRef.current = requestAnimationFrame(updateCanvas);
@@ -332,10 +329,7 @@ export default function StreamContainer({
     const point = getCanvasPoint(e);
 
     if (drawingState.isDrawing || drawingState.isErasing) {
-      const color = drawingState.isErasing ? 'transparent' : drawingState.color || '#FF0000';
-      const width = drawingState.width || 5;
-
-      startDrawing(point, color, width, drawingState.isErasing ? 'erase' : 'draw');
+      startDrawing(point, drawingState.color, drawingState.width, drawingState.isErasing ? 'erase' : 'draw');
       return;
     }
 
@@ -410,17 +404,17 @@ export default function StreamContainer({
         ctx.lineTo(path.points[i].x, path.points[i].y);
       }
 
-      ctx.strokeStyle = path.color;
+      if (path.type === 'erase') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = path.color;
+      }
+
       ctx.lineWidth = path.width;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-
-      if (path.type === 'erase') {
-        ctx.globalCompositeOperation = 'destination-out';
-      } else {
-        ctx.globalCompositeOperation = 'source-over';
-      }
-
       ctx.stroke();
     });
 
