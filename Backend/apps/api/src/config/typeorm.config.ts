@@ -1,5 +1,8 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { UserEntity } from '../users/entity/user.entity';
+import { CategoryEntity } from '../categories/entity/category.entity';
+import { LiveEntity } from '../lives/entity/live.entity';
 
 export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   const dbType = configService.get<string>('DB_TYPE');
@@ -8,7 +11,7 @@ export const typeOrmConfig = (configService: ConfigService): TypeOrmModuleOption
   return {
     type: dbType,
     ...dbConfig,
-    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    entities: [UserEntity, CategoryEntity, LiveEntity],
     synchronize: configService.get<boolean>('DB_SYNCHRONIZE'),
     logging: configService.get<boolean>('DB_LOGGING'),
   };

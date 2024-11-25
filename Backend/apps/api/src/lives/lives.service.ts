@@ -20,7 +20,6 @@ export interface ReadLivesOptions {
   onAir?: boolean;
 }
 
-
 @Injectable()
 export class LivesService {
   constructor(
@@ -70,12 +69,9 @@ export class LivesService {
     }
 
     // 페이지네이션 적용
-    const lives = await queryBuilder
-      .skip(offset)
-      .take(limit)
-      .getMany();
+    const lives = await queryBuilder.skip(offset).take(limit).getMany();
 
-    return lives.map((entity) => entity.toLivesDto());
+    return lives.map(entity => entity.toLivesDto());
   }
 
   async readLive(channelId: string): Promise<LiveDto> {
@@ -88,20 +84,28 @@ export class LivesService {
     return live.toLiveDto();
   }
 
-  async updateLive({channelId, updateLiveDto, userId}: {channelId: UUID; updateLiveDto: UpdateLiveDto; userId: number;}) {
+  async updateLive({
+    channelId,
+    updateLiveDto,
+    userId,
+  }: {
+    channelId: UUID;
+    updateLiveDto: UpdateLiveDto;
+    userId: number;
+  }) {
     const live = await this.livesRepository.findOne({
       where: { channelId },
       relations: ['user'],
     });
-  
+
     if (!live) {
       throw new NotFoundException(ErrorMessage.LIVE_NOT_FOUND);
     }
-  
+
     if (live.user.id !== userId) {
       throw new ForbiddenException('권한이 없습니다.');
     }
-  
+
     await this.livesRepository.update({ channelId }, updateLiveDto);
   }
 
@@ -127,7 +131,7 @@ export class LivesService {
     }
 
     this.chatsService.clearChat(live.channelId as UUID);
-    await this.livesRepository.update({ streamingKey }, { startedAt: new Date(), onAir: true });
+    await this.livesRepository.update({ streamingKey }, { startedAt: new Date(), onAir: true, viewers: 0 });
   }
 
   async endLive(channelId: UUID) {
@@ -153,9 +157,7 @@ export class LivesService {
   }
 
   // 카테고리 통계
-  async getCategoryStats(): Promise<
-    { categoriesId: number; liveCount: number; viewerCount: number }[]
-  > {
+  async getCategoryStats(): Promise<{ categoriesId: number; liveCount: number; viewerCount: number }[]> {
     const stats = await this.livesRepository
       .createQueryBuilder('live')
       .select('live.categoriesId', 'categoriesId')
@@ -165,7 +167,7 @@ export class LivesService {
       .groupBy('live.categoriesId')
       .getRawMany();
 
-    return stats.map((stat) => ({
+    return stats.map(stat => ({
       categoriesId: Number(stat.categoriesId),
       liveCount: Number(stat.liveCount),
       viewerCount: Number(stat.viewerCount) || 0,

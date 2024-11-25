@@ -11,11 +11,11 @@ async function bootstrap() {
 
   // PORT 설정
   const port = configService.get<number>('PORT') || 3000;
-
+  console.log(__dirname);
   app.use(cookieParser()); // cookie-parser 미들웨어 사용
   app.enableCors({
     // CORS 설정
-    origin: configService.get<string>('CORS').split(',') || '*',
+    origin: configService.get<string>('CORS')?.split(',') || '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
