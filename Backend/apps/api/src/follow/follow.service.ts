@@ -85,4 +85,15 @@ export class FollowService {
       onAir: streamer.live?.onAir || false,
     }));
   }
+
+  // 팔로워 수
+  async getFollowerCount(streamerId: number): Promise<number> {
+    const count = await this.usersRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.followers', 'follower')
+      .where('user.id = :streamerId', { streamerId })
+      .getCount();
+  
+    return count;
+  }
 }
