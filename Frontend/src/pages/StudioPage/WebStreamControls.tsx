@@ -38,8 +38,8 @@ export default function WebStreamControls({
       width: 20,
     },
     textTool: {
-      color: '#000000',
-      width: 10,
+      color: '#ffffff',
+      width: 12,
     },
   });
 

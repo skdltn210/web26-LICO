@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCanvasElement } from '@hooks/useCanvasElement';
 import { useDrawing } from '@hooks/useDrawing';
+import { useText } from '@hooks/useText';
 import { WebRTCStream } from './WebRTCStream';
 import { Position, StreamContainerProps, Point } from '@/types/canvas';
 import pencilCursor from '@assets/icons/pencilCursor.svg';
@@ -33,6 +34,10 @@ export default function StreamContainer({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   const { paths, startDrawing, continueDrawing, endDrawing } = useDrawing();
+  const { textInput, startTextInput, updateText, completeText, cancelText, drawTexts } = useText({
+    color: drawingState.textTool.color,
+    fontSize: drawingState.textTool.width,
+  });
 
   const getIsCamFlipped = () => {
     if (!mediaStream) return false;
@@ -219,17 +224,6 @@ export default function StreamContainer({
     }
   }, [mediaStream]);
 
-  const maintainAspectRatio = (newPosition: Position, isCamera: boolean) => {
-    const aspectRatio = isCamera ? cameraAspectRatio : screenAspectRatio;
-    const width = newPosition.width;
-    const height = width / aspectRatio;
-
-    return {
-      ...newPosition,
-      height,
-    };
-  };
-
   useEffect(() => {
     const canvas = canvasRef.current;
     const videoCanvas = videoCanvasRef.current;
@@ -290,7 +284,7 @@ export default function StreamContainer({
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (!drawingState.isDrawing && !drawingState.isErasing) {
+      if (!drawingState.isDrawing && !drawingState.isErasing && !drawingState.isTexting) {
         if (selectedElement === 'screen') {
           ctx.strokeStyle = 'white';
           ctx.lineWidth = 2;
@@ -305,6 +299,7 @@ export default function StreamContainer({
       }
 
       drawPaths(ctx);
+      drawTexts(ctx);
 
       animationFrameRef.current = requestAnimationFrame(updateCanvas);
     };
@@ -328,6 +323,33 @@ export default function StreamContainer({
     drawingState,
   ]);
 
+  const maintainAspectRatio = (newPosition: Position, isCamera: boolean) => {
+    const aspectRatio = isCamera ? cameraAspectRatio : screenAspectRatio;
+    const width = newPosition.width;
+    const height = width / aspectRatio;
+
+    return {
+      ...newPosition,
+      height,
+    };
+  };
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (!textInput.isVisible) return;
+
+      const input = document.getElementById('text-input');
+      if (input && !input.contains(e.target as Node)) {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d') || null;
+        completeText(ctx);
+      }
+    };
+
+    window.addEventListener('mousedown', handleOutsideClick);
+    return () => window.removeEventListener('mousedown', handleOutsideClick);
+  }, [textInput.isVisible, completeText]);
+
   const isPointInElement = (x: number, y: number, position: Position): boolean => {
     return x >= position.x && x <= position.x + position.width && y >= position.y && y <= position.y + position.height;
   };
@@ -343,26 +365,37 @@ export default function StreamContainer({
     return { x, y };
   };
 
-  const getDrawingColor = (): string => {
-    if (drawingState.isErasing) {
-      return drawingState.eraseTool.color;
-    } else if (drawingState.isDrawing) {
-      return drawingState.drawTool.color;
-    } else if (drawingState.isTexting) {
-      return drawingState.textTool.color;
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (drawingState.isTexting) {
+      e.preventDefault();
+      e.stopPropagation();
+      startTextInput({ x, y });
+      return;
     }
-    return '#ffffff';
   };
 
-  const getDrawingWidth = (): number => {
-    if (drawingState.isErasing) {
-      return drawingState.eraseTool.width;
-    } else if (drawingState.isDrawing) {
-      return drawingState.drawTool.width;
-    } else if (drawingState.isTexting) {
-      return drawingState.textTool.width;
+  const handleTextInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    updateText(e.target.value);
+  };
+
+  const handleTextInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+
+    if (e.key === 'Enter') {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d') || null;
+      completeText(ctx);
+    } else if (e.key === 'Escape') {
+      cancelText();
     }
-    return 5;
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -371,8 +404,18 @@ export default function StreamContainer({
 
     const point = getCanvasPoint(e);
 
+    if (drawingState.isTexting) {
+      handleCanvasClick(e);
+      return;
+    }
+
     if (drawingState.isDrawing || drawingState.isErasing) {
-      startDrawing(point, getDrawingColor(), getDrawingWidth(), drawingState.isErasing ? 'erase' : 'draw');
+      startDrawing(
+        point,
+        drawingState.isDrawing ? drawingState.drawTool.color : '#ffffff',
+        drawingState.isDrawing ? drawingState.drawTool.width : drawingState.eraseTool.width,
+        drawingState.isErasing ? 'erase' : 'draw',
+      );
       return;
     }
 
@@ -393,10 +436,7 @@ export default function StreamContainer({
     } else if (screenStream && isPointInElement(point.x, point.y, screenPosition)) {
       setSelectedElement('screen');
       setIsDragging(true);
-      setDragStart({
-        x: point.x - screenPosition.x,
-        y: point.y - screenPosition.y,
-      });
+      setDragStart({ x: point.x - screenPosition.x, y: point.y - screenPosition.y });
     }
   };
 
@@ -405,6 +445,11 @@ export default function StreamContainer({
     if (!canvas) return;
 
     const point = getCanvasPoint(e);
+
+    if (drawingState.isTexting) {
+      canvas.style.cursor = 'text';
+      return;
+    }
 
     if (drawingState.isDrawing) {
       canvas.style.cursor = `url(${pencilCursor}) 0 24, crosshair`;
@@ -415,11 +460,6 @@ export default function StreamContainer({
     if (drawingState.isErasing) {
       canvas.style.cursor = `url(${eraserCursor}) 8 24, cell`;
       continueDrawing(point);
-      return;
-    }
-
-    if (drawingState.isTexting) {
-      canvas.style.cursor = 'text';
       return;
     }
 
@@ -488,6 +528,32 @@ export default function StreamContainer({
         onMouseLeave={handleMouseUp}
         style={{ background: 'transparent' }}
       />
+      {textInput.isVisible && (
+        <div
+          className="absolute"
+          style={{
+            left: textInput.position.x,
+            top: textInput.position.y - drawingState.textTool.width * 0.5,
+            zIndex: 100,
+          }}
+        >
+          <input
+            id="text-input"
+            type="text"
+            value={textInput.text}
+            onChange={handleTextInputChange}
+            onKeyDown={handleTextInputKeyDown}
+            className="m-0 min-w-[100px] border-none bg-transparent p-0 outline-none"
+            style={{
+              color: drawingState.textTool.color,
+              fontSize: `${drawingState.textTool.width}px`,
+              lineHeight: '1',
+            }}
+            autoFocus
+            placeholder="텍스트 입력"
+          />
+        </div>
+      )}
       <video ref={screenVideoRef} autoPlay playsInline className="hidden" />
       <video ref={mediaVideoRef} autoPlay playsInline className="hidden" />
     </div>
