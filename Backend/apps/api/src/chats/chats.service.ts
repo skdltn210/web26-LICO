@@ -61,6 +61,6 @@ export class ChatsService {
       }),
     );
 
-    return data?.result?.message?.content;
+    return data?.result?.message?.content?.includes('true');
   }
 }
