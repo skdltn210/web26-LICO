@@ -22,9 +22,9 @@ fi
 
 
 if [[ "$APP_NAME" == "live" ]]; then
-    curl -X DELETE http://192.168.1.9:3000/lives/onair/$CHANNEL_ID
+    curl -X DELETE http://192.168.1.9:3000/lives/onair/$STREAM_KEY
 elif [[ "$APP_NAME" == "dev" ]]; then
-    curl -X DELETE http://192.168.1.7:3000/lives/onair/$CHANNEL_ID
+    curl -X DELETE http://192.168.1.7:3000/lives/onair/$STREAM_KEY
 else
     echo "Error: Unsupported APP_NAME. Exiting."
     exit 1

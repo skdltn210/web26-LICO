@@ -23,7 +23,7 @@ if [[ -z "$CHANNEL_ID" ]]; then
 fi
 
 
-ffmpeg -rw_timeout 10000000 -r 30 -i "rtmp://192.168.1.6:1935/$APP_NAME/$STREAM_KEY" \
+ffmpeg -rw_timeout 10000000 -r 30 -i "rtmp://192.168.1.6:1935/$APP_NAME/$STREAM_KEY" -y \
         -filter_complex "[0:v]split=3[720p][for480p][for360p];[for480p]scale=854:480[480p];[for360p]scale=640:360[360p]" \
         -map "[720p]" -map 0:a? -c:v:0 libx264 -b:v:0 2800k -s:v:0 1280x720 -preset ultrafast -g 30 -tune zerolatency -profile:v:0 baseline -c:a aac -b:a 128k \
         -map "[480p]" -map 0:a? -c:v:1 libx264 -b:v:1 1200k -preset ultrafast -g 30 -tune zerolatency -profile:v:1 baseline -c:a aac -b:a 128k \

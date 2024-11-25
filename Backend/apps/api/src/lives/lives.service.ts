@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { LiveEntity } from './entity/live.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { LivesDto } from './dto/lives.dto';
 import { LiveDto } from './dto/live.dto';
 import { UUID } from 'crypto';
@@ -134,8 +134,8 @@ export class LivesService {
     await this.livesRepository.update({ streamingKey }, { startedAt: new Date(), onAir: true, viewers: 0 });
   }
 
-  async endLive(channelId: UUID) {
-    this.livesRepository.update({ channelId }, { onAir: false });
+  async endLive(streamingKey: UUID) {
+    this.livesRepository.update({ streamingKey }, { onAir: false });
   }
 
   async readStatus(channelId: UUID) {
