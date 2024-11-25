@@ -3,6 +3,7 @@ import ChannelGrid from '@components/channel/ChannelGrid';
 import { useCategoryLives, useCategoryDetail } from '@hooks/useCategory';
 import { formatUnit } from '@utils/format';
 import LoadingSpinner from '@components/common/LoadingSpinner';
+import { config } from '@config/env.ts';
 
 export default function CategoryDetailPage() {
   const { categoryId } = useParams();
@@ -13,8 +14,6 @@ export default function CategoryDetailPage() {
 
   const { data: category, isLoading: categoryLoading, error: categoryError } = useCategoryDetail(categoryId);
   const { data: lives, isLoading: livesLoading, error: livesError } = useCategoryLives(categoryId);
-
-  console.log('lives data:', lives); // 데이터 구조 확인
 
   if (categoryLoading || livesLoading) {
     return <LoadingSpinner />;
@@ -33,11 +32,11 @@ export default function CategoryDetailPage() {
     title: live.livesName,
     streamerName: live.usersNickname,
     profileImgUrl: live.usersProfileImage,
-    viewers: 0,
+    viewers: live.viewers,
     category: live.categoriesName,
     categoryId: live.categoriesId,
     streamerId: live.streamerId,
-    thumbnailUrl: '/default-thumbnail.png',
+    thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.jpg`,
     createdAt: new Date().toISOString(),
   }));
 
