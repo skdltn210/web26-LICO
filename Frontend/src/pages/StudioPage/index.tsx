@@ -13,6 +13,7 @@ import NotFound from '@components/error/NotFound';
 import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
+import { DrawingState } from '@/types/canvas';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
@@ -25,6 +26,12 @@ export default function StudioPage() {
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [drawingState, setDrawingState] = useState<DrawingState>({
+    isDrawing: false,
+    isErasing: false,
+    color: '#FF0000',
+    width: 5,
+  });
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
   const { data: streamKey } = useStreamingKey();
@@ -46,6 +53,7 @@ export default function StudioPage() {
         setMediaStream(null);
       }
       setIsStreaming(false);
+      setDrawingState({ isDrawing: false, isErasing: false, color: '#FF0000', width: 5 });
     } else if (tab === 'WebStudio') {
       setVideoMode('container');
     }
@@ -63,6 +71,15 @@ export default function StudioPage() {
     setIsStreaming(streaming);
   };
 
+  const handleDrawingStateChange = (newState: DrawingState) => {
+    setDrawingState(prev => ({
+      ...prev,
+      ...newState,
+      color: newState.isDrawing ? prev.color || '#FF0000' : prev.color,
+      width: newState.isDrawing || newState.isErasing ? prev.width || 5 : prev.width,
+    }));
+  };
+
   const renderVideoContent = () => {
     if (videoMode === 'player') {
       return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
@@ -74,6 +91,7 @@ export default function StudioPage() {
         isStreaming={isStreaming}
         webrtcUrl={WEBRTC_URL}
         streamKey={streamKey?.toString() || ''}
+        drawingState={drawingState}
       />
     );
   };
@@ -159,6 +177,7 @@ export default function StudioPage() {
                   onScreenStreamChange={handleScreenStreamChange}
                   onMediaStreamChange={handleMediaStreamChange}
                   onStreamingChange={handleStreamingChange}
+                  onDrawingStateChange={handleDrawingStateChange}
                 />
               </div>
             )}

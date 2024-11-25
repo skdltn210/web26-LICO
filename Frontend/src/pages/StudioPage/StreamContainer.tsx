@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCanvasElement } from '@hooks/useCanvasElement';
+import { useDrawing } from '@hooks/useDrawing';
 import { WebRTCStream } from './WebRTCStream';
-import { Position, StreamContainerProps } from '@/types/canvas';
+import { Position, StreamContainerProps, Point } from '@/types/canvas';
 
 type SelectedElement = 'screen' | 'camera' | null;
 
@@ -12,6 +13,7 @@ export default function StreamContainer({
   webrtcUrl,
   streamKey,
   onStreamError,
+  drawingState,
 }: StreamContainerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
@@ -26,6 +28,8 @@ export default function StreamContainer({
   const [selectedElement, setSelectedElement] = useState<SelectedElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const { paths, startDrawing, continueDrawing, endDrawing } = useDrawing();
 
   const getIsCamFlipped = () => {
     if (!mediaStream) return false;
@@ -225,7 +229,7 @@ export default function StreamContainer({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d', { alpha: false });
+    const ctx = canvas?.getContext('2d', { alpha: true });
     const screenVideo = screenVideoRef.current;
     const mediaVideo = mediaVideoRef.current;
 
@@ -249,14 +253,9 @@ export default function StreamContainer({
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // Draw videos
       if (screenVideo && screenStream) {
         ctx.drawImage(screenVideo, screenPosition.x, screenPosition.y, screenPosition.width, screenPosition.height);
-        if (selectedElement === 'screen') {
-          ctx.strokeStyle = 'white';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(screenPosition.x, screenPosition.y, screenPosition.width, screenPosition.height);
-          drawResizeHandles(ctx, screenPosition);
-        }
       }
 
       if (mediaVideo && mediaStream && mediaStream.getVideoTracks().length > 0) {
@@ -269,14 +268,25 @@ export default function StreamContainer({
           ctx.drawImage(mediaVideo, camPosition.x, camPosition.y, camPosition.width, camPosition.height);
         }
         ctx.restore();
+      }
 
-        if (selectedElement === 'camera') {
+      // Draw selection handles
+      if (!drawingState.isDrawing && !drawingState.isErasing) {
+        if (selectedElement === 'screen') {
+          ctx.strokeStyle = 'white';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(screenPosition.x, screenPosition.y, screenPosition.width, screenPosition.height);
+          drawResizeHandles(ctx, screenPosition);
+        } else if (selectedElement === 'camera') {
           ctx.strokeStyle = 'white';
           ctx.lineWidth = 2;
           ctx.strokeRect(camPosition.x, camPosition.y, camPosition.width, camPosition.height);
           drawResizeHandles(ctx, camPosition);
         }
       }
+
+      // Draw paths
+      drawPaths(ctx);
 
       animationFrameRef.current = requestAnimationFrame(updateCanvas);
     };
@@ -288,65 +298,145 @@ export default function StreamContainer({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [screenStream, mediaStream, camPosition, screenPosition, selectedElement, drawResizeHandles, getIsCamFlipped]);
+  }, [
+    screenStream,
+    mediaStream,
+    camPosition,
+    screenPosition,
+    selectedElement,
+    drawResizeHandles,
+    paths,
+    getIsCamFlipped,
+    drawingState,
+  ]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const isPointInElement = (x: number, y: number, position: Position): boolean => {
+    return x >= position.x && x <= position.x + position.width && y >= position.y && y <= position.y + position.height;
+  };
+
+  const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>): Point => {
     const canvas = canvasRef.current;
-    if (!canvas || !selectedElement) return;
+    if (!canvas) return { x: 0, y: 0 };
 
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const currentPosition = selectedElement === 'camera' ? camPosition : screenPosition;
-
-    const resizeHandle = getResizeHandle(x, y, currentPosition);
-    canvas.style.cursor = resizeHandle
-      ? getResizeCursor(resizeHandle)
-      : isPointInElement(x, y, currentPosition)
-        ? 'move'
-        : 'default';
-  };
-
-  const isPointInElement = (x: number, y: number, position: Position): boolean => {
-    return x >= position.x && x <= position.x + position.width && y >= position.y && y <= position.y + position.height;
+    return { x, y };
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const point = getCanvasPoint(e);
+
+    if (drawingState.isDrawing || drawingState.isErasing) {
+      const color = drawingState.isErasing ? 'transparent' : drawingState.color || '#FF0000';
+      const width = drawingState.width || 5;
+
+      startDrawing(point, color, width, drawingState.isErasing ? 'erase' : 'draw');
+      return;
+    }
 
     const currentPosition = selectedElement === 'camera' ? camPosition : screenPosition;
 
     if (selectedElement) {
-      const resizeStarted = handleResizeStart(x, y, currentPosition);
+      const resizeStarted = handleResizeStart(point.x, point.y, currentPosition);
       if (resizeStarted) return;
     }
 
-    if (mediaStream && isPointInElement(x, y, camPosition)) {
+    if (mediaStream && isPointInElement(point.x, point.y, camPosition)) {
       setSelectedElement('camera');
       setIsDragging(true);
       setDragStart({
-        x: x - camPosition.x,
-        y: y - camPosition.y,
+        x: point.x - camPosition.x,
+        y: point.y - camPosition.y,
       });
-    } else if (screenStream && isPointInElement(x, y, screenPosition)) {
+    } else if (screenStream && isPointInElement(point.x, point.y, screenPosition)) {
       setSelectedElement('screen');
       setIsDragging(true);
       setDragStart({
-        x: x - screenPosition.x,
-        y: y - screenPosition.y,
+        x: point.x - screenPosition.x,
+        y: point.y - screenPosition.y,
       });
     }
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const point = getCanvasPoint(e);
+
+    if (drawingState.isDrawing || drawingState.isErasing) {
+      continueDrawing(point);
+      return;
+    }
+
+    if (!selectedElement) {
+      canvas.style.cursor = 'default';
+      return;
+    }
+
+    const currentPosition = selectedElement === 'camera' ? camPosition : screenPosition;
+    const resizeHandle = getResizeHandle(point.x, point.y, currentPosition);
+
+    canvas.style.cursor = resizeHandle
+      ? getResizeCursor(resizeHandle)
+      : isPointInElement(point.x, point.y, currentPosition)
+        ? 'move'
+        : 'default';
+  };
+
+  const handleMouseUp = () => {
+    if (drawingState.isDrawing || drawingState.isErasing) {
+      endDrawing();
+      return;
+    }
+
+    setIsDragging(false);
+    handleResizeEnd();
+  };
+
+  const drawPaths = (ctx: CanvasRenderingContext2D) => {
+    paths.forEach(path => {
+      if (path.points.length < 2) return;
+
+      ctx.beginPath();
+      ctx.moveTo(path.points[0].x, path.points[0].y);
+
+      for (let i = 1; i < path.points.length; i++) {
+        ctx.lineTo(path.points[i].x, path.points[i].y);
+      }
+
+      ctx.strokeStyle = path.color;
+      ctx.lineWidth = path.width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (path.type === 'erase') {
+        ctx.globalCompositeOperation = 'destination-out';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      ctx.stroke();
+    });
+
+    ctx.globalCompositeOperation = 'source-over';
+  };
+
   return (
     <div className="relative h-full w-full bg-black">
-      <canvas ref={canvasRef} className="h-full w-full" onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} />
+      <canvas
+        ref={canvasRef}
+        className="h-full w-full"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      />
       <video ref={screenVideoRef} autoPlay playsInline className="hidden" />
       <video ref={mediaVideoRef} autoPlay playsInline className="hidden" />
     </div>

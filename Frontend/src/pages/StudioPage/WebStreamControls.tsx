@@ -3,7 +3,7 @@ import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } fr
 import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
-import { MediaSettings, WebStreamControlsProps } from '@/types/canvas';
+import { MediaSettings, WebStreamControlsProps, DrawingState } from '@/types/canvas';
 
 export default function WebStreamControls({
   screenStream,
@@ -12,12 +12,15 @@ export default function WebStreamControls({
   onScreenStreamChange,
   onMediaStreamChange,
   onStreamingChange,
+  onDrawingStateChange,
 }: WebStreamControlsProps) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(() => ({
     videoEnabled: false,
     audioEnabled: false,
   }));
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [isErasing, setIsErasing] = useState(false);
 
   const handleScreenShare = async () => {
     try {
@@ -78,6 +81,38 @@ export default function WebStreamControls({
     onStreamingChange(!isStreaming);
   };
 
+  const handleDrawing = () => {
+    const newIsDrawing = !isDrawing;
+    setIsDrawing(newIsDrawing);
+    if (newIsDrawing) {
+      setIsErasing(false);
+    }
+
+    const drawingState: DrawingState = {
+      isDrawing: newIsDrawing,
+      isErasing: false,
+      color: '#FF0000',
+      width: 5,
+    };
+    onDrawingStateChange(drawingState);
+  };
+
+  const handleErasing = () => {
+    const newIsErasing = !isErasing;
+    setIsErasing(newIsErasing);
+    if (newIsErasing) {
+      setIsDrawing(false);
+    }
+
+    const drawingState: DrawingState = {
+      isDrawing: false,
+      isErasing: newIsErasing,
+      color: '#FF0000',
+      width: 5,
+    };
+    onDrawingStateChange(drawingState);
+  };
+
   return (
     <>
       <div className="flex items-center gap-4">
@@ -91,8 +126,8 @@ export default function WebStreamControls({
           />
           <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
           <ControlButton icon={LuType} label="텍스트" isEnabled={false} onClick={() => console.log()} />
-          <ControlButton icon={LuPencil} label="그리기" isEnabled={false} onClick={() => console.log()} />
-          <ControlButton icon={LuEraser} label="지우개" isEnabled={false} onClick={() => console.log()} />
+          <ControlButton icon={LuPencil} label="그리기" isEnabled={isDrawing} onClick={handleDrawing} />
+          <ControlButton icon={LuEraser} label="지우개" isEnabled={isErasing} onClick={handleErasing} />
         </div>
       </div>
 
