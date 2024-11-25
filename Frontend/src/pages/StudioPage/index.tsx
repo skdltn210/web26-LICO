@@ -173,6 +173,7 @@ export default function StudioPage() {
                   onMediaStreamChange={handleMediaStreamChange}
                   onStreamingChange={handleStreamingChange}
                   onDrawingStateChange={handleDrawingStateChange}
+                  streamingKey={streamKey?.toString() || ''}
                 />
               </div>
             )}

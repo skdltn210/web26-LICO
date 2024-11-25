@@ -5,6 +5,7 @@ import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
 import Palette from './Modals/Palette';
 import { MediaSettings, WebStreamControlsProps, DrawingState } from '@/types/canvas';
+import { useFinishLive } from '@/hooks/useLive';
 
 export default function WebStreamControls({
   screenStream,
@@ -14,6 +15,7 @@ export default function WebStreamControls({
   onMediaStreamChange,
   onStreamingChange,
   onDrawingStateChange,
+  streamingKey,
 }: WebStreamControlsProps) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(() => ({
@@ -28,6 +30,7 @@ export default function WebStreamControls({
     color: '#ffffff',
     width: 5,
   });
+  const { mutateAsync: finishLive } = useFinishLive();
 
   const handleScreenShare = async () => {
     try {
@@ -84,7 +87,15 @@ export default function WebStreamControls({
     }
   };
 
-  const handleStreaming = () => {
+  const handleStreaming = async () => {
+    if (isStreaming) {
+      try {
+        await finishLive(streamingKey);
+        console.log('Live stream ended successfully.');
+      } catch (error) {
+        console.error('Error ending the live stream:', error);
+      }
+    }
     onStreamingChange(!isStreaming);
   };
 
@@ -159,7 +170,7 @@ export default function WebStreamControls({
               ? 'bg-lico-gray-3 text-lico-gray-1 hover:bg-lico-gray-2'
               : 'bg-lico-orange-2 text-lico-gray-5 hover:bg-lico-orange-1'
           }`}
-          aria-label={isStreaming ? '방송 중지하기' : '방송 시작하기'}
+          aria-label={isStreaming ? '방송 종료하기' : '방송 시작하기'}
         >
           {isStreaming ? (
             <FaSquare className="h-4 w-4 text-red-600" aria-hidden="true" />

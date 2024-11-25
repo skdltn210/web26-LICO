@@ -56,4 +56,5 @@ export interface WebStreamControlsProps {
   onMediaStreamChange: (stream: MediaStream | null) => void;
   onStreamingChange: (streaming: boolean) => void;
   onDrawingStateChange: (state: DrawingState) => void;
+  streamingKey: string;
 }
