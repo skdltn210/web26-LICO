@@ -1,16 +1,26 @@
 import * as winston from 'winston';
+import 'winston-daily-rotate-file';
+
+const logLevel = 'warn';
+const logDir = './logs';
 
 export const winstonConfig: winston.LoggerOptions = {
-  level: 'error', // 'error' 레벨 이상의 로그만 출력
+  level: logLevel,
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message, stack }) => {
-      return `${timestamp} [${level.toUpperCase()}]: ${message} ${
-        stack ? '\n' + stack : ''
-      }`;
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} [${level.toUpperCase()}]: ${message}`;
     }),
   ),
   transports: [
     new winston.transports.Console(),
+    new winston.transports.DailyRotateFile({
+      dirname: logDir,
+      filename: 'application-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d',
+    }),
   ],
 };
