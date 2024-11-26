@@ -16,7 +16,7 @@ export default function WebStreamControls({
   onMediaStreamChange,
   onStreamingChange,
   onDrawingStateChange,
-  streamingKey,
+  streamKey,
 }: WebStreamControlsProps) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(() => ({
@@ -103,7 +103,7 @@ export default function WebStreamControls({
   const handleStreaming = async () => {
     if (isStreaming) {
       try {
-        await finishLive(streamingKey);
+        await finishLive(streamKey);
         console.log('Live stream ended successfully.');
       } catch (error) {
         console.error('Error ending the live stream:', error);

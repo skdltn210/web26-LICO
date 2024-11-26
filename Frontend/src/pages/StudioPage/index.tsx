@@ -14,6 +14,7 @@ import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 import { DrawingState } from '@/types/canvas';
+import { useFinishLive } from '@/hooks/useLive';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
@@ -47,11 +48,12 @@ export default function StudioPage() {
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
   const { data: streamKey } = useStreamingKey();
   const { chatState, toggleChat } = useLayoutStore();
+  const { mutateAsync: finishLive } = useFinishLive();
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
   const WEBRTC_URL = config.webrtcUrl;
 
-  const handleTabChange = (tab: TabType) => {
+  const handleTabChange = async (tab: TabType) => {
     setActiveTab(tab);
     if (tab === 'External') {
       setVideoMode('player');
@@ -64,23 +66,7 @@ export default function StudioPage() {
         setMediaStream(null);
       }
       setIsStreaming(false);
-      setDrawingState({
-        isDrawing: false,
-        isErasing: false,
-        isTexting: false,
-        drawTool: {
-          color: '#ffffff',
-          width: 5,
-        },
-        eraseTool: {
-          color: '#ffffff',
-          width: 20,
-        },
-        textTool: {
-          color: '#ffffff',
-          width: 10,
-        },
-      });
+      await finishLive(streamKey?.toString() || '');
     } else if (tab === 'WebStudio') {
       setVideoMode('container');
     }
@@ -200,7 +186,7 @@ export default function StudioPage() {
                   onMediaStreamChange={handleMediaStreamChange}
                   onStreamingChange={handleStreamingChange}
                   onDrawingStateChange={handleDrawingStateChange}
-                  streamingKey={streamKey?.toString() || ''}
+                  streamKey={streamKey?.toString() || ''}
                 />
               </div>
             )}
