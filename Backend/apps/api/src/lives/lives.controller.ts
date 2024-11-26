@@ -68,10 +68,10 @@ export class LivesController {
     return { code: 0 };
   }
 
-  @Delete('/onair/:channelId')
+  @Delete('/onair/:streamingKey')
   @HttpCode(202)
-  async endLive(@Param('channelId') channelId: UUID) {
-    this.livesService.endLive(channelId);
+  async endLive(@Param('streamingKey') streamingKey: UUID) {
+    this.livesService.endLive(streamingKey);
   }
 
   @Get('/status/:channelId')
