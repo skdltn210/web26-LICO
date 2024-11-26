@@ -57,7 +57,7 @@ export class ChatsService {
         },
         {
           role: 'user',
-          content: `message : ${chat.content}`,
+          content: `채팅내용 : ${chat.content}`,
         },
       ],
     };
