@@ -59,7 +59,7 @@ export default function ChatInput({ onSubmit, isLoggedIn = false }: ChatInputPro
     <div className="border-t border-lico-gray-3 px-4 py-2">
       <form aria-label="메시지 입력" className="relative flex flex-col" onSubmit={handleSubmit}>
         {showLoginAlert && (
-          <div className="absolute bottom-20 w-full rounded-xl border-2 border-lico-gray-4 bg-lico-gray-5 p-4 font-bold text-lico-orange-2">
+          <div className="absolute bottom-20 z-50 w-full rounded-xl border-2 border-lico-gray-4 bg-lico-gray-5 p-4 font-bold text-lico-orange-2">
             <p>
               채팅을 시작하기 전에 로그인이 필요합니다.
               <br /> 로그인 후 이용해 주세요.
