@@ -109,8 +109,70 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     };
   }, [ref, paths, drawTexts, drawImages]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && textInput.isVisible) {
+        cancelText();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [textInput.isVisible, cancelText]);
+
+  useEffect(() => {
+    let isMouseDown = false;
+    let mouseDownTarget: EventTarget | null = null;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      isMouseDown = true;
+      mouseDownTarget = e.target;
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (!isMouseDown || !textInput.isVisible) {
+        isMouseDown = false;
+        mouseDownTarget = null;
+        return;
+      }
+
+      const canvas = (ref as React.RefObject<HTMLCanvasElement>).current;
+      const textInputElement = document.getElementById('text-input');
+
+      if (e.target === mouseDownTarget) {
+        const isClickInsideCanvas = canvas?.contains(e.target as Node);
+        const isClickInsideTextInput = textInputElement?.contains(e.target as Node);
+
+        if (!isClickInsideCanvas && !isClickInsideTextInput) {
+          if (!textInput.text) {
+            cancelText();
+          } else {
+            const ctx = canvas?.getContext('2d') || null;
+            completeText(ctx);
+          }
+        }
+      }
+
+      isMouseDown = false;
+      mouseDownTarget = null;
+    };
+
+    window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [ref, textInput.isVisible, textInput.text, cancelText, completeText]);
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getCanvasPoint(e);
+
+    if (textInput.isVisible) {
+      cancelText();
+      return;
+    }
 
     if (drawingState.isTexting) {
       startTextInput(point);
@@ -183,8 +245,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
                 const canvas = ref as React.RefObject<HTMLCanvasElement>;
                 const ctx = canvas.current?.getContext('2d') || null;
                 completeText(ctx);
-              } else if (e.key === 'Escape') {
-                cancelText();
               }
             }}
             className="m-0 min-w-[100px] border-none bg-transparent p-0 outline-none"
