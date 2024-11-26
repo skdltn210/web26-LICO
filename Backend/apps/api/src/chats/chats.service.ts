@@ -27,7 +27,15 @@ export class ChatsService {
     nickname: string;
   }) {
     const chatId = crypto.randomUUID();
-    const chat = { content: message, userId, nickname, timestamp: new Date(), channelId, chatId };
+    const chat = {
+      content: message,
+      userId,
+      nickname,
+      timestamp: new Date(),
+      channelId,
+      chatId,
+      filteringResult: true,
+    };
     const chatString = JSON.stringify(chat);
     await this.redisClient.multi().publish(`${channelId}:chat`, chatString).lpush('chatQueue', chatId).exec();
     this.clovaFiltering(chat);
@@ -64,7 +72,7 @@ export class ChatsService {
       }),
     );
 
-    chat.filteringResult = data?.result?.message?.content?.includes('false');
+    chat.filteringResult = data?.result?.message?.content?.includes('true');
     await this.redisClient
       .multi()
       .publish(
