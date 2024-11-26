@@ -15,7 +15,7 @@ import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 import { DrawingState } from '@/types/canvas';
 import { useFinishLive } from '@hooks/useLive';
-import { ImageProvider } from '@/contexts/ImageContext';
+import { CanvasProvider } from '@/contexts/CanvasContext';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
@@ -118,7 +118,7 @@ export default function StudioPage() {
   if (!channelId || !liveDetail) return <NotFound />;
 
   return (
-    <ImageProvider>
+    <CanvasProvider>
       <div className="flex h-screen">
         <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
           <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
@@ -209,6 +209,6 @@ export default function StudioPage() {
         )}
         {chatState === 'hidden' && <ChatOpenButton className="text-lico-gray-2" onClick={toggleChat} />}
       </div>
-    </ImageProvider>
+    </CanvasProvider>
   );
 }

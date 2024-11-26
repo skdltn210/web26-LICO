@@ -1,9 +1,9 @@
 import { Point } from '@/types/canvas';
 import { CanvasImage } from '@/types/canvas';
-import { useImageContext } from '@/contexts/ImageContext';
+import { useCanvasContext } from '@/contexts/CanvasContext';
 
 export function useImage() {
-  const { images, setImages } = useImageContext();
+  const { images, setImages } = useCanvasContext();
 
   const calculateImageDimensions = (
     originalWidth: number,

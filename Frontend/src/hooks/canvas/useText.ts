@@ -1,32 +1,15 @@
 import { useState } from 'react';
 import { Point } from '@/types/canvas';
-
-interface TextInputState {
-  isVisible: boolean;
-  text: string;
-  position: Point;
-}
-
-interface CanvasText {
-  text: string;
-  position: Point;
-  color: string;
-  fontSize: number;
-}
-
-interface UseTextProps {
-  color: string;
-  fontSize: number;
-}
+import { UseTextProps, TextInputState, CanvasText } from '@/types/canvas';
+import { useCanvasContext } from '@/contexts/CanvasContext';
 
 export function useText({ color, fontSize }: UseTextProps) {
+  const { texts, setTexts } = useCanvasContext();
   const [textInput, setTextInput] = useState<TextInputState>({
     isVisible: false,
     text: '',
     position: { x: 0, y: 0 },
   });
-
-  const [texts, setTexts] = useState<CanvasText[]>([]);
 
   const startTextInput = (position: Point) => {
     setTextInput({
@@ -51,12 +34,13 @@ export function useText({ color, fontSize }: UseTextProps) {
     }
 
     const newText: CanvasText = {
+      id: crypto.randomUUID(),
       text: textInput.text,
       position: textInput.position,
       color,
       fontSize,
     };
-    setTexts(prev => [...prev, newText]);
+    setTexts([...texts, newText]);
 
     setTextInput({ isVisible: false, text: '', position: { x: 0, y: 0 } });
   };
@@ -75,6 +59,7 @@ export function useText({ color, fontSize }: UseTextProps) {
       ctx.restore();
     });
   };
+
   return {
     textInput,
     texts,

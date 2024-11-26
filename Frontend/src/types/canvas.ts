@@ -75,3 +75,22 @@ export interface CanvasImage {
   height: number;
   aspectRatio: number;
 }
+
+export interface TextInputState {
+  isVisible: boolean;
+  text: string;
+  position: Point;
+}
+
+export interface CanvasText {
+  id: string;
+  text: string;
+  position: Point;
+  color: string;
+  fontSize: number;
+}
+
+export interface UseTextProps {
+  color: string;
+  fontSize: number;
+}
