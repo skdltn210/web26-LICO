@@ -13,6 +13,7 @@ import NotFound from '@components/error/NotFound';
 import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
+import { DrawingState } from '@/types/canvas';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
@@ -25,6 +26,23 @@ export default function StudioPage() {
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [drawingState, setDrawingState] = useState<DrawingState>({
+    isDrawing: false,
+    isErasing: false,
+    isTexting: false,
+    drawTool: {
+      color: '#ffffff',
+      width: 5,
+    },
+    eraseTool: {
+      color: '#ffffff',
+      width: 20,
+    },
+    textTool: {
+      color: '#ffffff',
+      width: 10,
+    },
+  });
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
   const { data: streamKey } = useStreamingKey();
@@ -46,6 +64,23 @@ export default function StudioPage() {
         setMediaStream(null);
       }
       setIsStreaming(false);
+      setDrawingState({
+        isDrawing: false,
+        isErasing: false,
+        isTexting: false,
+        drawTool: {
+          color: '#ffffff',
+          width: 5,
+        },
+        eraseTool: {
+          color: '#ffffff',
+          width: 20,
+        },
+        textTool: {
+          color: '#ffffff',
+          width: 10,
+        },
+      });
     } else if (tab === 'WebStudio') {
       setVideoMode('container');
     }
@@ -63,6 +98,10 @@ export default function StudioPage() {
     setIsStreaming(streaming);
   };
 
+  const handleDrawingStateChange = (newState: DrawingState) => {
+    setDrawingState(newState);
+  };
+
   const renderVideoContent = () => {
     if (videoMode === 'player') {
       return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
@@ -74,6 +113,7 @@ export default function StudioPage() {
         isStreaming={isStreaming}
         webrtcUrl={WEBRTC_URL}
         streamKey={streamKey?.toString() || ''}
+        drawingState={drawingState}
       />
     );
   };
@@ -159,6 +199,8 @@ export default function StudioPage() {
                   onScreenStreamChange={handleScreenStreamChange}
                   onMediaStreamChange={handleMediaStreamChange}
                   onStreamingChange={handleStreamingChange}
+                  onDrawingStateChange={handleDrawingStateChange}
+                  streamingKey={streamKey?.toString() || ''}
                 />
               </div>
             )}

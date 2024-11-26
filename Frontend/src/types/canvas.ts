@@ -6,9 +6,43 @@ export interface Position {
 }
 
 export interface UseCanvasElementProps {
-  minSize?: number;
+  minSize: number;
   canvasWidth: number;
   canvasHeight: number;
+}
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface DrawingPath {
+  points: Point[];
+  color: string;
+  width: number;
+  type: 'draw' | 'erase';
+}
+
+export interface ToolState {
+  color: string;
+  width: number;
+}
+
+export interface DrawingState {
+  isDrawing: boolean;
+  isErasing: boolean;
+  isTexting: boolean;
+  drawTool: ToolState;
+  eraseTool: ToolState;
+  textTool: ToolState;
+}
+
+export interface MediaSettings {
+  videoEnabled: boolean;
+  audioEnabled: boolean;
+  videoDeviceId?: string;
+  audioDeviceId?: string;
+  isCamFlipped?: boolean;
 }
 
 export interface StreamContainerProps {
@@ -18,15 +52,7 @@ export interface StreamContainerProps {
   webrtcUrl: string;
   streamKey: string;
   onStreamError?: (error: Error) => void;
-}
-
-export interface MediaSettings {
-  videoEnabled: boolean;
-  audioEnabled: boolean;
-  videoDeviceId?: string;
-  audioDeviceId?: string;
-  isCamFlipped?: boolean;
-  volume?: number;
+  drawingState: DrawingState;
 }
 
 export interface WebStreamControlsProps {
@@ -36,4 +62,6 @@ export interface WebStreamControlsProps {
   onScreenStreamChange: (stream: MediaStream | null) => void;
   onMediaStreamChange: (stream: MediaStream | null) => void;
   onStreamingChange: (streaming: boolean) => void;
+  onDrawingStateChange: (state: DrawingState) => void;
+  streamingKey: string;
 }

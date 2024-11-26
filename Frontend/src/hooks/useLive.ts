@@ -53,3 +53,9 @@ export const useStreamingKey = (options?: { enabled?: boolean }) => {
     enabled: options?.enabled,
   });
 };
+
+export const useFinishLive = () => {
+  return useMutation({
+    mutationFn: (streamingKey: string) => liveApi.finishLive(streamingKey),
+  });
+};

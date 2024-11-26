@@ -28,4 +28,8 @@ export const liveApi = {
     const { data } = await api.get<LiveStatus>(`/lives/status/${channelId}`);
     return data;
   },
+
+  finishLive: async (streamingKey: string) => {
+    await api.delete(`/lives/onair/${streamingKey}`);
+  },
 };

@@ -1,28 +1,47 @@
 import { config } from '@config/env';
 
 export class WebRTCStream {
-  private canvas: HTMLCanvasElement | null;
+  private videoCanvas: HTMLCanvasElement | null;
+  private drawingCanvas: HTMLCanvasElement | null;
+  private compositeCanvas: HTMLCanvasElement | null;
   private streamKey: string;
   private pc: RTCPeerConnection | null;
   private screenStream: MediaStream | null;
   private camStream: MediaStream | null;
   private audioStream: MediaStream | null;
   private webrtcUrl: string;
+  private animationFrame: number | null;
 
   constructor(url: string, streamKey: string) {
-    this.canvas = null;
+    this.videoCanvas = null;
+    this.drawingCanvas = null;
+    this.compositeCanvas = null;
     this.webrtcUrl = url;
     this.streamKey = streamKey;
     this.pc = null;
     this.camStream = null;
     this.screenStream = null;
     this.audioStream = null;
+    this.animationFrame = null;
   }
 
-  async start(canvas: HTMLCanvasElement, screenStream: MediaStream | null, camStream: MediaStream | null) {
+  async start(
+    videoCanvas: HTMLCanvasElement,
+    drawingCanvas: HTMLCanvasElement,
+    screenStream: MediaStream | null,
+    camStream: MediaStream | null,
+  ) {
     try {
-      this.canvas = canvas;
-      const videoStream = this.canvas.captureStream(30);
+      this.videoCanvas = videoCanvas;
+      this.drawingCanvas = drawingCanvas;
+
+      this.compositeCanvas = document.createElement('canvas');
+      this.compositeCanvas.width = videoCanvas.width;
+      this.compositeCanvas.height = videoCanvas.height;
+
+      this.startCompositing();
+
+      const videoStream = this.compositeCanvas.captureStream(30);
       this.camStream = new MediaStream([...videoStream.getVideoTracks()]);
 
       if (screenStream) {
@@ -46,6 +65,22 @@ export class WebRTCStream {
       this.cleanup();
       throw error;
     }
+  }
+
+  private startCompositing() {
+    if (!this.compositeCanvas || !this.videoCanvas || !this.drawingCanvas) return;
+
+    const ctx = this.compositeCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const updateFrame = () => {
+      ctx.drawImage(this.videoCanvas!, 0, 0);
+      ctx.drawImage(this.drawingCanvas!, 0, 0);
+
+      this.animationFrame = requestAnimationFrame(updateFrame);
+    };
+
+    updateFrame();
   }
 
   private async connectWHIP() {
@@ -107,6 +142,11 @@ export class WebRTCStream {
   }
 
   private cleanup() {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
+    }
+
     if (this.pc) {
       this.pc.close();
       this.pc = null;
@@ -127,6 +167,8 @@ export class WebRTCStream {
       this.audioStream = null;
     }
 
-    this.canvas = null;
+    this.videoCanvas = null;
+    this.drawingCanvas = null;
+    this.compositeCanvas = null;
   }
 }
