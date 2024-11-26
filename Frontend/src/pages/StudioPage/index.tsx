@@ -182,6 +182,7 @@ export default function StudioPage() {
                   screenStream={screenStream}
                   mediaStream={mediaStream}
                   isStreaming={isStreaming}
+                  drawingState={drawingState}
                   onScreenStreamChange={handleScreenStreamChange}
                   onMediaStreamChange={handleMediaStreamChange}
                   onStreamingChange={handleStreamingChange}

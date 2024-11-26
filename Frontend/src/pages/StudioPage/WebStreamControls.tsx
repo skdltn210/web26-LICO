@@ -5,13 +5,14 @@ import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
 import Palette from './Modals/Palette';
 import TextSetting from './Modals/TextSetting';
-import { MediaSettings, WebStreamControlsProps, DrawingState, ToolState } from '@/types/canvas';
+import { MediaSettings, WebStreamControlsProps } from '@/types/canvas';
 import { useFinishLive } from '@/hooks/useLive';
 
 export default function WebStreamControls({
   screenStream,
   mediaStream,
   isStreaming,
+  drawingState,
   onScreenStreamChange,
   onMediaStreamChange,
   onStreamingChange,
@@ -25,23 +26,6 @@ export default function WebStreamControls({
   }));
 
   const [activeTool, setActiveTool] = useState<'text' | 'draw' | 'erase' | null>(null);
-  const [drawingState, setDrawingState] = useState<DrawingState>({
-    isDrawing: false,
-    isErasing: false,
-    isTexting: false,
-    drawTool: {
-      color: '#ffffff',
-      width: 5,
-    },
-    eraseTool: {
-      color: '#ffffff',
-      width: 20,
-    },
-    textTool: {
-      color: '#ffffff',
-      width: 12,
-    },
-  });
 
   const { mutateAsync: finishLive } = useFinishLive();
 
@@ -115,39 +99,35 @@ export default function WebStreamControls({
   const handleToolSelect = (tool: 'text' | 'draw' | 'erase' | null) => {
     if (activeTool === tool) {
       setActiveTool(null);
-      const newState: DrawingState = {
+      onDrawingStateChange({
         ...drawingState,
         isDrawing: false,
         isErasing: false,
         isTexting: false,
-      };
-      setDrawingState(newState);
-      onDrawingStateChange(newState);
+      });
       return;
     }
 
     setActiveTool(tool);
-
-    const newState: DrawingState = {
+    onDrawingStateChange({
       ...drawingState,
       isDrawing: tool === 'draw',
       isErasing: tool === 'erase',
       isTexting: tool === 'text',
-    };
-    setDrawingState(newState);
-    onDrawingStateChange(newState);
+    });
   };
 
-  const handleDrawingStateChange = (newState: Partial<ToolState>, tool: 'text' | 'draw' | 'erase') => {
-    const updatedState: DrawingState = {
+  const handleDrawingStateChange = (
+    newState: Partial<typeof drawingState.drawTool>,
+    tool: 'text' | 'draw' | 'erase',
+  ) => {
+    onDrawingStateChange({
       ...drawingState,
       [tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool']: {
         ...drawingState[tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool'],
         ...newState,
       },
-    };
-    setDrawingState(updatedState);
-    onDrawingStateChange(updatedState);
+    });
   };
 
   return (
