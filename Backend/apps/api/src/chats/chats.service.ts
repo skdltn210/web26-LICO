@@ -57,9 +57,16 @@ export class ChatsService {
         },
         {
           role: 'user',
-          content: `채팅내용 : ${chat.content}`,
+          content: `채팅내용 : "${chat.content}"`,
         },
       ],
+      maxTokens: this.configService.get<number>('CLOVA_CHAT_FILTERING_MAX_TOKEN') || 10,
+      topP: 0.8,
+      topK: 1,
+      temperature: 0.1,
+      repeatPenalty: 1.0,
+      includeAiFilters: true,
+      seed: 0,
     };
     const { data } = await firstValueFrom(
       this.httpService.post(this.configService.get<string>('CLOVA_API_URL'), postData, {
@@ -88,7 +95,7 @@ export class ChatsService {
     const lock = await this.redisClient.set(lockKey, 'lock', 'NX');
 
     try {
-      if (lockKey) {
+      if (lock) {
         while (true) {
           const frontChatId = await this.redisClient.lindex('chatQueue', 0);
           const chatString = await this.redisClient.hget('chatCache', frontChatId);
