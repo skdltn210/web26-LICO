@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { DrawingPath, Point } from '@/types/canvas';
 
-export const useDrawing = () => {
+export function useDrawing() {
   const [paths, setPaths] = useState<DrawingPath[]>([]);
   const [currentPath, setCurrentPath] = useState<DrawingPath | null>(null);
 
@@ -46,4 +46,4 @@ export const useDrawing = () => {
     endDrawing,
     clearDrawings,
   };
-};
+}

@@ -129,7 +129,7 @@ export default function StreamContainer({
   };
 
   return (
-    <div ref={containerRef} className="relative h-full w-full bg-black">
+    <div ref={containerRef} className="canvas-container relative h-full w-full bg-black">
       <StreamCanvas
         ref={streamCanvasRef}
         screenStream={screenStream}

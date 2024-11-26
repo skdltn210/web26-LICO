@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
@@ -6,7 +6,8 @@ import CamMicSetting from './Modals/CamMicSetting';
 import Palette from './Modals/Palette';
 import TextSetting from './Modals/TextSetting';
 import { MediaSettings, WebStreamControlsProps } from '@/types/canvas';
-import { useFinishLive } from '@/hooks/useLive';
+import { useFinishLive } from '@hooks/useLive';
+import { useImage } from '@hooks/canvas/useImage';
 
 export default function WebStreamControls({
   screenStream,
@@ -24,6 +25,8 @@ export default function WebStreamControls({
     videoEnabled: false,
     audioEnabled: false,
   }));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addImage } = useImage();
 
   const [activeTool, setActiveTool] = useState<'text' | 'draw' | 'erase' | null>(null);
 
@@ -130,6 +133,31 @@ export default function WebStreamControls({
     });
   };
 
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      alert('Please select a valid image file (JPEG, PNG, or GIF)');
+      return;
+    }
+
+    try {
+      await addImage(file);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error adding image:', error);
+      alert('Failed to add image. Please try again.');
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -142,7 +170,8 @@ export default function WebStreamControls({
               isEnabled={!!mediaStream}
               onClick={handleMediaSetting}
             />
-            <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+            <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={handleImageClick} />
             <div className="relative">
               <ControlButton
                 icon={LuType}

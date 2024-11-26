@@ -66,3 +66,12 @@ export interface WebStreamControlsProps {
   onDrawingStateChange: (state: DrawingState) => void;
   streamKey: string;
 }
+
+export interface CanvasImage {
+  id: string;
+  element: HTMLImageElement;
+  position: Point;
+  width: number;
+  height: number;
+  aspectRatio: number;
+}

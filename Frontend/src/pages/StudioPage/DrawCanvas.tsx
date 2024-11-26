@@ -1,6 +1,7 @@
 import { forwardRef, useEffect } from 'react';
-import { useDrawing } from '@hooks/useDrawing';
-import { useText } from '@hooks/useText';
+import { useDrawing } from '@hooks/canvas/useDrawing';
+import { useText } from '@hooks/canvas/useText';
+import { useImage } from '@hooks/canvas/useImage';
 import { Point } from '@/types/canvas';
 import pencilCursor from '@assets/icons/pencilCursor.svg?url';
 import eraserCursor from '@assets/icons/eraserCursor.svg?url';
@@ -22,6 +23,7 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     color: drawingState.textTool.color,
     fontSize: drawingState.textTool.width,
   });
+  const { drawImages } = useImage();
 
   const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>): Point => {
     const canvas = ref as React.RefObject<HTMLCanvasElement>;
@@ -44,16 +46,26 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       const container = canvas.current!.parentElement;
       if (container) {
         const scale = window.devicePixelRatio;
-        canvas.current!.width = container.clientWidth * scale;
-        canvas.current!.height = container.clientHeight * scale;
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+
+        canvas.current!.width = containerWidth * scale;
+        canvas.current!.height = containerHeight * scale;
+        canvas.current!.style.width = `${containerWidth}px`;
+        canvas.current!.style.height = `${containerHeight}px`;
+
         ctx.scale(scale, scale);
-        canvas.current!.style.width = `${container.clientWidth}px`;
-        canvas.current!.style.height = `${container.clientHeight}px`;
       }
 
-      ctx.clearRect(0, 0, canvas.current!.width, canvas.current!.height);
+      ctx.clearRect(
+        0,
+        0,
+        canvas.current!.width / window.devicePixelRatio,
+        canvas.current!.height / window.devicePixelRatio,
+      );
 
-      // Draw paths
+      drawImages(ctx);
+
       paths.forEach(path => {
         if (path.points.length < 2) return;
 
@@ -83,7 +95,19 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     };
 
     updateCanvas();
-  }, [ref, paths, drawTexts]);
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateCanvas();
+    });
+
+    if (canvas.current.parentElement) {
+      resizeObserver.observe(canvas.current.parentElement);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [ref, paths, drawTexts, drawImages]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getCanvasPoint(e);
