@@ -2,12 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // ConfigService 가져오기
   const configService = app.get(ConfigService);
+
+  // Winston 로거를 애플리케이션의 로거로 설정
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   // PORT 설정
   const port = configService.get<number>('PORT') || 3000;

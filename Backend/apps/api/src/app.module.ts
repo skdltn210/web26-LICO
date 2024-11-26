@@ -14,6 +14,8 @@ import sqliteConfig from './config/sqlite.config';
 import mysqlConfig from './config/mysql.config';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { redisConfig } from './config/redis.config';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './config/logger.config';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { redisConfig } from './config/redis.config';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => redisConfig(configService),
     }),
+    WinstonModule.forRoot(winstonConfig),
     AuthModule,
     UsersModule,
     CategoriesModule,
