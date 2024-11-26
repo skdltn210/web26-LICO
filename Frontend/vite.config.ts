@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import type { PreRenderedAsset } from 'rollup';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -12,6 +13,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    assetsInlineLimit: 0,
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo: PreRenderedAsset): string => {
+          if (assetInfo.source && /\.(svg)$/.test(assetInfo.name || '')) {
+            return 'assets/icons/[name][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
+      },
+    },
   },
   plugins: [react()],
   resolve: {

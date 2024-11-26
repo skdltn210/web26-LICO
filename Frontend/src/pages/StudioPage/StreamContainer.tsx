@@ -4,8 +4,8 @@ import { useDrawing } from '@hooks/useDrawing';
 import { useText } from '@hooks/useText';
 import { WebRTCStream } from './WebRTCStream';
 import { Position, StreamContainerProps, Point } from '@/types/canvas';
-import pencilCursor from '@assets/icons/pencilCursor.svg';
-import eraserCursor from '@assets/icons/eraserCursor.svg';
+import pencilCursor from '@assets/icons/pencilCursor.svg?url';
+import eraserCursor from '@assets/icons/eraserCursor.svg?url';
 
 type SelectedElement = 'screen' | 'camera' | null;
 
