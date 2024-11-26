@@ -1,22 +1,27 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useInfiniteQuery } from '@tanstack/react-query';
 import { liveApi } from '@apis/live';
 import { AxiosError } from 'axios';
-import type { Live, LiveDetail, UpdateLiveRequest, SortType, LiveStatus } from '@/types/live';
+import type { Live, LiveDetail, UpdateLiveRequest, LiveStatus, LiveParams } from '@/types/live';
 
 const POLLING_INTERVAL = 60000;
 
 export const liveKeys = {
   all: ['lives'] as const,
-  sorted: (sort: SortType) => [...liveKeys.all, { sort }] as const,
+  sorted: (params: LiveParams) => [...liveKeys.all, params] as const,
   detail: (channelId: string) => [...liveKeys.all, 'detail', channelId] as const,
   status: (channelId: string) => [...liveKeys.all, 'status', channelId] as const,
   streamingKey: () => [...liveKeys.all, 'streaming-key'] as const,
 };
 
-export const useLives = (sort: SortType) => {
-  return useQuery<Live[]>({
-    queryKey: liveKeys.sorted(sort),
-    queryFn: () => liveApi.getLives(sort),
+export const useLives = (params: Omit<LiveParams, 'offset'>) => {
+  return useInfiniteQuery<Live[], AxiosError>({
+    queryKey: liveKeys.sorted(params),
+    queryFn: ({ pageParam }) => liveApi.getLives({ ...params, offset: pageParam as number }),
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage.length || lastPage.length < 20) return undefined;
+      return allPages.length * 20;
+    },
+    initialPageParam: 0,
   });
 };
 

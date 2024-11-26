@@ -1,10 +1,14 @@
 import { api } from './axios';
-import type { Live, LiveDetail, UpdateLiveRequest, StreamingKeyResponse, SortType, LiveStatus } from '@/types/live';
+import type { Live, LiveDetail, UpdateLiveRequest, StreamingKeyResponse, LiveStatus, LiveParams } from '@/types/live';
 
 export const liveApi = {
-  getLives: async (sort: SortType) => {
+  getLives: async (params: LiveParams) => {
     const { data } = await api.get<Live[]>('/lives', {
-      params: { sort },
+      params: {
+        sort: params.sort,
+        limit: params.limit,
+        offset: params.offset,
+      },
     });
     return data;
   },
