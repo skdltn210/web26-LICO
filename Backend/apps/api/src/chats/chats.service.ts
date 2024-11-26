@@ -8,13 +8,14 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class ChatsService {
+  private isFlushing = false;
   constructor(
     @InjectRedis() private readonly redisClient: Redis,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}
 
-  async publishChat({
+  async ingestChat({
     channelId,
     message,
     userId,
@@ -25,9 +26,11 @@ export class ChatsService {
     userId: number;
     nickname: string;
   }) {
-    const filteringResult = await this.clovaFiltering(message);
-    const chat = JSON.stringify({ content: message, userId, nickname, timestamp: new Date(), filteringResult });
-    await this.redisClient.multi().publish(`${channelId}:chat`, chat).rpush(`${channelId}:chats`, chat).exec();
+    const chatId = crypto.randomUUID();
+    const chat = { content: message, userId, nickname, timestamp: new Date(), channelId, chatId };
+    const chatString = JSON.stringify(chat);
+    await this.redisClient.multi().publish(`${channelId}:chat`, chatString).lpush('chatQueue', chatId).exec();
+    this.clovaFiltering(chat);
   }
 
   async readViewers(channelId: UUID) {
@@ -38,7 +41,7 @@ export class ChatsService {
     this.redisClient.del(`${channelId}:chats`);
   }
 
-  async clovaFiltering(message: string) {
+  async clovaFiltering(chat) {
     const postData = {
       messages: [
         {
@@ -47,7 +50,7 @@ export class ChatsService {
         },
         {
           role: 'user',
-          content: message,
+          content: chat.content,
         },
       ],
     };
@@ -61,6 +64,32 @@ export class ChatsService {
       }),
     );
 
-    return data?.result?.message?.content?.includes('true');
+    chat.filteringResult = data?.result?.message?.content?.includes('false');
+    await this.redisClient
+      .multi()
+      .publish(
+        `${chat.channelId}:filter`,
+        JSON.stringify({ chatId: chat.chatId, filteringResult: chat.filteringResult }),
+      )
+      .hset('chatCache', chat.chatId, JSON.stringify(chat))
+      .exec();
+    this.flushChat();
+  }
+
+  async flushChat() {
+    if (!this.isFlushing) {
+      this.isFlushing = true;
+      while (true) {
+        const frontChatId = await this.redisClient.lindex('chatQueue', 0);
+        const chatString = await this.redisClient.hget('chatCache', frontChatId);
+        if (!chatString) {
+          break;
+        } else {
+          const chat = JSON.parse(chatString);
+          await this.redisClient.multi().rpush(`${chat.channelId}:chats`, chatString).lpop('chatQueue').exec();
+        }
+      }
+      this.isFlushing = false;
+    }
   }
 }
