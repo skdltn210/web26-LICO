@@ -83,6 +83,7 @@ export class FollowService {
       usersNickname: streamer.nickname,
       usersProfileImage: streamer.profileImage,
       onAir: streamer.live?.onAir || false,
+      viewers: streamer.live?.viewers || 0
     }));
   }
 
