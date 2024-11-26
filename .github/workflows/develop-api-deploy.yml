@@ -30,7 +30,7 @@ jobs:
           set -o pipefail
           ssh -o StrictHostKeyChecking=no ${{ secrets.DEV_API_USER_NAME }}@${{ secrets.DEV_API_SERVER_ADDRESS }} << 'EOF'
             chmod +x /lico/Backend/server/api/deploy.sh || exit 2
-            /lico-deploy/Backend/server/api/deploy.sh "$BRANCH_NAME"
+            /lico/Backend/server/api/deploy.sh "$BRANCH_NAME"
           EOF
           ssh_exit_code=$?
           echo "DEPLOY_RESULT=$ssh_exit_code" >> $GITHUB_ENV
