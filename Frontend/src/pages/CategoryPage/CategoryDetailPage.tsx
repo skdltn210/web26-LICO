@@ -3,18 +3,39 @@ import ChannelGrid from '@components/channel/ChannelGrid';
 import { useCategoryLives, useCategoryDetail } from '@hooks/useCategory';
 import { formatUnit } from '@utils/format';
 import LoadingSpinner from '@components/common/LoadingSpinner';
+import { useRef, useEffect } from 'react';
 
 export default function CategoryDetailPage() {
   const { categoryId } = useParams();
+  const observerRef = useRef<HTMLDivElement>(null);
 
   if (!categoryId) {
     return <div>잘못된 접근입니다.</div>;
   }
 
   const { data: category, isLoading: categoryLoading, error: categoryError } = useCategoryDetail(categoryId);
-  const { data: lives, isLoading: livesLoading, error: livesError } = useCategoryLives(categoryId);
+  const {
+    data,
+    isLoading: livesLoading,
+    error: livesError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useCategoryLives(categoryId);
 
-  console.log('lives data:', lives); // 데이터 구조 확인
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    });
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (categoryLoading || livesLoading) {
     return <LoadingSpinner />;
@@ -24,11 +45,13 @@ export default function CategoryDetailPage() {
     return <div>데이터를 불러오는데 실패했습니다.</div>;
   }
 
-  if (!category || !lives) {
+  if (!category || !data) {
     return null;
   }
 
-  const channelsData = lives.map(live => ({
+  const allLives = data.pages.flatMap(page => page);
+
+  const channelsData = allLives.map(live => ({
     id: live.channelId,
     title: live.livesName,
     streamerName: live.usersNickname,
@@ -52,12 +75,14 @@ export default function CategoryDetailPage() {
         <div className="p-8">
           <h1 className="font-bold text-2xl text-lico-gray-1">{category.name}</h1>
           <p className="mt-2 font-medium text-sm text-lico-gray-2">
-            시청자 {formatUnit(totalViewers)}명 · 라이브 {lives.length}개
+            시청자 {formatUnit(totalViewers)}명 · 라이브 {allLives.length}개
           </p>
         </div>
       </div>
       <div className="mb-6 h-[1px] bg-lico-gray-3" />
       <ChannelGrid channels={channelsData} />
+
+      <div ref={observerRef} className="absolute bottom-[500px] h-10" />
     </div>
   );
 }
