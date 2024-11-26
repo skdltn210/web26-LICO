@@ -4,6 +4,8 @@ import { useCategoryLives, useCategoryDetail } from '@hooks/useCategory';
 import { formatUnit } from '@utils/format';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import { useRef, useEffect } from 'react';
+import { config } from '@config/env.ts';
+
 
 export default function CategoryDetailPage() {
   const { categoryId } = useParams();
@@ -37,6 +39,7 @@ export default function CategoryDetailPage() {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+
   if (categoryLoading || livesLoading) {
     return <LoadingSpinner />;
   }
@@ -56,11 +59,11 @@ export default function CategoryDetailPage() {
     title: live.livesName,
     streamerName: live.usersNickname,
     profileImgUrl: live.usersProfileImage,
-    viewers: 0,
+    viewers: live.viewers,
     category: live.categoriesName,
     categoryId: live.categoriesId,
     streamerId: live.streamerId,
-    thumbnailUrl: '/default-thumbnail.png',
+    thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.jpg`,
     createdAt: new Date().toISOString(),
   }));
 

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUUID, IsNumber, IsDate } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsDate, IsBoolean } from 'class-validator';
 export class ChatDto {
   @IsString()
   @IsNotEmpty()
@@ -14,4 +14,7 @@ export class ChatDto {
 
   @IsDate()
   timestamp: Date;
+
+  @IsBoolean()
+  fillteringResult: boolean;
 }
