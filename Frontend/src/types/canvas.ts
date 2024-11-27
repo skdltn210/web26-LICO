@@ -59,9 +59,38 @@ export interface WebStreamControlsProps {
   screenStream: MediaStream | null;
   mediaStream: MediaStream | null;
   isStreaming: boolean;
+  drawingState: DrawingState;
   onScreenStreamChange: (stream: MediaStream | null) => void;
   onMediaStreamChange: (stream: MediaStream | null) => void;
   onStreamingChange: (streaming: boolean) => void;
   onDrawingStateChange: (state: DrawingState) => void;
-  streamingKey: string;
+  streamKey: string;
+}
+
+export interface CanvasImage {
+  id: string;
+  element: HTMLImageElement;
+  position: Point;
+  width: number;
+  height: number;
+  aspectRatio: number;
+}
+
+export interface TextInputState {
+  isVisible: boolean;
+  text: string;
+  position: Point;
+}
+
+export interface CanvasText {
+  id: string;
+  text: string;
+  position: Point;
+  color: string;
+  fontSize: number;
+}
+
+export interface UseTextProps {
+  color: string;
+  fontSize: number;
 }

@@ -1,47 +1,34 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
 import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
 import Palette from './Modals/Palette';
 import TextSetting from './Modals/TextSetting';
-import { MediaSettings, WebStreamControlsProps, DrawingState, ToolState } from '@/types/canvas';
-import { useFinishLive } from '@/hooks/useLive';
+import { MediaSettings, WebStreamControlsProps } from '@/types/canvas';
+import { useFinishLive } from '@hooks/useLive';
+import { useImage } from '@hooks/canvas/useImage';
 
 export default function WebStreamControls({
   screenStream,
   mediaStream,
   isStreaming,
+  drawingState,
   onScreenStreamChange,
   onMediaStreamChange,
   onStreamingChange,
   onDrawingStateChange,
-  streamingKey,
+  streamKey,
 }: WebStreamControlsProps) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(() => ({
     videoEnabled: false,
     audioEnabled: false,
   }));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addImage } = useImage();
 
   const [activeTool, setActiveTool] = useState<'text' | 'draw' | 'erase' | null>(null);
-  const [drawingState, setDrawingState] = useState<DrawingState>({
-    isDrawing: false,
-    isErasing: false,
-    isTexting: false,
-    drawTool: {
-      color: '#ffffff',
-      width: 5,
-    },
-    eraseTool: {
-      color: '#ffffff',
-      width: 20,
-    },
-    textTool: {
-      color: '#ffffff',
-      width: 12,
-    },
-  });
 
   const { mutateAsync: finishLive } = useFinishLive();
 
@@ -103,7 +90,7 @@ export default function WebStreamControls({
   const handleStreaming = async () => {
     if (isStreaming) {
       try {
-        await finishLive(streamingKey);
+        await finishLive(streamKey);
         console.log('Live stream ended successfully.');
       } catch (error) {
         console.error('Error ending the live stream:', error);
@@ -115,39 +102,60 @@ export default function WebStreamControls({
   const handleToolSelect = (tool: 'text' | 'draw' | 'erase' | null) => {
     if (activeTool === tool) {
       setActiveTool(null);
-      const newState: DrawingState = {
+      onDrawingStateChange({
         ...drawingState,
         isDrawing: false,
         isErasing: false,
         isTexting: false,
-      };
-      setDrawingState(newState);
-      onDrawingStateChange(newState);
+      });
       return;
     }
 
     setActiveTool(tool);
-
-    const newState: DrawingState = {
+    onDrawingStateChange({
       ...drawingState,
       isDrawing: tool === 'draw',
       isErasing: tool === 'erase',
       isTexting: tool === 'text',
-    };
-    setDrawingState(newState);
-    onDrawingStateChange(newState);
+    });
   };
 
-  const handleDrawingStateChange = (newState: Partial<ToolState>, tool: 'text' | 'draw' | 'erase') => {
-    const updatedState: DrawingState = {
+  const handleDrawingStateChange = (
+    newState: Partial<typeof drawingState.drawTool>,
+    tool: 'text' | 'draw' | 'erase',
+  ) => {
+    onDrawingStateChange({
       ...drawingState,
       [tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool']: {
         ...drawingState[tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool'],
         ...newState,
       },
-    };
-    setDrawingState(updatedState);
-    onDrawingStateChange(updatedState);
+    });
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      alert('Please select a valid image file (JPEG, PNG, or GIF)');
+      return;
+    }
+
+    try {
+      await addImage(file);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error adding image:', error);
+      alert('Failed to add image. Please try again.');
+    }
   };
 
   return (
@@ -162,7 +170,8 @@ export default function WebStreamControls({
               isEnabled={!!mediaStream}
               onClick={handleMediaSetting}
             />
-            <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={() => console.log()} />
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+            <ControlButton icon={LuImage} label="이미지" isEnabled={false} onClick={handleImageClick} />
             <div className="relative">
               <ControlButton
                 icon={LuType}
