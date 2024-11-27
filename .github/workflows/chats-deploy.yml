@@ -1,11 +1,11 @@
-name: Deploy Main API-Server
+name: Deploy Chats-Server
 
 on:
   push:
     branches:
-      - main
+      - develop
     paths:
-      - "Backend/src/**"
+      - "Backend/apps/chats/src/**"
 
 jobs:
   deploy:
@@ -26,8 +26,8 @@ jobs:
         run: |
           set -o pipefail
           ssh -o StrictHostKeyChecking=no ${{ secrets.API_USER_NAME }}@${{ secrets.API_SERVER_ADDRESS }} << 'EOF'
-            chmod +x /lico/Backend/server/api/deploy.sh || exit 2
-            /lico/Backend/server/api/deploy.sh main
+            chmod +x /lico/Backend/server/chats/deploy.sh || exit 2
+            /lico/Backend/server/chats/deploy.sh
           EOF
           ssh_exit_code=$?
           echo "DEPLOY_RESULT=$ssh_exit_code" >> $GITHUB_ENV
@@ -36,6 +36,6 @@ jobs:
       - name: 결과 전송
         run: |
           curl -X POST -H "Content-Type: application/json" -d '{
-            "server": "main",
+            "server": "chats",
             "result": "${{ env.DEPLOY_RESULT }}"
           }' ${{ secrets.WEBHOOK_URL }}
