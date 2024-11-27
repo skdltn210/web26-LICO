@@ -2,21 +2,11 @@
 set -e  # 에러 발생 시 즉시 스크립트 종료
 
 echo "배포 스크립트 시작"
-BRANCH_NAME=$1
-echo "배포 브랜치: $BRANCH_NAME"
-
-if [ -z "$BRANCH_NAME" ]; then
-   echo "Error: Branch name is required."
-   exit 4
-fi
 
 cd /lico/Backend
 
 # Git 작업
-git fetch origin
-git checkout "$BRANCH_NAME"
-git reset --hard
-git pull origin "$BRANCH_NAME"
+git pull
 
 # 의존성 설치 및 빌드
 npm install || exit 5
