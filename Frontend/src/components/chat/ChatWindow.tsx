@@ -9,6 +9,7 @@ import { useAuthStore } from '@store/useAuthStore';
 import { config } from '@config/env';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
 import PendingMessageNotification from '@components/chat/PendingMessageNotification';
+import { chatApi } from '@apis/chat.ts';
 import type { Message } from '@/types/live';
 import ChatMessage from './ChatMessage';
 
@@ -49,9 +50,9 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     chatRef.current.scrollTop = chatRef.current.scrollHeight;
   };
 
-  const handleNewMessage = (content: string) => {
+  const handleNewMessage = async (content: string) => {
     setIsScrollPaused(false);
-    socketRef.current?.emit('chat', content);
+    await chatApi.sendChat({ channelId: id, message: content });
   };
 
   const handleUserClick = (userId: number, messageElement: HTMLElement) => {
@@ -128,18 +129,14 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     if (!onAir) return undefined;
     if (socketRef.current?.connected) return undefined;
 
-    const socket = io(`${config.apiBaseUrl}/chats`, {
+    const socket = io(`${config.chatUrl}`, {
       transports: ['websocket'],
-      ...(isLoggedIn && {
-        auth: {
-          token: accessToken,
-        },
-      }),
+      extraHeaders: {
+        Authorization: `Bearer ${accessToken}`, // 헤더에 토큰 추가
+      },
     });
 
-    socket.on('auth', ({ message }) => {
-      if (message === 'authorization completed') socket.emit('join', { channelId: id });
-    });
+    socket.emit('join', { channelId: id });
 
     socketRef.current = socket;
 
@@ -150,7 +147,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         socketRef.current = null;
       }
     };
-  }, [onAir, accessToken, id, isLoggedIn]);
+  }, [onAir, accessToken, id]);
 
   useEffect(() => {
     const socket = socketRef.current;

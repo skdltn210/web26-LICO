@@ -2,6 +2,7 @@
 
 export const config = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+  chatUrl: import.meta.env.VITE_CHAT_URL,
   rtmpUrl: import.meta.env.VITE_RTMP_URL,
   storageUrl: import.meta.env.VITE_STORAGE_URL,
   isDevelopment: import.meta.env.VITE_NODE_ENV === 'development',
