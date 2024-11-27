@@ -16,6 +16,9 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { redisConfig } from './config/redis.config';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './config/logger.config';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
@@ -42,6 +45,15 @@ import { winstonConfig } from './config/logger.config';
     FollowModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+      {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },],
 })
 export class AppModule {}
