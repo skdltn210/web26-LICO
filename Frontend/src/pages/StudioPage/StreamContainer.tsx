@@ -1,9 +1,8 @@
-import { useRef, useEffect, useState } from 'react';
-import { StreamCanvas } from './StreamCanvas';
+import { useState, useRef, useEffect } from 'react';
+import StreamCanvas from './StreamCanvas';
 import { DrawCanvas } from './DrawCanvas';
-import { InteractionCanvas } from './InteractionCanvas';
 import { WebRTCStream } from './WebRTCStream';
-import { StreamContainerProps, Position } from '@/types/canvas';
+import { StreamContainerProps } from '@/types/canvas';
 
 export default function StreamContainer({
   screenStream,
@@ -15,13 +14,15 @@ export default function StreamContainer({
   drawingState,
 }: StreamContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const streamCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
-  const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
   const webrtcRef = useRef<WebRTCStream | null>(null);
+  const [streamCanvas, setStreamCanvas] = useState<HTMLCanvasElement | null>(null);
 
-  const [screenPosition, setScreenPosition] = useState<Position>({ x: 0, y: 0, width: 100, height: 100 });
-  const [camPosition, setCamPosition] = useState<Position>({ x: 20, y: 20, width: 240, height: 180 });
+  const isDrawingMode = drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing;
+
+  const handleCanvasUpdate = (canvas: HTMLCanvasElement) => {
+    setStreamCanvas(canvas);
+  };
 
   useEffect(() => {
     if (!webrtcRef.current && webrtcUrl && streamKey) {
@@ -38,13 +39,10 @@ export default function StreamContainer({
 
   useEffect(() => {
     const startStreaming = async () => {
-      const streamCanvas = streamCanvasRef.current;
-      const drawCanvas = drawCanvasRef.current;
-
-      if (!streamCanvas || !drawCanvas || !webrtcRef.current) return;
+      if (!streamCanvas || !drawCanvasRef.current || !webrtcRef.current) return;
 
       try {
-        await webrtcRef.current.start(streamCanvas, drawCanvas, screenStream, mediaStream);
+        await webrtcRef.current.start(streamCanvas, drawCanvasRef.current, screenStream, mediaStream);
       } catch (error) {
         console.error('Streaming failed:', error);
         onStreamError?.(error as Error);
@@ -56,38 +54,40 @@ export default function StreamContainer({
     } else {
       webrtcRef.current?.stop();
     }
-  }, [isStreaming, screenStream, mediaStream, onStreamError]);
+  }, [isStreaming, screenStream, mediaStream, onStreamError, streamCanvas]);
 
   return (
-    <div ref={containerRef} className="canvas-container relative h-full w-full bg-black">
-      <div className="absolute inset-0" style={{ zIndex: 1 }}>
+    <div ref={containerRef} className="relative h-full w-full bg-black">
+      <div className="relative h-full w-full">
         <StreamCanvas
-          ref={streamCanvasRef}
           screenStream={screenStream}
           mediaStream={mediaStream}
-          screenPosition={screenPosition}
-          camPosition={camPosition}
+          onCanvasUpdate={handleCanvasUpdate}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: '100%',
+            zIndex: isDrawingMode ? 1 : 3,
+            pointerEvents: isDrawingMode ? 'none' : 'auto',
+          }}
         />
-      </div>
-      <div className="absolute inset-0" style={{ zIndex: 2 }}>
-        <InteractionCanvas
-          ref={interactionCanvasRef}
-          screenStream={screenStream}
-          mediaStream={mediaStream}
-          screenPosition={screenPosition}
-          camPosition={camPosition}
-          onScreenPositionChange={setScreenPosition}
-          onCamPositionChange={setCamPosition}
+
+        <DrawCanvas
+          ref={drawCanvasRef}
+          drawingState={drawingState}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: '100%',
+            zIndex: isDrawingMode ? 3 : 1,
+            pointerEvents: isDrawingMode ? 'auto' : 'none',
+            background: 'transparent',
+          }}
         />
-      </div>
-      <div
-        className="absolute inset-0"
-        style={{
-          zIndex: 3,
-          pointerEvents: drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing ? 'auto' : 'none',
-        }}
-      >
-        <DrawCanvas ref={drawCanvasRef} drawingState={drawingState} />
       </div>
     </div>
   );

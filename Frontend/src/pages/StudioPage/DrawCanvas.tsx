@@ -25,9 +25,10 @@ interface DrawCanvasProps {
     eraseTool: { width: number };
     textTool: { color: string; width: number };
   };
+  style?: React.CSSProperties;
 }
 
-export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ drawingState }, ref) => {
+export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ drawingState, style }, ref) => {
   const { paths, startDrawing, continueDrawing, endDrawing } = useDrawing();
   const { textInput, startTextInput, updateText, completeText, cancelText, drawTexts } = useText({
     color: drawingState.textTool.color,
@@ -308,13 +309,12 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     <>
       <canvas
         ref={ref}
-        className="absolute left-0 top-0 h-full w-full"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={endDrawing}
         onMouseLeave={endDrawing}
         onContextMenu={handleCanvasContextMenu}
-        style={{ background: 'transparent' }}
+        style={style}
       />
       {textInput.isVisible && (
         <div
