@@ -57,7 +57,7 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
       .lrange(`${channelId}:chats`, -this.OLD_CHATS_MAXIMUM_SIZE, -1)
       .exec();
 
-    socket.emit('chat', results[1]);
+    socket.emit('chat', results[1][1]);
   }
 
   async handleDisconnect(socket: Socket) {
