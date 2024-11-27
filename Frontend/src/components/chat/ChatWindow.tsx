@@ -10,6 +10,7 @@ import { config } from '@config/env';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
 import PendingMessageNotification from '@components/chat/PendingMessageNotification';
 import { chatApi } from '@apis/chat.ts';
+import ChatSettingsMenu from '@components/chat/ChatSettingsMenu';
 import type { Message } from '@/types/live';
 import ChatMessage from './ChatMessage';
 
@@ -35,6 +36,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const [isScrollPaused, setIsScrollPaused] = useState(false);
+  const [showChatSettingsMenu, setShowChatSettingsMenu] = useState(false);
   const [showPendingMessages, setShowPendingMessages] = useState(false);
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const chatRef = useRef<HTMLDivElement | null>(null);
@@ -131,9 +133,6 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
     const socket = io(`${config.chatUrl}`, {
       transports: ['websocket'],
-      extraHeaders: {
-        Authorization: `Bearer ${accessToken}`, // 헤더에 토큰 추가
-      },
     });
 
     socket.emit('join', { channelId: id });
@@ -162,7 +161,8 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
   return (
     <div className="relative flex h-full flex-col border-l border-lico-gray-3 bg-lico-gray-4">
-      <ChatHeader onClose={toggleChat} onSettingsClick={() => {}} />
+      <ChatHeader onClose={toggleChat} onSettingsClick={() => setShowChatSettingsMenu(!showChatSettingsMenu)} />
+      {showChatSettingsMenu && <ChatSettingsMenu onClose={() => setShowChatSettingsMenu(false)} />}
       <div
         role="log"
         aria-label="채팅 메시지"
