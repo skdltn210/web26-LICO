@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { RiRobot2Line } from 'react-icons/ri';
 import { BsBoxArrowUpRight } from 'react-icons/bs';
 import Toggle from '@components/common/Toggle';
@@ -9,11 +8,16 @@ interface ChatSettingsMenuProps {
     top: string;
     right: string;
   };
+  cleanBotEnabled: boolean;
+  onCleanBotChange: (enabled: boolean) => void;
 }
 
-function ChatSettingsMenu({ onClose, position = { top: '50px', right: '8px' } }: ChatSettingsMenuProps) {
-  const [cleanBot, setCleanBot] = useState(false);
-
+function ChatSettingsMenu({
+  onClose,
+  position = { top: '50px', right: '8px' },
+  cleanBotEnabled,
+  onCleanBotChange,
+}: ChatSettingsMenuProps) {
   return (
     <>
       <button aria-label="채팅세팅메뉴 닫기" type="button" className="z fixed inset-0" onClick={onClose} />
@@ -29,7 +33,7 @@ function ChatSettingsMenu({ onClose, position = { top: '50px', right: '8px' } }:
             <RiRobot2Line size={18} />
             <span>클린봇</span>
           </div>
-          <Toggle checked={cleanBot} onChange={setCleanBot} />
+          <Toggle checked={cleanBotEnabled} onChange={onCleanBotChange} />
         </div>
 
         <button

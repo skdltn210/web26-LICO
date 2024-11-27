@@ -37,6 +37,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const [isScrollPaused, setIsScrollPaused] = useState(false);
   const [showChatSettingsMenu, setShowChatSettingsMenu] = useState(false);
+  const [cleanBotEnabled, setCleanBotEnabled] = useState(false);
   const [showPendingMessages, setShowPendingMessages] = useState(false);
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const chatRef = useRef<HTMLDivElement | null>(null);
@@ -81,9 +82,18 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     }, 100);
   };
 
+  const handleCleanBotChange = (enabled: boolean) => {
+    setCleanBotEnabled(enabled);
+  };
+
   const chatHandler = useCallback(
     (data: string[]) => {
-      const newMessages = data.map(v => JSON.parse(v));
+      const newMessages = data
+        .map(v => JSON.parse(v))
+        .map(msg => ({
+          ...msg,
+          content: msg.filteringResult ? msg.content : '클린봇이 삭제한 메세지입니다.',
+        }));
 
       if (isScrollPaused) {
         setShowPendingMessages(true);
@@ -136,17 +146,14 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     });
 
     socket.emit('join', { channelId: id });
-
     socketRef.current = socket;
 
     return () => {
-      if (!onAir) {
-        socket.disconnect();
-        socket.removeAllListeners();
-        socketRef.current = null;
-      }
+      socket.disconnect();
+      socket.removeAllListeners();
+      socketRef.current = null;
     };
-  }, [onAir, accessToken, id]);
+  }, [onAir, id]);
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -154,15 +161,45 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
     socket.off('chat').on('chat', chatHandler);
 
+    const handleFilter = (data: { chatId: string; filteringResult: boolean }[]) => {
+      const filteredMessage = data[0];
+      if (!cleanBotEnabled || filteredMessage.filteringResult) return;
+
+      setMessages(prevMessages => {
+        const messageIndex = prevMessages.findIndex(msg => msg.chatId === filteredMessage.chatId);
+
+        if (messageIndex === -1 || prevMessages[messageIndex].content === '클린봇이 삭제한 메세지입니다.') {
+          return prevMessages;
+        }
+
+        const updatedMessages = [...prevMessages];
+        updatedMessages[messageIndex] = {
+          ...updatedMessages[messageIndex],
+          content: '클린봇이 삭제한 메세지입니다.',
+          filteringResult: false,
+        };
+        return updatedMessages;
+      });
+    };
+
+    socket.off('filter').on('filter', handleFilter);
+
     return () => {
       socket.off('chat');
+      socket.off('filter');
     };
-  }, [chatHandler]);
+  }, [chatHandler, cleanBotEnabled]);
 
   return (
     <div className="relative flex h-full flex-col border-l border-lico-gray-3 bg-lico-gray-4">
       <ChatHeader onClose={toggleChat} onSettingsClick={() => setShowChatSettingsMenu(!showChatSettingsMenu)} />
-      {showChatSettingsMenu && <ChatSettingsMenu onClose={() => setShowChatSettingsMenu(false)} />}
+      {showChatSettingsMenu && (
+        <ChatSettingsMenu
+          onClose={() => setShowChatSettingsMenu(false)}
+          cleanBotEnabled={cleanBotEnabled}
+          onCleanBotChange={handleCleanBotChange}
+        />
+      )}
       <div
         role="log"
         aria-label="채팅 메시지"
@@ -174,10 +211,12 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
           <div className="flex break-after-all flex-col">
             {messages?.map(message => (
               <ChatMessage
-                id={message.userId}
+                key={message.chatId}
+                userId={message.userId}
                 nickname={message.nickname}
                 content={message.content}
                 color={getConsistentTextColor(message.nickname)}
+                filteringResult={message.filteringResult}
                 onUserClick={(userId, element) => handleUserClick(userId, element)}
               />
             ))}
