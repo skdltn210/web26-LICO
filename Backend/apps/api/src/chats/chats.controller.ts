@@ -11,6 +11,6 @@ export class ChatsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async sendChat(@Body(ValidationPipe) sendChatDto: SendChatDto, @Req() req: Request & { user: UserEntity }) {
-    this.chatsService.publishChat({ ...sendChatDto, userId: req.user.id, nickname: req.user.nickname });
+    this.chatsService.ingestChat({ ...sendChatDto, userId: req.user.id, nickname: req.user.nickname });
   }
 }

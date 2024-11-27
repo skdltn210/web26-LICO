@@ -14,7 +14,7 @@ export class ChatsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async publishChat({
+  async ingestChat({
     channelId,
     message,
     userId,
@@ -25,9 +25,19 @@ export class ChatsService {
     userId: number;
     nickname: string;
   }) {
-    const filteringResult = await this.clovaFiltering(message);
-    const chat = JSON.stringify({ content: message, userId, nickname, timestamp: new Date(), filteringResult });
-    await this.redisClient.multi().publish(`${channelId}:chat`, chat).rpush(`${channelId}:chats`, chat).exec();
+    const chatId = crypto.randomUUID();
+    const chat = {
+      content: message,
+      userId,
+      nickname,
+      timestamp: new Date(),
+      channelId,
+      chatId,
+      filteringResult: true,
+    };
+    const chatString = JSON.stringify(chat);
+    await this.redisClient.multi().publish(`${channelId}:chat`, chatString).rpush('chatQueue', chatId).exec();
+    this.clovaFiltering(chat);
   }
 
   async readViewers(channelId: UUID) {
@@ -38,7 +48,7 @@ export class ChatsService {
     this.redisClient.del(`${channelId}:chats`);
   }
 
-  async clovaFiltering(message: string) {
+  async clovaFiltering(chat) {
     const postData = {
       messages: [
         {
@@ -47,9 +57,16 @@ export class ChatsService {
         },
         {
           role: 'user',
-          content: message,
+          content: `채팅내용 : "${chat.content}"`,
         },
       ],
+      maxTokens: this.configService.get<number>('CLOVA_CHAT_FILTERING_MAX_TOKEN') || 10,
+      topP: 0.8,
+      topK: 1,
+      temperature: 0.1,
+      repeatPenalty: 1.0,
+      includeAiFilters: true,
+      seed: 0,
     };
     const { data } = await firstValueFrom(
       this.httpService.post(this.configService.get<string>('CLOVA_API_URL'), postData, {
@@ -61,6 +78,39 @@ export class ChatsService {
       }),
     );
 
-    return data?.result?.message?.content?.includes('true');
+    chat.filteringResult = data?.result?.message?.content?.includes('true');
+    await this.redisClient
+      .multi()
+      .publish(
+        `${chat.channelId}:filter`,
+        JSON.stringify({ chatId: chat.chatId, filteringResult: chat.filteringResult }),
+      )
+      .hset('chatCache', chat.chatId, JSON.stringify(chat))
+      .exec();
+    this.flushChat();
+  }
+
+  async flushChat() {
+    const lockKey = 'chat:flush:lock';
+    const lock = await this.redisClient.set(lockKey, 'lock', 'NX');
+
+    try {
+      if (lock) {
+        while (true) {
+          const frontChatId = await this.redisClient.lindex('chatQueue', 0);
+          const chatString = await this.redisClient.hget('chatCache', frontChatId);
+          if (!chatString) {
+            break;
+          } else {
+            const chat = JSON.parse(chatString);
+            await this.redisClient.multi().rpush(`${chat.channelId}:chats`, chatString).lpop('chatQueue').exec();
+          }
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      await this.redisClient.del(lockKey);
+    }
   }
 }

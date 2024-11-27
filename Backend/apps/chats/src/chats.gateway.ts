@@ -25,11 +25,19 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
   constructor(@InjectRedis() private redisClient: Redis) {
     const subscriber = this.redisClient.duplicate();
     subscriber.psubscribe('*:chat');
+    subscriber.psubscribe('*:filter');
     subscriber.on('pmessage', async (pattern, channel, message) => {
       if (pattern === '*:chat') {
-        const channelId = channel.slice(0, -5) as UUID;
+        const channelId = channel.split(':')[0];
         const chat = plainToInstance(ChatDto, message);
         this.emitChat({ channelId, chat });
+      }
+    });
+
+    subscriber.on('pmessage', async (pattern, channel, message) => {
+      if (pattern === '*:filter') {
+        const channelId = channel.split(':')[0];
+        this.emitFilter({ channelId, filteringResult: JSON.parse(message) });
       }
     });
   }
@@ -66,5 +74,9 @@ export class ChatsGateway implements OnGatewayDisconnect, OnGatewayConnection {
 
   async emitChat({ channelId, chat }) {
     this.server.to(channelId).emit('chat', [chat]);
+  }
+
+  async emitFilter({ channelId, filteringResult }) {
+    this.server.to(channelId).emit('filter', [filteringResult]);
   }
 }
