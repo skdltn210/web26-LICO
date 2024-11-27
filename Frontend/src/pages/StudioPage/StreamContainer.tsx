@@ -1,8 +1,9 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { StreamCanvas } from './StreamCanvas';
 import { DrawCanvas } from './DrawCanvas';
+import { InteractionCanvas } from './InteractionCanvas';
 import { WebRTCStream } from './WebRTCStream';
-import { StreamContainerProps } from '@/types/canvas';
+import { StreamContainerProps, Position } from '@/types/canvas';
 
 export default function StreamContainer({
   screenStream,
@@ -16,7 +17,11 @@ export default function StreamContainer({
   const containerRef = useRef<HTMLDivElement>(null);
   const streamCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
+  const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
   const webrtcRef = useRef<WebRTCStream | null>(null);
+
+  const [screenPosition, setScreenPosition] = useState<Position>({ x: 0, y: 0, width: 100, height: 100 });
+  const [camPosition, setCamPosition] = useState<Position>({ x: 20, y: 20, width: 240, height: 180 });
 
   useEffect(() => {
     if (!webrtcRef.current && webrtcUrl && streamKey) {
@@ -56,12 +61,29 @@ export default function StreamContainer({
   return (
     <div ref={containerRef} className="canvas-container relative h-full w-full bg-black">
       <div className="absolute inset-0" style={{ zIndex: 1 }}>
-        <StreamCanvas ref={streamCanvasRef} screenStream={screenStream} mediaStream={mediaStream} />
+        <StreamCanvas
+          ref={streamCanvasRef}
+          screenStream={screenStream}
+          mediaStream={mediaStream}
+          screenPosition={screenPosition}
+          camPosition={camPosition}
+        />
+      </div>
+      <div className="absolute inset-0" style={{ zIndex: 2 }}>
+        <InteractionCanvas
+          ref={interactionCanvasRef}
+          screenStream={screenStream}
+          mediaStream={mediaStream}
+          screenPosition={screenPosition}
+          camPosition={camPosition}
+          onScreenPositionChange={setScreenPosition}
+          onCamPositionChange={setCamPosition}
+        />
       </div>
       <div
         className="absolute inset-0"
         style={{
-          zIndex: 2,
+          zIndex: 3,
           pointerEvents: drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing ? 'auto' : 'none',
         }}
       >
