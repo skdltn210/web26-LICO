@@ -20,7 +20,7 @@ git pull origin "$BRANCH_NAME"
 
 # 의존성 설치 및 빌드
 npm install || exit 5
-npm run build api || exit 6
+npm run build chats || exit 6
 
 # 서버 재시작
 forever stop dist/apps/chats/main.js || true  # 기존 프로세스가 없어도 오류 발생 방지
