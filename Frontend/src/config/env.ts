@@ -2,6 +2,7 @@
 
 export const config = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+  chatUrl: import.meta.env.VITE_CHAT_URL,
   rtmpUrl: import.meta.env.VITE_RTMP_URL,
   storageUrl: import.meta.env.VITE_STORAGE_URL,
   isDevelopment: import.meta.env.VITE_NODE_ENV === 'development',
@@ -20,6 +21,9 @@ export const config = {
       redirectUri: `${import.meta.env.VITE_AUTH_REDIRECT_BASE_URL}/auth/github/callback`,
     },
   },
+  webrtcUrl: import.meta.env.VITE_WEBRTC_URL,
+  whipUrl: import.meta.env.VITE_WHIP_URL,
+  streamUrl: import.meta.env.VITE_STREAM_URL,
 } as const;
 
 export const urls = {

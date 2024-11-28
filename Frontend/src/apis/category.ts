@@ -1,6 +1,6 @@
 import { api } from './axios';
 import type { Category } from '@/types/category';
-import type { Live } from '@/types/live';
+import type { Live, LiveParams } from '@/types/live';
 
 export const categoryApi = {
   getCategories: async () => {
@@ -13,8 +13,13 @@ export const categoryApi = {
     return data;
   },
 
-  getCategoryLives: async (categoryId: string) => {
-    const { data } = await api.get<Live[]>(`/categories/${categoryId}/lives`);
+  getCategoryLives: async (categoryId: string, params: Omit<LiveParams, 'sort'>) => {
+    const { data } = await api.get<Live[]>(`/categories/${categoryId}/lives`, {
+      params: {
+        limit: params.limit,
+        offset: params.offset,
+      },
+    });
     return data;
   },
 };

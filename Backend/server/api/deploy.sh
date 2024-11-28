@@ -23,8 +23,8 @@ npm install || exit 5
 npm run build api || exit 6
 
 # 서버 재시작
-forever stop dist/main.js || true  # 기존 프로세스가 없어도 오류 발생 방지
-forever start dist/main.js
+forever stop dist/apps/api/main.js || true  # 기존 프로세스가 없어도 오류 발생 방지
+forever start dist/apps/api/main.js
 
 echo "배포 성공"
 exit 0

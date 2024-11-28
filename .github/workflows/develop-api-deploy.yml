@@ -5,7 +5,7 @@ on:
     branches:
       - develop
     paths:
-      - "Backend/src/**"
+      - "Backend/apps/api/src/**"
 
 jobs:
   deploy:

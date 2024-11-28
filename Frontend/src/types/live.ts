@@ -41,11 +41,19 @@ export interface StreamingKeyResponse {
   streamingKey: string;
 }
 
-export type SortType = 'viewers' | 'latest' | 'random';
+export type SortType = 'viewers' | 'latest' | 'recommendation';
+
+export interface LiveParams {
+  sort?: SortType;
+  limit?: number;
+  offset?: number;
+}
 
 export interface Message {
   userId: number;
   nickname: string;
   content: string;
   timestamp: string;
+  chatId: string;
+  filteringResult: boolean;
 }

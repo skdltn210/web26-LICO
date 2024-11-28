@@ -1,41 +1,62 @@
+import { config } from '@config/env';
+
 export class WebRTCStream {
-  private canvas: HTMLCanvasElement | null;
+  private videoCanvas: HTMLCanvasElement | null;
+  private drawingCanvas: HTMLCanvasElement | null;
+  private compositeCanvas: HTMLCanvasElement | null;
   private streamKey: string;
   private pc: RTCPeerConnection | null;
-  private mediaStream: MediaStream | null;
-  private screenAudioStream: MediaStream | null;
-  private micAudioStream: MediaStream | null;
-  private originUrl: string;
+  private screenStream: MediaStream | null;
+  private camStream: MediaStream | null;
+  private audioStream: MediaStream | null;
+  private webrtcUrl: string;
+  private animationFrame: number | null;
 
   constructor(url: string, streamKey: string) {
-    this.canvas = null;
-    this.originUrl = url;
+    this.videoCanvas = null;
+    this.drawingCanvas = null;
+    this.compositeCanvas = null;
+    this.webrtcUrl = url;
     this.streamKey = streamKey;
     this.pc = null;
-    this.mediaStream = null;
-    this.screenAudioStream = null;
-    this.micAudioStream = null;
+    this.camStream = null;
+    this.screenStream = null;
+    this.audioStream = null;
+    this.animationFrame = null;
   }
 
-  async start(canvas: HTMLCanvasElement, screenStream: MediaStream | null, mediaStream: MediaStream | null) {
+  async start(
+    videoCanvas: HTMLCanvasElement,
+    drawingCanvas: HTMLCanvasElement,
+    screenStream: MediaStream | null,
+    camStream: MediaStream | null,
+  ) {
     try {
-      this.canvas = canvas;
-      const videoStream = this.canvas.captureStream(30);
-      this.mediaStream = new MediaStream([...videoStream.getVideoTracks()]);
+      this.videoCanvas = videoCanvas;
+      this.drawingCanvas = drawingCanvas;
+
+      this.compositeCanvas = document.createElement('canvas');
+      this.compositeCanvas.width = videoCanvas.width;
+      this.compositeCanvas.height = videoCanvas.height;
+
+      this.startCompositing();
+
+      const videoStream = this.compositeCanvas.captureStream(30);
+      this.camStream = new MediaStream([...videoStream.getVideoTracks()]);
 
       if (screenStream) {
-        this.screenAudioStream = screenStream;
-        const screenAudioTracks = this.screenAudioStream.getAudioTracks();
+        this.screenStream = screenStream;
+        const screenAudioTracks = this.screenStream.getAudioTracks();
         screenAudioTracks.forEach(track => {
-          this.mediaStream?.addTrack(track.clone());
+          this.camStream?.addTrack(track.clone());
         });
       }
 
-      if (mediaStream) {
-        this.micAudioStream = mediaStream;
-        const micAudioTracks = this.micAudioStream.getAudioTracks();
+      if (camStream) {
+        this.audioStream = camStream;
+        const micAudioTracks = this.audioStream.getAudioTracks();
         micAudioTracks.forEach(track => {
-          this.mediaStream?.addTrack(track.clone());
+          this.camStream?.addTrack(track.clone());
         });
       }
 
@@ -46,16 +67,32 @@ export class WebRTCStream {
     }
   }
 
+  private startCompositing() {
+    if (!this.compositeCanvas || !this.videoCanvas || !this.drawingCanvas) return;
+
+    const ctx = this.compositeCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const updateFrame = () => {
+      ctx.drawImage(this.videoCanvas!, 0, 0);
+      ctx.drawImage(this.drawingCanvas!, 0, 0);
+
+      this.animationFrame = requestAnimationFrame(updateFrame);
+    };
+
+    updateFrame();
+  }
+
   private async connectWHIP() {
     this.pc = new RTCPeerConnection({
       iceServers: [],
     });
 
-    if (this.mediaStream) {
-      const tracks = this.mediaStream.getTracks();
+    if (this.camStream) {
+      const tracks = this.camStream.getTracks();
       tracks.forEach(track => {
-        if (this.mediaStream) {
-          this.pc?.addTrack(track, this.mediaStream);
+        if (this.camStream) {
+          this.pc?.addTrack(track, this.camStream);
         }
       });
     }
@@ -64,8 +101,8 @@ export class WebRTCStream {
       const offer = await this.pc.createOffer();
       await this.pc.setLocalDescription(offer);
 
-      const whipEndpoint = 'https://rtc.lico.digital/rtc/v1/publish/';
-      const streamUrl = `${this.originUrl}/live/${this.streamKey}`;
+      const whipEndpoint = config.whipUrl;
+      const streamUrl = `${this.webrtcUrl}/${this.streamKey}`;
 
       const requestBody = {
         api: whipEndpoint,
@@ -105,26 +142,33 @@ export class WebRTCStream {
   }
 
   private cleanup() {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+      this.animationFrame = null;
+    }
+
     if (this.pc) {
       this.pc.close();
       this.pc = null;
     }
 
-    if (this.mediaStream) {
-      this.mediaStream.getTracks().forEach(track => track.stop());
-      this.mediaStream = null;
+    if (this.camStream) {
+      this.camStream.getTracks().forEach(track => track.stop());
+      this.camStream = null;
     }
 
-    if (this.screenAudioStream) {
-      this.screenAudioStream.getTracks().forEach(track => track.stop());
-      this.screenAudioStream = null;
+    if (this.screenStream) {
+      this.screenStream.getTracks().forEach(track => track.stop());
+      this.screenStream = null;
     }
 
-    if (this.micAudioStream) {
-      this.micAudioStream.getTracks().forEach(track => track.stop());
-      this.micAudioStream = null;
+    if (this.audioStream) {
+      this.audioStream.getTracks().forEach(track => track.stop());
+      this.audioStream = null;
     }
 
-    this.canvas = null;
+    this.videoCanvas = null;
+    this.drawingCanvas = null;
+    this.compositeCanvas = null;
   }
 }

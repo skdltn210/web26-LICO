@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FaAngleDown } from 'react-icons/fa';
-import ChatHeader from '@components/chat/ChatHeader';
-import ChatInput from '@components/chat/ChatInput';
-import useLayoutStore from '@store/useLayoutStore';
-import { getConsistentTextColor } from '@utils/chatUtils';
 import { io, Socket } from 'socket.io-client';
+import { FaAngleDown } from 'react-icons/fa';
+import { getConsistentTextColor } from '@utils/chatUtils';
+import { chatApi } from '@apis/chat';
 import { useAuthStore } from '@store/useAuthStore';
 import { config } from '@config/env';
+import useLayoutStore from '@store/useLayoutStore';
+import ChatHeader from '@components/chat/ChatHeader';
+import ChatInput from '@components/chat/ChatInput';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
 import PendingMessageNotification from '@components/chat/PendingMessageNotification';
-import type { Message } from '@/types/live';
+import ChatSettingsMenu from '@components/chat/ChatSettingsMenu';
 import ChatMessage from './ChatMessage';
+import type { Message } from '@/types/live';
 
 interface ChatWindowProps {
   onAir: boolean;
@@ -23,6 +25,7 @@ interface SelectedMessage {
 }
 
 const MESSAGE_LIMIT = 200;
+const CLEAN_BOT_MESSAGE = '클린봇이 삭제한 메세지입니다.';
 
 const updateMessagesWithLimit = (prevMessages: Message[], newMessages: Message[]) => {
   const updatedMessages = [...prevMessages, ...newMessages];
@@ -34,6 +37,8 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const [isScrollPaused, setIsScrollPaused] = useState(false);
+  const [showChatSettingsMenu, setShowChatSettingsMenu] = useState(false);
+  const [cleanBotEnabled, setCleanBotEnabled] = useState(false);
   const [showPendingMessages, setShowPendingMessages] = useState(false);
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const chatRef = useRef<HTMLDivElement | null>(null);
@@ -49,9 +54,9 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     chatRef.current.scrollTop = chatRef.current.scrollHeight;
   };
 
-  const handleNewMessage = (content: string) => {
+  const handleNewMessage = async (content: string) => {
     setIsScrollPaused(false);
-    socketRef.current?.emit('chat', content);
+    await chatApi.sendChat({ channelId: id, message: content });
   };
 
   const handleUserClick = (userId: number, messageElement: HTMLElement) => {
@@ -78,9 +83,18 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     }, 100);
   };
 
+  const handleCleanBotChange = (enabled: boolean) => {
+    setCleanBotEnabled(enabled);
+  };
+
   const chatHandler = useCallback(
     (data: string[]) => {
-      const newMessages = data.map(v => JSON.parse(v));
+      const newMessages = data
+        .map(v => JSON.parse(v))
+        .map(msg => ({
+          ...msg,
+          content: msg.filteringResult ? msg.content : CLEAN_BOT_MESSAGE,
+        }));
 
       if (isScrollPaused) {
         setShowPendingMessages(true);
@@ -128,29 +142,19 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     if (!onAir) return undefined;
     if (socketRef.current?.connected) return undefined;
 
-    const socket = io(`${config.apiBaseUrl}/chats`, {
+    const socket = io(`${config.chatUrl}`, {
       transports: ['websocket'],
-      ...(isLoggedIn && {
-        auth: {
-          token: accessToken,
-        },
-      }),
     });
 
-    socket.on('auth', ({ message }) => {
-      if (message === 'authorization completed') socket.emit('join', { channelId: id });
-    });
-
+    socket.emit('join', { channelId: id });
     socketRef.current = socket;
 
     return () => {
-      if (!onAir) {
-        socket.disconnect();
-        socket.removeAllListeners();
-        socketRef.current = null;
-      }
+      socket.disconnect();
+      socket.removeAllListeners();
+      socketRef.current = null;
     };
-  }, [onAir, accessToken, id, isLoggedIn]);
+  }, [onAir, id]);
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -158,14 +162,45 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
     socket.off('chat').on('chat', chatHandler);
 
+    const handleFilter = (data: { chatId: string; filteringResult: boolean }[]) => {
+      const filteredMessage = data[0];
+      if (!cleanBotEnabled || filteredMessage.filteringResult) return;
+
+      setMessages(prevMessages => {
+        const messageIndex = prevMessages.findIndex(msg => msg.chatId === filteredMessage.chatId);
+
+        if (messageIndex === -1 || prevMessages[messageIndex].content === CLEAN_BOT_MESSAGE) {
+          return prevMessages;
+        }
+
+        const updatedMessages = [...prevMessages];
+        updatedMessages[messageIndex] = {
+          ...updatedMessages[messageIndex],
+          content: CLEAN_BOT_MESSAGE,
+          filteringResult: false,
+        };
+        return updatedMessages;
+      });
+    };
+
+    socket.off('filter').on('filter', handleFilter);
+
     return () => {
       socket.off('chat');
+      socket.off('filter');
     };
-  }, [chatHandler]);
+  }, [chatHandler, cleanBotEnabled]);
 
   return (
     <div className="relative flex h-full flex-col border-l border-lico-gray-3 bg-lico-gray-4">
-      <ChatHeader onClose={toggleChat} onSettingsClick={() => {}} />
+      <ChatHeader onClose={toggleChat} onSettingsClick={() => setShowChatSettingsMenu(!showChatSettingsMenu)} />
+      {showChatSettingsMenu && (
+        <ChatSettingsMenu
+          onClose={() => setShowChatSettingsMenu(false)}
+          cleanBotEnabled={cleanBotEnabled}
+          onCleanBotChange={handleCleanBotChange}
+        />
+      )}
       <div
         role="log"
         aria-label="채팅 메시지"
@@ -177,10 +212,12 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
           <div className="flex break-after-all flex-col">
             {messages?.map(message => (
               <ChatMessage
-                id={message.userId}
+                key={message.chatId}
+                userId={message.userId}
                 nickname={message.nickname}
                 content={message.content}
                 color={getConsistentTextColor(message.nickname)}
+                filteringResult={message.filteringResult}
                 onUserClick={(userId, element) => handleUserClick(userId, element)}
               />
             ))}

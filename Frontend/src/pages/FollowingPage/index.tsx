@@ -1,6 +1,7 @@
 import ChannelGrid from '@components/channel/ChannelGrid';
+import { config } from '@config/env.ts';
+import { useFollow } from '@hooks/useFollow';
 import OfflineGrid from './OfflineGrid';
-import { useFollow } from '@/hooks/useFollow';
 
 export default function FollowingPage() {
   const { follows, isLoadingFollows } = useFollow();
@@ -13,7 +14,7 @@ export default function FollowingPage() {
       category: follow.categoriesName,
       categoryId: follow.categoriesId,
       profileImgUrl: follow.usersProfileImage,
-      thumbnailUrl: '/api/placeholder/400/320',
+      thumbnailUrl: `${config.storageUrl}/${follow.channelId}/thumbnail.jpg`,
       viewers: 0,
       isLive: follow.onAir,
       createdAt: new Date().toISOString(),
