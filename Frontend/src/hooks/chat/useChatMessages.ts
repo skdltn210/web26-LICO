@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Message } from '@/types/live';
+import type { Message } from '@/types/live';
 
 const MESSAGE_LIMIT = 200;
 
