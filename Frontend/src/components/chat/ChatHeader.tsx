@@ -22,16 +22,16 @@ export default function ChatHeader({ onClose, onSettingsClick }: ChatHeaderProps
         aria-label="채팅창 닫기"
         type="button"
         onClick={onClose}
-        className="text-lico-gray-2 hover:text-lico-gray-1"
+        className="rounded-md p-2 text-lico-gray-2 hover:bg-lico-gray-3"
       >
         {videoPlayerState && isVerticalMode ? <LuArrowDownToLine size={20} /> : <LuArrowRightToLine size={20} />}
       </button>
-      <h3 className="font-bold text-base text-lico-orange-2">채팅</h3>
+      <h3 className="font-bold text-xl text-lico-orange-2">채팅</h3>
       <button
         aria-label="채팅창 설정"
         type="button"
         onClick={onSettingsClick}
-        className="rounded-md p-2 text-lico-gray-2 hover:text-lico-gray-1"
+        className="rounded-md p-2 text-lico-gray-2 hover:bg-lico-gray-3"
       >
         <HiDotsVertical size={20} />
       </button>
