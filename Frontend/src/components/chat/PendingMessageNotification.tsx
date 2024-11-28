@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
 import { getConsistentTextColor } from '@utils/chatUtils.ts';
-
-interface Message {
-  nickname: string;
-  content: string;
-}
+import type { Message } from '@/types/live';
 
 interface PendingMessageNotificationProps {
   pendingMessages: Message[];
 }
 
 export default function PendingMessageNotification({ pendingMessages }: PendingMessageNotificationProps) {
-  const [currentMessage, setCurrentMessage] = useState<Message | null>(null);
+  const [currentMessage, setCurrentMessage] = useState<Pick<Message, 'nickname' | 'content'> | null>(null);
 
   useEffect(() => {
-    console.log('111', pendingMessages);
     if (pendingMessages?.length > 0) {
-      setCurrentMessage(pendingMessages[pendingMessages.length - 1]);
+      const lastMessage = pendingMessages[pendingMessages.length - 1];
+      setCurrentMessage({
+        nickname: lastMessage.nickname,
+        content: lastMessage.content,
+      });
     }
   }, [pendingMessages]);
 
