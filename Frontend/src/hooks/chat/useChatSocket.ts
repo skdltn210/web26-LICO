@@ -1,25 +1,42 @@
+import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useEffect, useRef } from 'react';
 import { config } from '@config/env.ts';
 
-function useChatSocket(channelId: string) {
+function useChatSocket(channelId: string, onAir: boolean) {
   const socketRef = useRef<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    if (!onAir) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setIsConnected(false);
+      }
+      return;
+    }
+
     const socket = io(`${config.chatUrl}`, {
       transports: ['websocket'],
     });
 
-    socket.emit('join', { channelId });
+    socket.on('connect', () => {
+      socket.emit('join', { channelId });
+      setIsConnected(true);
+    });
+
     socketRef.current = socket;
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setIsConnected(false);
+      }
     };
-  }, [channelId]);
+  }, [channelId, onAir]);
 
-  return socketRef.current;
+  return { socket: socketRef.current, isConnected };
 }
 
 export default useChatSocket;

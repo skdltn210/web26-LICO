@@ -33,6 +33,8 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const accessToken = useAuthStore(state => state.accessToken);
   const { toggleChat } = useLayoutStore();
 
+  const { socket, isConnected } = useChatSocket(id, onAir);
+  const { chatRef, bottomRef, showScrollButton, isScrollPaused, scrollToBottom, setIsScrollPaused } = useChatScroll();
   const {
     messages,
     pendingMessages,
@@ -42,9 +44,6 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     applyPendingMessages,
     setMessages,
   } = useChatMessages();
-
-  const { chatRef, bottomRef, showScrollButton, isScrollPaused, scrollToBottom, setIsScrollPaused } = useChatScroll();
-  const socket = useChatSocket(id);
 
   const isLoggedIn = accessToken !== null;
 
@@ -77,11 +76,10 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   };
 
   useEffect((): (() => void) | void => {
-    if (!socket || !onAir) return;
+    if (!socket || !onAir || !isConnected) return;
 
     const handleChat = (data: string[]) => {
       const newMessages = data.map(v => JSON.parse(v));
-
       if (isScrollPaused) {
         addToPending(newMessages);
       } else {
@@ -118,7 +116,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
       socket.off('chat', handleChat);
       socket.off('filter', handleFilter);
     };
-  }, [socket, onAir, isScrollPaused, addMessages, addToPending, cleanBotEnabled, setMessages]);
+  }, [socket, onAir, isScrollPaused, addMessages, addToPending, cleanBotEnabled, setMessages, isConnected]);
 
   useEffect(() => {
     if (isScrollPaused) return;
