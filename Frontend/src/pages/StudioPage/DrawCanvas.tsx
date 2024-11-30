@@ -137,12 +137,13 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     const updateCanvas = () => {
       const container = canvas.current!.parentElement;
       if (container) {
-        const scale = window.devicePixelRatio;
+        const scale = window.devicePixelRatio * 2;
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
 
         canvas.current!.width = containerWidth * scale;
         canvas.current!.height = containerHeight * scale;
+
         canvas.current!.style.width = `${containerWidth}px`;
         canvas.current!.style.height = `${containerHeight}px`;
 

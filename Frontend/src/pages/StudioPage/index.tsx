@@ -90,18 +90,31 @@ export default function StudioPage() {
   };
 
   const renderVideoContent = () => {
+    const AspectRatioContainer = ({ children }: { children: React.ReactNode }) => (
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <div className="absolute inset-0">{children}</div>
+      </div>
+    );
+
     if (videoMode === 'player') {
-      return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
+      return (
+        <AspectRatioContainer>
+          <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />
+        </AspectRatioContainer>
+      );
     }
+
     return (
-      <StreamContainer
-        screenStream={screenStream}
-        mediaStream={mediaStream}
-        isStreaming={isStreaming}
-        webrtcUrl={WEBRTC_URL}
-        streamKey={streamKey?.toString() || ''}
-        drawingState={drawingState}
-      />
+      <AspectRatioContainer>
+        <StreamContainer
+          screenStream={screenStream}
+          mediaStream={mediaStream}
+          isStreaming={isStreaming}
+          webrtcUrl={WEBRTC_URL}
+          streamKey={streamKey?.toString() || ''}
+          drawingState={drawingState}
+        />
+      </AspectRatioContainer>
     );
   };
 
@@ -122,53 +135,55 @@ export default function StudioPage() {
       <div className="flex h-screen">
         <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
           <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
-          <div className="mt-4 h-3/5">{renderVideoContent()}</div>
+          <div className="space-y-4">
+            {renderVideoContent()}
 
-          <div className="mt-4">
-            <div className="flex justify-end">
-              <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('External')}
-                  className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
-                    activeTab === 'External'
-                      ? 'bg-lico-orange-2 text-lico-gray-5'
-                      : 'text-lico-gray-1 hover:text-lico-orange-2'
-                  }`}
-                  role="tab"
-                  aria-selected={activeTab === 'External'}
-                  aria-controls="External-panel"
-                >
-                  외부 스트림
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('WebStudio')}
-                  className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
-                    activeTab === 'WebStudio'
-                      ? 'bg-lico-orange-2 text-lico-gray-5'
-                      : 'text-lico-gray-1 hover:text-lico-orange-2'
-                  }`}
-                  role="tab"
-                  aria-selected={activeTab === 'WebStudio'}
-                  aria-controls="WebStudio-panel"
-                >
-                  웹 스튜디오
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('Info')}
-                  className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
-                    activeTab === 'Info'
-                      ? 'bg-lico-orange-2 text-lico-gray-5'
-                      : 'text-lico-gray-1 hover:text-lico-orange-2'
-                  }`}
-                  role="tab"
-                  aria-selected={activeTab === 'Info'}
-                  aria-controls="info-panel"
-                >
-                  방송 정보
-                </button>
+            <div className="mt-4">
+              <div className="flex justify-end">
+                <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('External')}
+                    className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
+                      activeTab === 'External'
+                        ? 'bg-lico-orange-2 text-lico-gray-5'
+                        : 'text-lico-gray-1 hover:text-lico-orange-2'
+                    }`}
+                    role="tab"
+                    aria-selected={activeTab === 'External'}
+                    aria-controls="External-panel"
+                  >
+                    외부 스트림
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('WebStudio')}
+                    className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
+                      activeTab === 'WebStudio'
+                        ? 'bg-lico-orange-2 text-lico-gray-5'
+                        : 'text-lico-gray-1 hover:text-lico-orange-2'
+                    }`}
+                    role="tab"
+                    aria-selected={activeTab === 'WebStudio'}
+                    aria-controls="WebStudio-panel"
+                  >
+                    웹 스튜디오
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('Info')}
+                    className={`rounded px-3 py-1.5 font-medium text-sm transition-colors ${
+                      activeTab === 'Info'
+                        ? 'bg-lico-orange-2 text-lico-gray-5'
+                        : 'text-lico-gray-1 hover:text-lico-orange-2'
+                    }`}
+                    role="tab"
+                    aria-selected={activeTab === 'Info'}
+                    aria-controls="info-panel"
+                  >
+                    방송 정보
+                  </button>
+                </div>
               </div>
             </div>
 
