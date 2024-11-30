@@ -1,5 +1,4 @@
-import { Point } from '@/types/canvas';
-import { CanvasImage } from '@/types/canvas';
+import { Point, CanvasImage } from '@/types/canvas';
 import { useCanvasContext } from '@/contexts/CanvasContext';
 
 export function useImage() {
@@ -41,13 +40,14 @@ export function useImage() {
         const img = new Image();
 
         img.onload = () => {
-          const container = document.querySelector('.canvas-container');
-          if (!container) {
-            return reject(new Error('Container not found'));
+          const drawCanvas = document.querySelector<HTMLCanvasElement>('.draw-canvas');
+          if (!drawCanvas) {
+            return reject(new Error('DrawCanvas not found'));
           }
 
-          const containerWidth = container.clientWidth;
-          const containerHeight = container.clientHeight;
+          const rect = drawCanvas.getBoundingClientRect();
+          const containerWidth = rect.width;
+          const containerHeight = rect.height;
 
           const { width, height } = calculateImageDimensions(img.width, img.height, containerWidth, containerHeight);
 
@@ -87,10 +87,18 @@ export function useImage() {
   const drawImages = (ctx: CanvasRenderingContext2D) => {
     if (!ctx) return;
 
+    const scale = window.devicePixelRatio;
+
     images.forEach(image => {
       if (image && image.element && image.element.complete) {
         ctx.save();
-        ctx.drawImage(image.element, image.position.x, image.position.y, image.width, image.height);
+        ctx.drawImage(
+          image.element,
+          image.position.x * scale,
+          image.position.y * scale,
+          image.width * scale,
+          image.height * scale,
+        );
         ctx.restore();
       }
     });

@@ -26,6 +26,7 @@ interface DrawCanvasProps {
     textTool: { color: string; width: number };
   };
   style?: React.CSSProperties;
+  className?: string;
 }
 
 export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ drawingState, style }, ref) => {
@@ -315,6 +316,7 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
         onMouseLeave={endDrawing}
         onContextMenu={handleCanvasContextMenu}
         style={style}
+        className="draw-canvas"
       />
       {textInput.isVisible && (
         <div
