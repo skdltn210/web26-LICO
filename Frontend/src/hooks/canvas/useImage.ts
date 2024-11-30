@@ -10,26 +10,23 @@ export function useImage() {
     containerWidth: number,
     containerHeight: number,
   ) => {
-    const maxWidth = containerWidth * 0.8;
-    const maxHeight = containerHeight * 0.8;
-    const aspectRatio = originalWidth / originalHeight;
-    let width = originalWidth;
-    let height = originalHeight;
+    const maxWidth = containerWidth / 4;
+    const maxHeight = containerHeight / 4;
 
-    if (width > maxWidth) {
-      width = maxWidth;
-      height = width / aspectRatio;
-    }
+    const aspectRatio = originalWidth / originalHeight;
+
+    let width = maxWidth;
+    let height = width / aspectRatio;
 
     if (height > maxHeight) {
       height = maxHeight;
       width = height * aspectRatio;
     }
 
-    width = Math.round(width);
-    height = Math.round(height);
-
-    return { width, height };
+    return {
+      width: Math.round(width),
+      height: Math.round(height),
+    };
   };
 
   const addImage = async (file: File) => {
@@ -52,8 +49,8 @@ export function useImage() {
           const { width, height } = calculateImageDimensions(img.width, img.height, containerWidth, containerHeight);
 
           const position: Point = {
-            x: Math.round((containerWidth - width) / 2),
-            y: Math.round((containerHeight - height) / 2),
+            x: 0,
+            y: 0,
           };
 
           const newImage: CanvasImage = {
@@ -87,7 +84,7 @@ export function useImage() {
   const drawImages = (ctx: CanvasRenderingContext2D) => {
     if (!ctx) return;
 
-    const scale = window.devicePixelRatio;
+    const scale = window.devicePixelRatio * 2;
 
     images.forEach(image => {
       if (image && image.element && image.element.complete) {
