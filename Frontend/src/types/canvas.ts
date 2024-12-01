@@ -69,7 +69,7 @@ export interface WebStreamControlsProps {
 
 export interface CanvasImage {
   id: string;
-  element: HTMLImageElement;
+  element: HTMLImageElement | HTMLCanvasElement;
   position: Point;
   width: number;
   height: number;

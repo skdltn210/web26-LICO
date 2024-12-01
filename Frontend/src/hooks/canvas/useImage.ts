@@ -4,28 +4,10 @@ import { useCanvasContext } from '@/contexts/CanvasContext';
 export function useImage() {
   const { images, setImages } = useCanvasContext();
 
-  const calculateImageDimensions = (
-    originalWidth: number,
-    originalHeight: number,
-    containerWidth: number,
-    containerHeight: number,
-  ) => {
-    const maxWidth = containerWidth / 4;
-    const maxHeight = containerHeight / 4;
-
-    const aspectRatio = originalWidth / originalHeight;
-
-    let width = maxWidth;
-    let height = width / aspectRatio;
-
-    if (height > maxHeight) {
-      height = maxHeight;
-      width = height * aspectRatio;
-    }
-
+  const calculateImageDimensions = (originalWidth: number, originalHeight: number) => {
     return {
-      width: Math.round(width),
-      height: Math.round(height),
+      width: originalWidth,
+      height: originalHeight,
     };
   };
 
@@ -42,20 +24,27 @@ export function useImage() {
             return reject(new Error('DrawCanvas not found'));
           }
 
-          const rect = drawCanvas.getBoundingClientRect();
-          const containerWidth = rect.width;
-          const containerHeight = rect.height;
-
-          const { width, height } = calculateImageDimensions(img.width, img.height, containerWidth, containerHeight);
+          const { width, height } = calculateImageDimensions(img.width, img.height);
 
           const position: Point = {
             x: 0,
             y: 0,
           };
 
+          const offscreenCanvas = document.createElement('canvas');
+          offscreenCanvas.width = width;
+          offscreenCanvas.height = height;
+
+          const offscreenCtx = offscreenCanvas.getContext('2d');
+          if (!offscreenCtx) {
+            return reject(new Error('Failed to get offscreen context'));
+          }
+
+          offscreenCtx.drawImage(img, 0, 0, width, height);
+
           const newImage: CanvasImage = {
             id: crypto.randomUUID(),
-            element: img,
+            element: offscreenCanvas,
             position,
             width,
             height,
@@ -84,18 +73,12 @@ export function useImage() {
   const drawImages = (ctx: CanvasRenderingContext2D) => {
     if (!ctx) return;
 
-    const scale = window.devicePixelRatio * 2;
+    const scale = window.devicePixelRatio;
 
     images.forEach(image => {
-      if (image && image.element && image.element.complete) {
+      if (image && image.element) {
         ctx.save();
-        ctx.drawImage(
-          image.element,
-          image.position.x * scale,
-          image.position.y * scale,
-          image.width * scale,
-          image.height * scale,
-        );
+        ctx.drawImage(image.element, image.position.x, image.position.y, image.width / scale, image.height / scale);
         ctx.restore();
       }
     });

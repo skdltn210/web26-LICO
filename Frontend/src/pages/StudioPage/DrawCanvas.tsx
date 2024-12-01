@@ -117,7 +117,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       });
     }
   };
-
   const handleDelete = () => {
     if (contextMenu.type === 'text') {
       setTexts(texts.filter(text => text.id !== contextMenu.targetId));
@@ -151,8 +150,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
 
       ctx.clearRect(0, 0, containerWidth, containerHeight);
 
-      drawImages(ctx);
-
       paths.forEach(path => {
         if (path.points.length < 2) return;
 
@@ -178,6 +175,7 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       });
 
       ctx.globalCompositeOperation = 'source-over';
+      drawImages(ctx);
       drawTexts(ctx);
     };
 
