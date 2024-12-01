@@ -22,33 +22,10 @@ export default function StreamContainer({
   const webrtcRef = useRef<WebRTCStream | null>(null);
   const animationFrameRef = useRef<number>();
 
-  const [screenPosition, setScreenPosition] = useState<Position>({ x: 0, y: 0, width: 100, height: 100 });
+  const [screenPosition, setScreenPosition] = useState<Position>({ x: 0, y: 0, width: 792, height: 446 });
   const [camPosition, setCamPosition] = useState<Position>({ x: 20, y: 20, width: 240, height: 180 });
 
   const isDrawingMode = drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing;
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container || !screenStream) return;
-
-    const containerWidth = container.clientWidth / 2;
-    const containerHeight = container.clientHeight / 2;
-    const targetAspectRatio = 16 / 9;
-
-    let width, height;
-    if (containerWidth / containerHeight > targetAspectRatio) {
-      height = containerHeight;
-      width = height * targetAspectRatio;
-    } else {
-      width = containerWidth;
-      height = width / targetAspectRatio;
-    }
-
-    const x = (containerWidth - width) / 2;
-    const y = (containerHeight - height) / 2;
-
-    setScreenPosition({ x, y, width, height });
-  }, [screenStream]);
 
   const updateCompositeCanvas = () => {
     const streamCanvas = streamCanvasRef.current;
