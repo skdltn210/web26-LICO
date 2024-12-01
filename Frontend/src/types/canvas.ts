@@ -88,6 +88,7 @@ export interface CanvasText {
   position: Position;
   color: string;
   fontSize: number;
+  originalFontSize: number;
 }
 
 export interface UseTextProps {

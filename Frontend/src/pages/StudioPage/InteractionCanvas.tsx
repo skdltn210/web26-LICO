@@ -103,7 +103,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       handleResizeEnd,
       isResizing,
     } = useCanvasElement({
-      minSize: selectedElement === 'camera' ? 100 : 200,
+      minSize: selectedElement === 'text' ? 1 : selectedElement === 'camera' ? 100 : 200,
       canvasWidth: getCanvasElement()?.width || 0,
       canvasHeight: getCanvasElement()?.height || 0,
     });

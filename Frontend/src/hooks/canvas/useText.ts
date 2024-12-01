@@ -3,7 +3,7 @@ import { Point } from '@/types/canvas';
 import { UseTextProps, TextInputState, CanvasText } from '@/types/canvas';
 import { useCanvasContext } from '@/contexts/CanvasContext';
 
-export function useText({ color, fontSize }: UseTextProps) {
+export function useText({ color, fontSize: initialFontSize }: UseTextProps) {
   const { texts, setTexts } = useCanvasContext();
   const [textInput, setTextInput] = useState<TextInputState>({
     isVisible: false,
@@ -19,7 +19,7 @@ export function useText({ color, fontSize }: UseTextProps) {
         x: point.x,
         y: point.y,
         width: 0,
-        height: fontSize,
+        height: initialFontSize,
       },
     });
   };
@@ -30,8 +30,10 @@ export function useText({ color, fontSize }: UseTextProps) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.font = `${fontSize}px Arial`;
+      ctx.font = `${initialFontSize}px Arial`;
       const metrics = ctx.measureText(singleLineText);
+
+      const textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
       setTextInput(prev => ({
         ...prev,
@@ -39,7 +41,7 @@ export function useText({ color, fontSize }: UseTextProps) {
         position: {
           ...prev.position,
           width: metrics.width,
-          height: fontSize,
+          height: textHeight || initialFontSize,
         },
       }));
     }
@@ -55,8 +57,9 @@ export function useText({ color, fontSize }: UseTextProps) {
       return;
     }
 
-    ctx.font = `${fontSize}px Arial`;
+    ctx.font = `${initialFontSize}px Arial`;
     const metrics = ctx.measureText(textInput.text);
+    const textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
     const newText: CanvasText = {
       id: crypto.randomUUID(),
@@ -64,10 +67,11 @@ export function useText({ color, fontSize }: UseTextProps) {
       position: {
         ...textInput.position,
         width: metrics.width,
-        height: fontSize,
+        height: textHeight || initialFontSize,
       },
       color,
-      fontSize,
+      fontSize: initialFontSize,
+      originalFontSize: initialFontSize,
     };
     setTexts([...texts, newText]);
 
@@ -79,20 +83,31 @@ export function useText({ color, fontSize }: UseTextProps) {
   };
 
   const cancelText = () => {
-    setTextInput({ isVisible: false, text: '', position: { x: 0, y: 0, width: 0, height: 0 } });
+    setTextInput({
+      isVisible: false,
+      text: '',
+      position: { x: 0, y: 0, width: 0, height: 0 },
+    });
   };
 
   const drawTexts = (ctx: CanvasRenderingContext2D) => {
     texts.forEach(text => {
       ctx.save();
-      ctx.font = `${text.fontSize}px Arial`;
+
+      const heightScale = text.position.height / text.originalFontSize;
+      const scaledFontSize = text.originalFontSize * heightScale;
+
+      ctx.font = `${scaledFontSize}px Arial`;
       ctx.fillStyle = text.color;
       ctx.textBaseline = 'top';
 
-      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-      ctx.strokeRect(text.position.x, text.position.y, text.position.width, text.position.height);
+      const metrics = ctx.measureText(text.text);
+      const actualTextHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
-      ctx.fillText(text.text, text.position.x, text.position.y);
+      const yOffset = (text.position.height - actualTextHeight) / 2;
+
+      ctx.fillText(text.text, text.position.x, text.position.y + yOffset);
+
       ctx.restore();
     });
   };
