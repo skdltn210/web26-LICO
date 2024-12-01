@@ -72,6 +72,8 @@ export interface CanvasImage {
   element: HTMLImageElement | HTMLCanvasElement;
   position: Position;
   aspectRatio: number;
+  originalWidth: number;
+  originalHeight: number;
 }
 
 export interface TextInputState {
