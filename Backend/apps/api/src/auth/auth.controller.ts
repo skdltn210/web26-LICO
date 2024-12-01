@@ -34,6 +34,12 @@ export class AuthController {
     return this.handleOAuthCallback(req, res);
   }
 
+  @Get('lico/callback')
+  @UseGuards(AuthGuard('lico'))
+  async licoAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
+    return this.handleOAuthCallback(req, res);
+  }
+
   @Get('logout')
   @UseGuards(JwtAuthGuard)
   async logout(@Req() req: Request, @Res() res: Response) {
