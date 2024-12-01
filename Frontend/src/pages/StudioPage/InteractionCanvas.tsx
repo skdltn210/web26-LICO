@@ -377,6 +377,14 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
           setSelectedElement(null);
           setSelectedId(null);
         }
+
+        setDeleteModal({
+          show: false,
+          x: 0,
+          y: 0,
+          type: 'text',
+          targetId: '',
+        });
       };
 
       window.addEventListener('click', handleGlobalClick);

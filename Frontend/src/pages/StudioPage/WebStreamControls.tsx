@@ -8,7 +8,7 @@ import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
 import Palette from './Modals/Palette';
 import TextSetting from './Modals/TextSetting';
-import { clear } from 'console';
+import Toast from '@components/common/Toast';
 
 interface WebStreamControlsProps {
   streamKey: string;
@@ -31,9 +31,27 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
   } = useStudioStore();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addImage } = useImage();
   const { mutateAsync: finishLive } = useFinishLive();
+
+  const showToastMessage = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+  };
+
+  const validateAudioTracks = () => {
+    const hasScreenAudio = screenStream !== null && screenStream.getAudioTracks().length > 0;
+    const hasMediaAudio = mediaStream !== null && mediaStream.getAudioTracks().length > 0;
+
+    if (!hasScreenAudio && !hasMediaAudio) {
+      showToastMessage('화면공유 / 마이크 설정에서 오디오 트랙을 추가해주세요');
+      return false;
+    }
+    return true;
+  };
 
   const handleScreenShare = async () => {
     try {
@@ -67,12 +85,18 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
     if (isStreaming) {
       try {
         await finishLive(streamKey);
-        console.log('Live stream ended successfully.');
+        showToastMessage('방송이 종료되었습니다');
       } catch (error) {
         console.error('Error ending the live stream:', error);
       }
+      setIsStreaming(false);
+    } else {
+      if (!validateAudioTracks()) {
+        return;
+      }
+      setIsStreaming(true);
+      showToastMessage('방송이 시작되었습니다');
     }
-    setIsStreaming(!isStreaming);
   };
 
   const handleToolSelect = (tool: 'text' | 'draw' | 'erase' | null) => {
@@ -177,6 +201,7 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
 
         <CamMicSetting isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
       </div>
+      <Toast message={toastMessage} isOpen={showToast} onClose={() => setShowToast(false)} />
     </>
   );
 }
