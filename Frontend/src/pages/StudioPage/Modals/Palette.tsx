@@ -1,13 +1,16 @@
 import { ChangeEvent } from 'react';
-import { ToolState } from '@/types/canvas';
+import { useStudioStore } from '@store/useStudioStore';
 
-interface ToolSettingProps {
-  toolState: ToolState;
-  onStateChange: (state: Partial<ToolState>) => void;
-  isErasing?: boolean;
+interface PaletteConfig {
+  isErasing: boolean;
 }
 
-export default function Palette({ toolState, onStateChange, isErasing = false }: ToolSettingProps) {
+export default function Palette({ isErasing }: PaletteConfig) {
+  const drawingState = useStudioStore(state => state.drawingState);
+  const setDrawingState = useStudioStore(state => state.setDrawingState);
+
+  const currentTool = isErasing ? drawingState.eraseTool : drawingState.drawTool;
+
   const presetColors = [
     { color: '#FFFFFF', label: '흰색' },
     { color: '#000000', label: '검정' },
@@ -26,15 +29,42 @@ export default function Palette({ toolState, onStateChange, isErasing = false }:
   ];
 
   const handleColorClick = (color: string) => {
-    onStateChange({ color });
+    if (!isErasing) {
+      setDrawingState({
+        ...drawingState,
+        drawTool: {
+          ...drawingState.drawTool,
+          color,
+        },
+      });
+    }
   };
 
   const handleSizeClick = (width: number) => {
-    onStateChange({ width });
+    const toolKey = isErasing ? 'eraseTool' : 'drawTool';
+    setDrawingState({
+      ...drawingState,
+      [toolKey]: {
+        ...drawingState[toolKey],
+        width,
+      },
+    });
   };
 
   const handleCustomColorChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onStateChange({ color: e.target.value });
+    if (!isErasing) {
+      setDrawingState({
+        ...drawingState,
+        drawTool: {
+          ...drawingState.drawTool,
+          color: e.target.value,
+        },
+      });
+    }
+  };
+
+  const getCurrentColor = () => {
+    return isErasing ? '#FFFFFF' : drawingState.drawTool.color;
   };
 
   return (
@@ -49,7 +79,7 @@ export default function Palette({ toolState, onStateChange, isErasing = false }:
                 type="button"
                 onClick={() => handleColorClick(color)}
                 className={`h-6 w-6 rounded-full border ${
-                  toolState.color === color ? 'ring-2 ring-lico-orange-2 ring-offset-2' : ''
+                  getCurrentColor() === color ? 'ring-2 ring-lico-orange-2 ring-offset-2' : ''
                 }`}
                 style={{ backgroundColor: color }}
                 title={label}
@@ -57,7 +87,7 @@ export default function Palette({ toolState, onStateChange, isErasing = false }:
             ))}
             <input
               type="color"
-              value={toolState.color}
+              value={getCurrentColor()}
               onChange={handleCustomColorChange}
               className="h-6 w-6 cursor-pointer rounded-full"
               title="커스텀 색상"
@@ -65,6 +95,7 @@ export default function Palette({ toolState, onStateChange, isErasing = false }:
           </div>
         </div>
       )}
+
       <div className="space-y-2">
         <span className="block text-sm text-lico-gray-1">두께</span>
         <div className="flex items-center gap-3">
@@ -74,7 +105,7 @@ export default function Palette({ toolState, onStateChange, isErasing = false }:
               type="button"
               onClick={() => handleSizeClick(size)}
               className={`relative flex h-8 w-8 items-center justify-center rounded-lg ${
-                toolState.width === size ? 'bg-lico-orange-2' : 'bg-lico-gray-4 hover:bg-lico-gray-2'
+                currentTool.width === size ? 'bg-lico-orange-2' : 'bg-lico-gray-4 hover:bg-lico-gray-2'
               } `}
               title={`${size}px`}
             >
@@ -83,7 +114,7 @@ export default function Palette({ toolState, onStateChange, isErasing = false }:
                 style={{
                   width: `${dimension}px`,
                   height: `${dimension}px`,
-                  backgroundColor: isErasing ? 'white' : toolState.color,
+                  backgroundColor: isErasing ? 'white' : getCurrentColor(),
                 }}
               />
             </button>

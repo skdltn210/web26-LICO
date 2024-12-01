@@ -1,61 +1,45 @@
 import { useEffect, useState, forwardRef, useCallback } from 'react';
 import { useCanvasElement } from '@hooks/canvas/useCanvasElement';
-import { Position, Point } from '@/types/canvas';
+import { Position, Point, CanvasImage, CanvasText } from '@/types/canvas';
 import { CanvasElementDeleteModal } from './Modals/CanvasElementDeleteModal';
-import { useStudioStore } from '@store/useStudioStore';
+import { useStudioStore } from '@/store/useStudioStore';
 
 type SelectedElement = 'screen' | 'camera' | 'text' | 'image' | null;
 
-interface ContextMenu {
-  show: boolean;
-  x: number;
-  y: number;
-  type: 'text' | 'image';
-  targetId: string;
-}
-
 interface InteractionCanvasProps {
-  screenStream: MediaStream | null;
-  mediaStream: MediaStream | null;
-  screenPosition: Position;
-  camPosition: Position;
-  setScreenPosition: (position: Position | ((prev: Position) => Position)) => void;
-  setCamPosition: (position: Position | ((prev: Position) => Position)) => void;
   isDrawingMode: boolean;
 }
 
 export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvasProps>(
-  (
-    { screenStream, mediaStream, screenPosition, camPosition, setScreenPosition, setCamPosition, isDrawingMode },
-    forwardedRef,
-  ) => {
-    const texts = useStudioStore(state => state.texts);
-    const images = useStudioStore(state => state.images);
-    const setTexts = useStudioStore(state => state.setTexts);
-    const setImages = useStudioStore(state => state.setImages);
-
+  ({ isDrawingMode }, forwardedRef) => {
     const [selectedElement, setSelectedElement] = useState<SelectedElement>(null);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-    const [contextMenu, setContextMenu] = useState<ContextMenu>({
-      show: false,
-      x: 0,
-      y: 0,
-      type: 'text',
-      targetId: '',
-    });
-
     const screenAspectRatio = 16 / 9;
     const cameraAspectRatio = 4 / 3;
+
+    const {
+      screenStream,
+      mediaStream,
+      screenPosition,
+      camPosition,
+      texts,
+      images,
+      setScreenPosition,
+      setCamPosition,
+      setTexts,
+      setImages,
+      setDeleteModal,
+    } = useStudioStore();
 
     const getCanvasElement = (): HTMLCanvasElement | null => {
       if (!forwardedRef) return null;
       return 'current' in forwardedRef ? forwardedRef.current : null;
     };
 
-    const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const handleElementRightClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       const point = getCanvasPoint(e);
       const scale = getScale();
@@ -74,7 +58,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       );
 
       if (clickedText) {
-        setContextMenu({
+        setDeleteModal({
           show: true,
           x: e.clientX,
           y: e.clientY,
@@ -93,7 +77,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       );
 
       if (clickedImage) {
-        setContextMenu({
+        setDeleteModal({
           show: true,
           x: e.clientX,
           y: e.clientY,
@@ -103,27 +87,22 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       }
     };
 
-    const handleDelete = () => {
-      if (contextMenu.type === 'text') {
-        const updatedTexts = texts.filter(text => text.id !== contextMenu.targetId);
-        setTexts(updatedTexts);
-      } else {
-        const updatedImages = images.filter(image => image.id !== contextMenu.targetId);
-        setImages(updatedImages);
-      }
-      setContextMenu(prev => ({ ...prev, show: false }));
-    };
-
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && contextMenu.show) {
-          setContextMenu(prev => ({ ...prev, show: false }));
+        if (e.key === 'Escape') {
+          setDeleteModal({
+            show: false,
+            x: 0,
+            y: 0,
+            type: 'text',
+            targetId: '',
+          });
         }
       };
 
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [contextMenu.show]);
+    }, []);
 
     const getScale = (): number => {
       return window.devicePixelRatio;
@@ -193,7 +172,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       handleResizeEnd,
       isResizing,
     } = useCanvasElement({
-      minSize: selectedElement === 'text' ? 1 : selectedElement === 'screen' ? 200 : 50,
+      minSize: selectedElement === 'text' ? 1 : selectedElement === 'screen' ? 200 : 100,
       canvasWidth: getCanvasElement()?.width || 0,
       canvasHeight: getCanvasElement()?.height || 0,
     });
@@ -245,16 +224,28 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
 
         switch (selectedElement) {
           case 'text': {
-            const updatedTexts = texts.map(text =>
-              text.id === selectedId ? { ...text, position: newPosition } : text,
-            );
+            const updatedTexts: CanvasText[] = texts.map(text => {
+              if (text.id === selectedId) {
+                return {
+                  ...text,
+                  position: newPosition,
+                };
+              }
+              return text;
+            });
             setTexts(updatedTexts);
             break;
           }
           case 'image': {
-            const updatedImages = images.map(image =>
-              image.id === selectedId ? { ...image, position: newPosition } : image,
-            );
+            const updatedImages: CanvasImage[] = images.map(image => {
+              if (image.id === selectedId) {
+                return {
+                  ...image,
+                  position: newPosition,
+                };
+              }
+              return image;
+            });
             setImages(updatedImages);
             break;
           }
@@ -381,11 +372,6 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     useEffect(() => {
       const handleGlobalClick = (e: MouseEvent) => {
         const canvas = getCanvasElement();
-        const modalElement = document.querySelector('.canvas-element-delete-modal');
-
-        if (modalElement && !modalElement.contains(e.target as Node)) {
-          setContextMenu(prev => ({ ...prev, show: false }));
-        }
 
         if (!canvas || !(e.target instanceof HTMLCanvasElement) || e.target !== canvas) {
           setSelectedElement(null);
@@ -535,15 +521,9 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={() => handleResizeEnd()}
-          onContextMenu={handleContextMenu}
+          onContextMenu={handleElementRightClick}
         />
-        <CanvasElementDeleteModal
-          show={contextMenu.show}
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onDelete={handleDelete}
-          canvasRef={forwardedRef}
-        />
+        <CanvasElementDeleteModal canvasRef={forwardedRef} />
       </>
     );
   },

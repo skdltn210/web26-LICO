@@ -28,12 +28,16 @@ export interface ToolState {
   width: number;
 }
 
+export interface EraserToolState {
+  width: number;
+}
+
 export interface DrawingState {
   isDrawing: boolean;
   isErasing: boolean;
   isTexting: boolean;
   drawTool: ToolState;
-  eraseTool: ToolState;
+  eraseTool: EraserToolState;
   textTool: ToolState;
 }
 
@@ -46,13 +50,9 @@ export interface MediaSettings {
 }
 
 export interface StreamContainerProps {
-  screenStream: MediaStream | null;
-  mediaStream: MediaStream | null;
-  isStreaming: boolean;
   webrtcUrl: string;
   streamKey: string;
   onStreamError?: (error: Error) => void;
-  drawingState: DrawingState;
 }
 
 export interface WebStreamControlsProps {
@@ -95,3 +95,27 @@ export interface UseTextProps {
   color: string;
   fontSize: number;
 }
+
+export interface DeleteModalState {
+  show: boolean;
+  x: number;
+  y: number;
+  type: 'text' | 'image';
+  targetId: string;
+}
+
+export interface MediaSettings {
+  videoEnabled: boolean;
+  audioEnabled: boolean;
+  videoDeviceId?: string;
+  audioDeviceId?: string;
+  isCamFlipped?: boolean;
+  volume?: number;
+}
+
+export const initialMediaSettings: MediaSettings = {
+  videoEnabled: false,
+  audioEnabled: false,
+  isCamFlipped: false,
+  volume: 75,
+};

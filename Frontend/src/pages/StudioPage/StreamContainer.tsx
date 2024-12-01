@@ -1,27 +1,25 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { StreamCanvas } from './StreamCanvas';
 import { DrawCanvas } from './DrawCanvas';
 import { InteractionCanvas } from './InteractionCanvas';
 import { WebRTCStream } from './WebRTCStream';
-import { StreamContainerProps, Position } from '@/types/canvas';
+import { useStudioStore } from '@store/useStudioStore';
 
-export default function StreamContainer({
-  screenStream,
-  mediaStream,
-  isStreaming,
-  webrtcUrl,
-  streamKey,
-  onStreamError,
-  drawingState,
-}: StreamContainerProps) {
+interface StreamContainerProps {
+  webrtcUrl: string;
+  streamKey: string;
+  onStreamError?: (error: Error) => void;
+}
+
+export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }: StreamContainerProps) {
   const streamCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
   const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const webrtcRef = useRef<WebRTCStream | null>(null);
 
-  const [screenPosition, setScreenPosition] = useState<Position>({ x: 0, y: 0, width: 792, height: 446 });
-  const [camPosition, setCamPosition] = useState<Position>({ x: 20, y: 20, width: 240, height: 180 });
+  const drawingState = useStudioStore(state => state.drawingState);
+  const isStreaming = useStudioStore(state => state.isStreaming);
 
   const isDrawingMode = drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing;
 
@@ -66,24 +64,9 @@ export default function StreamContainer({
 
   return (
     <div ref={containerRef} className="relative h-full w-full">
-      <StreamCanvas
-        ref={streamCanvasRef}
-        screenStream={screenStream}
-        mediaStream={mediaStream}
-        screenPosition={screenPosition}
-        camPosition={camPosition}
-      />
+      <StreamCanvas ref={streamCanvasRef} />
       <DrawCanvas ref={drawCanvasRef} drawingState={drawingState} isDrawingMode={isDrawingMode} />
-      <InteractionCanvas
-        ref={interactionCanvasRef}
-        screenStream={screenStream}
-        mediaStream={mediaStream}
-        screenPosition={screenPosition}
-        camPosition={camPosition}
-        setScreenPosition={setScreenPosition}
-        setCamPosition={setCamPosition}
-        isDrawingMode={isDrawingMode}
-      />
+      <InteractionCanvas ref={interactionCanvasRef} isDrawingMode={isDrawingMode} />
     </div>
   );
 }

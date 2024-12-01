@@ -13,8 +13,8 @@ import NotFound from '@components/error/NotFound';
 import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
-import { DrawingState } from '@/types/canvas';
 import { useFinishLive } from '@hooks/useLive';
+import { useStudioStore } from '@store/useStudioStore';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
@@ -24,26 +24,11 @@ export default function StudioPage() {
   const [activeTab, setActiveTab] = useState<TabType>('External');
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
 
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [drawingState, setDrawingState] = useState<DrawingState>({
-    isDrawing: false,
-    isErasing: false,
-    isTexting: false,
-    drawTool: {
-      color: '#ffffff',
-      width: 5,
-    },
-    eraseTool: {
-      color: '#ffffff',
-      width: 20,
-    },
-    textTool: {
-      color: '#ffffff',
-      width: 10,
-    },
-  });
+  const screenStream = useStudioStore(state => state.screenStream);
+  const mediaStream = useStudioStore(state => state.mediaStream);
+  const setScreenStream = useStudioStore(state => state.setScreenStream);
+  const setMediaStream = useStudioStore(state => state.setMediaStream);
+  const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
   const { data: streamKey } = useStreamingKey();
@@ -51,7 +36,7 @@ export default function StudioPage() {
   const { mutateAsync: finishLive } = useFinishLive();
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
-  const WEBRTC_URL = config.webrtcUrl;
+  const WEBRTC_URL = `${config.webrtcUrl}/${channelId}`;
 
   const handleTabChange = async (tab: TabType) => {
     setActiveTab(tab);
@@ -72,22 +57,6 @@ export default function StudioPage() {
     }
   };
 
-  const handleScreenStreamChange = (stream: MediaStream | null) => {
-    setScreenStream(stream);
-  };
-
-  const handleMediaStreamChange = (stream: MediaStream | null) => {
-    setMediaStream(stream);
-  };
-
-  const handleStreamingChange = (streaming: boolean) => {
-    setIsStreaming(streaming);
-  };
-
-  const handleDrawingStateChange = (newState: DrawingState) => {
-    setDrawingState(newState);
-  };
-
   const renderVideoContent = () => {
     const AspectRatioContainer = ({ children }: { children: React.ReactNode }) => (
       <div className="relative h-full w-full bg-black" style={{ paddingBottom: '56.25%' }}>
@@ -101,14 +70,7 @@ export default function StudioPage() {
 
     return (
       <AspectRatioContainer>
-        <StreamContainer
-          screenStream={screenStream}
-          mediaStream={mediaStream}
-          isStreaming={isStreaming}
-          webrtcUrl={WEBRTC_URL}
-          streamKey={streamKey?.toString() || ''}
-          drawingState={drawingState}
-        />
+        <StreamContainer streamKey={streamKey?.toString() || ''} webrtcUrl={WEBRTC_URL} />
       </AspectRatioContainer>
     );
   };
@@ -189,17 +151,7 @@ export default function StudioPage() {
             )}
             {activeTab === 'WebStudio' && (
               <div id="WebStudio-panel" role="tabpanel">
-                <WebStreamControls
-                  screenStream={screenStream}
-                  mediaStream={mediaStream}
-                  isStreaming={isStreaming}
-                  drawingState={drawingState}
-                  onScreenStreamChange={handleScreenStreamChange}
-                  onMediaStreamChange={handleMediaStreamChange}
-                  onStreamingChange={handleStreamingChange}
-                  onDrawingStateChange={handleDrawingStateChange}
-                  streamKey={streamKey?.toString() || ''}
-                />
+                <WebStreamControls streamKey={streamKey?.toString() || ''} />
               </div>
             )}
             {activeTab === 'Info' && (

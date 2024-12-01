@@ -1,15 +1,28 @@
 import { useRef, useEffect } from 'react';
+import { useStudioStore } from '@store/useStudioStore';
 
 interface CanvasElementDeleteModalProps {
-  show: boolean;
-  x: number;
-  y: number;
-  onDelete: () => void;
   canvasRef: React.ForwardedRef<HTMLCanvasElement> | React.RefObject<HTMLCanvasElement>;
 }
 
-export function CanvasElementDeleteModal({ show, x, y, onDelete, canvasRef }: CanvasElementDeleteModalProps) {
+export function CanvasElementDeleteModal({ canvasRef }: CanvasElementDeleteModalProps) {
   const modalRef = useRef<HTMLButtonElement>(null);
+
+  const { show, x, y, targetId, type } = useStudioStore(state => state.deleteModal);
+  const setDeleteModal = useStudioStore(state => state.setDeleteModal);
+  const setTexts = useStudioStore(state => state.setTexts);
+  const setImages = useStudioStore(state => state.setImages);
+  const texts = useStudioStore(state => state.texts);
+  const images = useStudioStore(state => state.images);
+
+  const handleDelete = () => {
+    if (type === 'text') {
+      setTexts(texts.filter(text => text.id !== targetId));
+    } else {
+      setImages(images.filter(image => image.id !== targetId));
+    }
+    setDeleteModal({ show: false, x: 0, y: 0, type: 'text', targetId: '' });
+  };
 
   const getCanvasElement = (): HTMLCanvasElement | null => {
     if (!canvasRef) return null;
@@ -86,12 +99,10 @@ export function CanvasElementDeleteModal({ show, x, y, onDelete, canvasRef }: Ca
     <button
       ref={modalRef}
       className="canvas-element-delete-modal absolute z-50 rounded-lg bg-lico-gray-3 px-4 py-2 text-left font-bold text-sm text-lico-orange-2 shadow-lg transition-colors duration-150 hover:bg-lico-gray-2"
-      style={{
-        visibility: 'hidden',
-      }}
+      style={{ visibility: 'hidden' }}
       onClick={e => {
         e.stopPropagation();
-        onDelete();
+        handleDelete();
       }}
     >
       삭제
