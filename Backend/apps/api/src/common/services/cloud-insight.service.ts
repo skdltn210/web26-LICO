@@ -7,7 +7,7 @@ import { Logger } from 'winston';
 
 @Injectable()
 export class CloudInsightService {
-  private readonly isProduction: boolean;
+  private readonly useMetrics: boolean;
   private readonly cwKey: string;
   private readonly accessKey: string;
   private readonly secretKey: string;
@@ -17,7 +17,7 @@ export class CloudInsightService {
     private readonly configService: ConfigService,
     @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {
-    this.isProduction = this.configService.get('IS_PRODUCTION') === 'true';
+    this.useMetrics = this.configService.get('METRICS_ENABLED') === 'true';
     this.cwKey = this.configService.get('NCLOUD_CW_KEY');
     this.accessKey = this.configService.get('NCLOUD_ACCESS_KEY');
     this.secretKey = this.configService.get('NCLOUD_SECRET_KEY');
@@ -25,7 +25,7 @@ export class CloudInsightService {
   }
 
   async sendData(data: any): Promise<void> {
-    if (!this.isProduction) {
+    if (!this.useMetrics) {
       // 로컬 환경에서는 데이터 전송하지 않음
       return;
     }
