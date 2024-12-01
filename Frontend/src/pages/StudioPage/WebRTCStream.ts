@@ -28,42 +28,7 @@ export class WebRTCStream {
     this.compositeCanvas = document.createElement('canvas');
   }
 
-  private updateCompositeCanvas = () => {
-    if (!this.canvasInputs) {
-      return;
-    }
-
-    const { streamCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } = this.canvasInputs;
-    const ctx = this.compositeCanvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    const scale = window.devicePixelRatio;
-
-    const halfStreamWidth = Math.floor(streamCanvas.width / 2);
-    const halfStreamHeight = Math.floor(streamCanvas.height / 2);
-
-    this.compositeCanvas.width = Math.floor(containerWidth * scale);
-    this.compositeCanvas.height = Math.floor(containerHeight * scale);
-
-    ctx.scale(scale, scale);
-    ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
-
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
-
-    try {
-      ctx.drawImage(streamCanvas, 0, 0, halfStreamWidth, halfStreamHeight, 0, 0, containerWidth, containerHeight);
-
-      ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
-      ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
-    } catch (error) {}
-
-    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
-  };
-
-  async start(canvasInputs: CanvasInputs) {
+  async start(canvasInputs: CanvasInputs, screenStream: MediaStream | null, mediaStream: MediaStream | null) {
     if (this.isConnecting) {
       return;
     }
@@ -87,6 +52,24 @@ export class WebRTCStream {
 
       this.stream = new MediaStream([videoTrack]);
 
+      if (screenStream) {
+        const screenAudioTracks = screenStream.getAudioTracks();
+        screenAudioTracks.forEach(track => {
+          if (this.stream) {
+            this.stream.addTrack(track.clone());
+          }
+        });
+      }
+
+      if (mediaStream) {
+        const micAudioTracks = mediaStream.getAudioTracks();
+        micAudioTracks.forEach(track => {
+          if (this.stream) {
+            this.stream.addTrack(track.clone());
+          }
+        });
+      }
+
       await this.connectWHIP();
     } catch (error) {
       await this.cleanup();
@@ -101,11 +84,15 @@ export class WebRTCStream {
       throw new Error('No stream available');
     }
 
-    this.pc = new RTCPeerConnection();
+    this.pc = new RTCPeerConnection({
+      iceServers: [],
+    });
 
-    this.pc.addTransceiver('video', {
-      direction: 'sendonly',
-      streams: [this.stream],
+    const tracks = this.stream.getTracks();
+    tracks.forEach(track => {
+      if (this.stream) {
+        this.pc?.addTrack(track, this.stream);
+      }
     });
 
     this.pc.onconnectionstatechange = () => {
@@ -116,7 +103,6 @@ export class WebRTCStream {
 
     try {
       const offer = await this.pc.createOffer();
-
       await this.pc.setLocalDescription(offer);
 
       const whipEndpoint = config.whipUrl;
@@ -150,6 +136,40 @@ export class WebRTCStream {
       throw error;
     }
   }
+
+  private updateCompositeCanvas = () => {
+    if (!this.canvasInputs) {
+      return;
+    }
+
+    const { streamCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } = this.canvasInputs;
+    const ctx = this.compositeCanvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    const scale = window.devicePixelRatio;
+
+    const halfStreamWidth = Math.floor(streamCanvas.width / 2);
+    const halfStreamHeight = Math.floor(streamCanvas.height / 2);
+
+    this.compositeCanvas.width = Math.floor(containerWidth * scale);
+    this.compositeCanvas.height = Math.floor(containerHeight * scale);
+
+    ctx.scale(scale, scale);
+    ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+
+    try {
+      ctx.drawImage(streamCanvas, 0, 0, halfStreamWidth, halfStreamHeight, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
+    } catch (error) {}
+
+    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+  };
 
   private async cleanup() {
     if (this.animationFrameId) {

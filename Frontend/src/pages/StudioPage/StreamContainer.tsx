@@ -20,8 +20,19 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
 
   const drawingState = useStudioStore(state => state.drawingState);
   const isStreaming = useStudioStore(state => state.isStreaming);
+  const screenStream = useStudioStore(state => state.screenStream);
+  const mediaStream = useStudioStore(state => state.mediaStream);
 
   const isDrawingMode = drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing;
+
+  const validateAudioStreams = () => {
+    const hasScreenAudio = screenStream !== null && screenStream.getAudioTracks().length > 0;
+    const hasMediaAudio = mediaStream !== null && mediaStream.getAudioTracks().length > 0;
+
+    if (!hasScreenAudio && !hasMediaAudio) {
+      throw new Error('At least one audio source (screen share or microphone) is required');
+    }
+  };
 
   const updateCanvasDimensions = () => {
     if (!containerRef.current) return;
@@ -67,13 +78,19 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
     }
 
     try {
-      await webrtcRef.current.start({
-        streamCanvas: streamCanvasRef.current,
-        drawCanvas: drawCanvasRef.current,
-        interactionCanvas: interactionCanvasRef.current,
-        containerWidth: width,
-        containerHeight: height,
-      });
+      validateAudioStreams();
+
+      await webrtcRef.current.start(
+        {
+          streamCanvas: streamCanvasRef.current,
+          drawCanvas: drawCanvasRef.current,
+          interactionCanvas: interactionCanvasRef.current,
+          containerWidth: width,
+          containerHeight: height,
+        },
+        screenStream,
+        mediaStream,
+      );
     } catch (error) {
       onStreamError?.(error as Error);
     }
