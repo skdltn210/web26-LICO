@@ -1,9 +1,12 @@
 import { useCallback } from 'react';
 import { DrawingPath, Point } from '@/types/canvas';
-import { useCanvasContext } from '@contexts/CanvasContext';
+import { useStudioStore } from '@store/useStudioStore';
 
 export function useDrawing() {
-  const { paths, setPaths, currentPath, setCurrentPath } = useCanvasContext();
+  const paths = useStudioStore(state => state.paths);
+  const setPaths = useStudioStore(state => state.setPaths);
+  const currentPath = useStudioStore(state => state.currentPath);
+  const setCurrentPath = useStudioStore(state => state.setCurrentPath);
 
   const startDrawing = useCallback(
     (point: Point, color: string, width: number, type: 'draw' | 'erase') => {
@@ -15,7 +18,7 @@ export function useDrawing() {
       };
 
       setCurrentPath(newPath);
-      setPaths(prevPaths => [...prevPaths, newPath]);
+      setPaths([...paths, newPath]);
     },
     [paths, setPaths, setCurrentPath],
   );
@@ -29,10 +32,10 @@ export function useDrawing() {
         };
 
         setCurrentPath(updatedPath);
-        setPaths(prevPaths => [...prevPaths.slice(0, -1), updatedPath]);
+        setPaths([...paths.slice(0, -1), updatedPath]);
       }
     },
-    [paths, currentPath, setPaths, setCurrentPath],
+    [currentPath, paths, setPaths, setCurrentPath],
   );
 
   const endDrawing = useCallback(() => {
@@ -40,7 +43,7 @@ export function useDrawing() {
   }, [setCurrentPath]);
 
   const clearDrawings = useCallback(() => {
-    setPaths(() => []);
+    setPaths([]);
     setCurrentPath(null);
   }, [setPaths, setCurrentPath]);
 

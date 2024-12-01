@@ -1,8 +1,8 @@
 import { useEffect, useState, forwardRef, useCallback } from 'react';
 import { useCanvasElement } from '@hooks/canvas/useCanvasElement';
-import { Position, Point, CanvasImage, CanvasText } from '@/types/canvas';
-import { useCanvasContext } from '@/contexts/CanvasContext';
+import { Position, Point } from '@/types/canvas';
 import { CanvasElementDeleteModal } from './Modals/CanvasElementDeleteModal';
+import { useStudioStore } from '@store/useStudioStore';
 
 type SelectedElement = 'screen' | 'camera' | 'text' | 'image' | null;
 
@@ -29,7 +29,10 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     { screenStream, mediaStream, screenPosition, camPosition, setScreenPosition, setCamPosition, isDrawingMode },
     forwardedRef,
   ) => {
-    const { texts, images, setTexts, setImages } = useCanvasContext();
+    const texts = useStudioStore(state => state.texts);
+    const images = useStudioStore(state => state.images);
+    const setTexts = useStudioStore(state => state.setTexts);
+    const setImages = useStudioStore(state => state.setImages);
 
     const [selectedElement, setSelectedElement] = useState<SelectedElement>(null);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -102,9 +105,11 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
 
     const handleDelete = () => {
       if (contextMenu.type === 'text') {
-        setTexts(texts.filter(text => text.id !== contextMenu.targetId));
+        const updatedTexts = texts.filter(text => text.id !== contextMenu.targetId);
+        setTexts(updatedTexts);
       } else {
-        setImages(images.filter(image => image.id !== contextMenu.targetId));
+        const updatedImages = images.filter(image => image.id !== contextMenu.targetId);
+        setImages(updatedImages);
       }
       setContextMenu(prev => ({ ...prev, show: false }));
     };
@@ -240,28 +245,16 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
 
         switch (selectedElement) {
           case 'text': {
-            const updatedTexts: CanvasText[] = texts.map(text => {
-              if (text.id === selectedId) {
-                return {
-                  ...text,
-                  position: newPosition,
-                };
-              }
-              return text;
-            });
+            const updatedTexts = texts.map(text =>
+              text.id === selectedId ? { ...text, position: newPosition } : text,
+            );
             setTexts(updatedTexts);
             break;
           }
           case 'image': {
-            const updatedImages: CanvasImage[] = images.map(image => {
-              if (image.id === selectedId) {
-                return {
-                  ...image,
-                  position: newPosition,
-                };
-              }
-              return image;
-            });
+            const updatedImages = images.map(image =>
+              image.id === selectedId ? { ...image, position: newPosition } : image,
+            );
             setImages(updatedImages);
             break;
           }
