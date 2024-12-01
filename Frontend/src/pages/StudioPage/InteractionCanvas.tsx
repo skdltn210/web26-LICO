@@ -12,7 +12,6 @@ interface InteractionCanvasProps {
   setScreenPosition: (position: Position | ((prev: Position) => Position)) => void;
   setCamPosition: (position: Position | ((prev: Position) => Position)) => void;
   isDrawingMode: boolean;
-  style?: React.CSSProperties;
 }
 
 export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvasProps>((props, forwardedRef) => {
@@ -28,15 +27,8 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     return 'current' in forwardedRef ? forwardedRef.current : null;
   };
 
-  const isPointInInteractionArea = (x: number, y: number): boolean => {
-    const canvas = getCanvasElement();
-    if (!canvas) return false;
-
-    return x >= 0 && x <= canvas.width / 2 && y >= 0 && y <= canvas.height / 2;
-  };
-
-  const isPointInElement = (x: number, y: number, position: Position): boolean => {
-    return x >= position.x && x <= position.x + position.width && y >= position.y && y <= position.y + position.height;
+  const getScale = (): number => {
+    return window.devicePixelRatio;
   };
 
   const getCanvasPoint = (e: MouseEvent | React.MouseEvent): Point => {
@@ -44,14 +36,36 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     if (!canvas) return { x: 0, y: 0 };
 
     const rect = canvas.getBoundingClientRect();
+    const scale = getScale();
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left) * scale;
+    const y = (e.clientY - rect.top) * scale;
 
-    return {
-      x: x * 2,
-      y: y * 2,
+    return { x, y };
+  };
+
+  const isPointInInteractionArea = (x: number, y: number): boolean => {
+    const canvas = getCanvasElement();
+    if (!canvas) return false;
+
+    return x >= 0 && x <= canvas.width && y >= 0 && y <= canvas.height;
+  };
+
+  const isPointInElement = (x: number, y: number, position: Position): boolean => {
+    const scale = getScale();
+    const scaledPosition = {
+      x: position.x * scale,
+      y: position.y * scale,
+      width: position.width * scale,
+      height: position.height * scale,
     };
+
+    return (
+      x >= scaledPosition.x &&
+      x <= scaledPosition.x + scaledPosition.width &&
+      y >= scaledPosition.y &&
+      y <= scaledPosition.y + scaledPosition.height
+    );
   };
 
   const {
@@ -87,18 +101,39 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
 
     if (selectedElement) {
       const currentPosition = selectedElement === 'camera' ? props.camPosition : props.screenPosition;
-      const resizeStarted = handleResizeStart(point.x, point.y, currentPosition);
-      if (resizeStarted) return;
+      const scale = getScale();
+      const scaledPosition = {
+        ...currentPosition,
+        x: currentPosition.x * scale,
+        y: currentPosition.y * scale,
+        width: currentPosition.width * scale,
+        height: currentPosition.height * scale,
+      };
+      const resizeStarted = handleResizeStart(point.x, point.y, scaledPosition);
+      if (resizeStarted) {
+        return;
+      }
     }
 
-    if (props.mediaStream && isPointInElement(point.x, point.y, props.camPosition)) {
+    const isClickingCamera = props.mediaStream && isPointInElement(point.x, point.y, props.camPosition);
+    const isClickingScreen = props.screenStream && isPointInElement(point.x, point.y, props.screenPosition);
+
+    if (isClickingCamera) {
       setSelectedElement('camera');
       setIsDragging(true);
-      setDragStart({ x: point.x - props.camPosition.x, y: point.y - props.camPosition.y });
-    } else if (props.screenStream && isPointInElement(point.x, point.y, props.screenPosition)) {
+      const scale = getScale();
+      setDragStart({
+        x: point.x - props.camPosition.x * scale,
+        y: point.y - props.camPosition.y * scale,
+      });
+    } else if (isClickingScreen) {
       setSelectedElement('screen');
       setIsDragging(true);
-      setDragStart({ x: point.x - props.screenPosition.x, y: point.y - props.screenPosition.y });
+      const scale = getScale();
+      setDragStart({
+        x: point.x - props.screenPosition.x * scale,
+        y: point.y - props.screenPosition.y * scale,
+      });
     } else {
       setSelectedElement(null);
     }
@@ -118,12 +153,23 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
 
     if (selectedElement) {
       const currentPosition = selectedElement === 'camera' ? props.camPosition : props.screenPosition;
-      const resizeHandle = getResizeHandle(point.x, point.y, currentPosition);
-      canvas.style.cursor = resizeHandle
-        ? getResizeCursor(resizeHandle)
-        : isPointInElement(point.x, point.y, currentPosition)
-          ? 'move'
-          : 'default';
+      const scale = getScale();
+      const scaledPosition = {
+        x: currentPosition.x * scale,
+        y: currentPosition.y * scale,
+        width: currentPosition.width * scale,
+        height: currentPosition.height * scale,
+      };
+
+      const resizeHandle = getResizeHandle(point.x, point.y, scaledPosition);
+
+      if (resizeHandle) {
+        canvas.style.cursor = getResizeCursor(resizeHandle);
+      } else if (isPointInElement(point.x, point.y, currentPosition)) {
+        canvas.style.cursor = 'move';
+      } else {
+        canvas.style.cursor = 'default';
+      }
     }
   };
 
@@ -146,41 +192,52 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       const canvas = getCanvasElement();
       if (!canvas) return;
 
-      const point = getCanvasPoint(e);
-      const maxWidth = canvas.width / 2;
-      const maxHeight = canvas.height / 2;
+      const container = canvas.parentElement?.parentElement;
+      if (!container) return;
 
-      const clampedX = Math.max(0, Math.min(point.x, maxWidth));
-      const clampedY = Math.max(0, Math.min(point.y, maxHeight));
+      const point = getCanvasPoint(e);
+      const scale = getScale();
 
       if (selectedElement) {
         if (isResizing) {
-          const newPosition = handleResize(
-            clampedX,
-            clampedY,
-            selectedElement === 'camera' ? props.camPosition : props.screenPosition,
-          );
+          const currentPosition = selectedElement === 'camera' ? props.camPosition : props.screenPosition;
+          const scaledPosition = {
+            ...currentPosition,
+            x: currentPosition.x * scale,
+            y: currentPosition.y * scale,
+            width: currentPosition.width * scale,
+            height: currentPosition.height * scale,
+          };
+
+          const newPosition = handleResize(point.x, point.y, scaledPosition);
           if (newPosition) {
-            const adjustedPosition = maintainAspectRatio(newPosition, selectedElement === 'camera');
+            const unscaledPosition = {
+              x: newPosition.x / scale,
+              y: newPosition.y / scale,
+              width: newPosition.width / scale,
+              height: newPosition.height / scale,
+            };
+
+            const adjustedPosition = maintainAspectRatio(unscaledPosition, selectedElement === 'camera');
             const setPosition = selectedElement === 'camera' ? props.setCamPosition : props.setScreenPosition;
 
             setPosition((prev: Position) => ({
               ...adjustedPosition,
-              x: Math.max(0, Math.min(adjustedPosition.x, maxWidth - prev.width)),
-              y: Math.max(0, Math.min(adjustedPosition.y, maxHeight - prev.height)),
-              width: Math.min(adjustedPosition.width, maxWidth),
-              height: Math.min(adjustedPosition.height, maxHeight),
+              x: Math.max(0, Math.min(adjustedPosition.x, container.clientWidth - prev.width)),
+              y: Math.max(0, Math.min(adjustedPosition.y, container.clientHeight - prev.height)),
+              width: Math.min(adjustedPosition.width, container.clientWidth),
+              height: Math.min(adjustedPosition.height, container.clientHeight),
             }));
           }
         } else if (isDragging) {
           const setPosition = selectedElement === 'camera' ? props.setCamPosition : props.setScreenPosition;
-          const newX = clampedX - dragStart.x;
-          const newY = clampedY - dragStart.y;
+          const newX = point.x / scale - dragStart.x / scale;
+          const newY = point.y / scale - dragStart.y / scale;
 
           setPosition((prev: Position) => ({
             ...prev,
-            x: Math.max(0, Math.min(maxWidth - prev.width, newX)),
-            y: Math.max(0, Math.min(maxHeight - prev.height, newY)),
+            x: Math.max(0, Math.min(container.clientWidth - prev.width, newX)),
+            y: Math.max(0, Math.min(container.clientHeight - prev.height, newY)),
           }));
         }
       }
@@ -214,18 +271,17 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
 
     if (!canvas || !ctx) return;
 
+    const scale = getScale();
     const container = canvas.parentElement?.parentElement;
     if (!container) return;
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    canvas.width = container.clientWidth * scale;
+    canvas.height = container.clientHeight * scale;
+    canvas.style.width = `${container.clientWidth}px`;
+    canvas.style.height = `${container.clientHeight}px`;
 
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-
-    ctx.clearRect(0, 0, width, height);
+    ctx.scale(scale, scale);
+    ctx.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
 
     if (selectedElement) {
       const currentPosition = selectedElement === 'camera' ? props.camPosition : props.screenPosition;
@@ -233,7 +289,13 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       ctx.strokeStyle = 'white';
       ctx.lineWidth = 2;
       ctx.strokeRect(currentPosition.x, currentPosition.y, currentPosition.width, currentPosition.height);
-      drawResizeHandles(ctx, currentPosition);
+
+      drawResizeHandles(ctx, {
+        x: currentPosition.x * scale,
+        y: currentPosition.y * scale,
+        width: currentPosition.width * scale,
+        height: currentPosition.height * scale,
+      });
     }
   }, [selectedElement, props.camPosition, props.screenPosition, drawResizeHandles]);
 
@@ -241,14 +303,9 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     <canvas
       ref={forwardedRef}
       className="absolute left-0 top-0 h-full w-full"
-      style={{
-        ...props.style,
-        background: 'transparent',
-      }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={() => handleResizeEnd()}
-      onMouseLeave={() => handleResizeEnd()}
     />
   );
 });

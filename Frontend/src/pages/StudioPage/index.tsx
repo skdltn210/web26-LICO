@@ -91,17 +91,13 @@ export default function StudioPage() {
 
   const renderVideoContent = () => {
     const AspectRatioContainer = ({ children }: { children: React.ReactNode }) => (
-      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-        <div className="absolute inset-0">{children}</div>
+      <div className="relative h-full w-full bg-black" style={{ paddingBottom: '56.25%' }}>
+        {children}
       </div>
     );
 
     if (videoMode === 'player') {
-      return (
-        <AspectRatioContainer>
-          <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />
-        </AspectRatioContainer>
-      );
+      return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
     }
 
     return (

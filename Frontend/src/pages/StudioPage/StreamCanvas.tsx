@@ -6,11 +6,10 @@ interface StreamCanvasProps {
   mediaStream: MediaStream | null;
   screenPosition: Position;
   camPosition: Position;
-  style?: React.CSSProperties;
 }
 
 export const StreamCanvas = forwardRef<HTMLCanvasElement, StreamCanvasProps>(
-  ({ screenStream, mediaStream, screenPosition, camPosition, style }, ref) => {
+  ({ screenStream, mediaStream, screenPosition, camPosition }, ref) => {
     const screenVideoRef = useRef<HTMLVideoElement>(null);
     const mediaVideoRef = useRef<HTMLVideoElement>(null);
     const animationFrameRef = useRef<number>();
@@ -86,11 +85,11 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement, StreamCanvasProps>(
     }, [screenStream, mediaStream, camPosition, screenPosition, getIsCamFlipped, ref]);
 
     return (
-      <div className="relative h-full w-full bg-black" style={style}>
+      <>
         <canvas ref={ref} className="absolute left-0 top-0 h-full w-full" />
         <video ref={screenVideoRef} autoPlay playsInline className="hidden" />
         <video ref={mediaVideoRef} autoPlay playsInline className="hidden" />
-      </div>
+      </>
     );
   },
 );

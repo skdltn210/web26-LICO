@@ -118,33 +118,16 @@ export default function StreamContainer({
   }, [isStreaming]);
 
   return (
-    <div className="relative h-full w-full bg-black">
-      <div
-        ref={containerRef}
-        className="absolute left-0 top-0 h-[200%] w-[200%] overflow-hidden"
-        style={{
-          clipPath: 'inset(0 50% 50% 0)',
-          transform: 'scale(0.5)',
-          transformOrigin: 'top left',
-        }}
-      >
-        <div className="relative h-full w-full">
-          <StreamCanvas
-            ref={streamCanvasRef}
-            screenStream={screenStream}
-            mediaStream={mediaStream}
-            screenPosition={screenPosition}
-            camPosition={camPosition}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '100%',
-              height: '100%',
-              zIndex: 1,
-            }}
-          />
-          {/* <DrawCanvas
+    <>
+      <div ref={containerRef} className="relative h-full w-full">
+        <StreamCanvas
+          ref={streamCanvasRef}
+          screenStream={screenStream}
+          mediaStream={mediaStream}
+          screenPosition={screenPosition}
+          camPosition={camPosition}
+        />
+        {/* <DrawCanvas
           ref={drawCanvasRef}
           drawingState={drawingState}
           style={{
@@ -158,32 +141,18 @@ export default function StreamContainer({
             background: 'transparent',
           }}
         /> */}
-          <InteractionCanvas
-            ref={interactionCanvasRef}
-            screenStream={screenStream}
-            mediaStream={mediaStream}
-            screenPosition={screenPosition}
-            camPosition={camPosition}
-            setScreenPosition={setScreenPosition}
-            setCamPosition={setCamPosition}
-            isDrawingMode={isDrawingMode}
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '100%',
-              height: '100%',
-              zIndex: isDrawingMode ? 1 : 3,
-              pointerEvents: isDrawingMode ? 'none' : 'auto',
-            }}
-          />
-          <canvas
-            ref={compositeCanvasRef}
-            className="absolute left-0 top-0 hidden h-full w-full"
-            style={{ zIndex: 0 }}
-          />
-        </div>
+        <InteractionCanvas
+          ref={interactionCanvasRef}
+          screenStream={screenStream}
+          mediaStream={mediaStream}
+          screenPosition={screenPosition}
+          camPosition={camPosition}
+          setScreenPosition={setScreenPosition}
+          setCamPosition={setCamPosition}
+          isDrawingMode={isDrawingMode}
+        />
+        <canvas ref={compositeCanvasRef} className="absolute left-0 top-0 hidden h-full w-full" style={{ zIndex: 0 }} />
       </div>
-    </div>
+    </>
   );
 }
