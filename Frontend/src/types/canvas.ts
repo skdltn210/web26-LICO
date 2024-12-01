@@ -70,22 +70,20 @@ export interface WebStreamControlsProps {
 export interface CanvasImage {
   id: string;
   element: HTMLImageElement | HTMLCanvasElement;
-  position: Point;
-  width: number;
-  height: number;
+  position: Position;
   aspectRatio: number;
 }
 
 export interface TextInputState {
   isVisible: boolean;
   text: string;
-  position: Point;
+  position: Position;
 }
 
 export interface CanvasText {
   id: string;
   text: string;
-  position: Point;
+  position: Position;
   color: string;
   fontSize: number;
 }

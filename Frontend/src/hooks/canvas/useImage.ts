@@ -1,4 +1,4 @@
-import { Point, CanvasImage } from '@/types/canvas';
+import { Position, CanvasImage } from '@/types/canvas';
 import { useCanvasContext } from '@/contexts/CanvasContext';
 
 export function useImage() {
@@ -26,9 +26,11 @@ export function useImage() {
 
           const { width, height } = calculateImageDimensions(img.width, img.height);
 
-          const position: Point = {
+          const position: Position = {
             x: 0,
             y: 0,
+            width: width,
+            height: height,
           };
 
           const offscreenCanvas = document.createElement('canvas');
@@ -46,8 +48,6 @@ export function useImage() {
             id: crypto.randomUUID(),
             element: offscreenCanvas,
             position,
-            width,
-            height,
             aspectRatio: img.width / img.height,
           };
 
@@ -78,7 +78,13 @@ export function useImage() {
     images.forEach(image => {
       if (image && image.element) {
         ctx.save();
-        ctx.drawImage(image.element, image.position.x, image.position.y, image.width / scale, image.height / scale);
+        ctx.drawImage(
+          image.element,
+          image.position.x,
+          image.position.y,
+          image.position.width / scale,
+          image.position.height / scale,
+        );
         ctx.restore();
       }
     });

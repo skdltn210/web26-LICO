@@ -70,20 +70,11 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     const point = getCanvasPoint(e);
 
     const clickedText = texts.find(text => {
-      const canvas = (ref as React.RefObject<HTMLCanvasElement>).current;
-      if (!canvas) return false;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return false;
-
-      ctx.font = `${text.fontSize}px Arial`;
-      const metrics = ctx.measureText(text.text);
-
       return (
         point.x >= text.position.x &&
-        point.x <= text.position.x + metrics.width &&
+        point.x <= text.position.x + text.position.width &&
         point.y >= text.position.y &&
-        point.y <= text.position.y + text.fontSize
+        point.y <= text.position.y + text.position.height
       );
     });
 
@@ -101,9 +92,9 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     const clickedImage = images.find(image => {
       return (
         point.x >= image.position.x &&
-        point.x <= image.position.x + image.width &&
+        point.x <= image.position.x + image.position.width &&
         point.y >= image.position.y &&
-        point.y <= image.position.y + image.height
+        point.y <= image.position.y + image.position.height
       );
     });
 
@@ -117,6 +108,7 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       });
     }
   };
+
   const handleDelete = () => {
     if (contextMenu.type === 'text') {
       setTexts(texts.filter(text => text.id !== contextMenu.targetId));
