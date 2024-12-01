@@ -23,6 +23,62 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
 
   const isDrawingMode = drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing;
 
+  const updateCanvasDimensions = () => {
+    if (!containerRef.current) return;
+
+    const containerWidth = containerRef.current.clientWidth;
+    const containerHeight = (containerWidth * 9) / 16;
+
+    [streamCanvasRef, drawCanvasRef, interactionCanvasRef].forEach(canvasRef => {
+      if (canvasRef.current) {
+        canvasRef.current.width = containerWidth;
+        canvasRef.current.height = containerHeight;
+        canvasRef.current.style.width = `${containerWidth}px`;
+        canvasRef.current.style.height = `${containerHeight}px`;
+      }
+    });
+
+    containerRef.current.style.height = `${containerHeight}px`;
+
+    if (isStreaming) {
+      startStreaming(containerWidth, containerHeight);
+    }
+  };
+
+  useEffect(() => {
+    updateCanvasDimensions();
+
+    const observer = new ResizeObserver(() => {
+      updateCanvasDimensions();
+    });
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isStreaming]);
+
+  const startStreaming = async (width: number, height: number) => {
+    if (!streamCanvasRef.current || !drawCanvasRef.current || !interactionCanvasRef.current || !webrtcRef.current) {
+      return;
+    }
+
+    try {
+      await webrtcRef.current.start({
+        streamCanvas: streamCanvasRef.current,
+        drawCanvas: drawCanvasRef.current,
+        interactionCanvas: interactionCanvasRef.current,
+        containerWidth: width,
+        containerHeight: height,
+      });
+    } catch (error) {
+      onStreamError?.(error as Error);
+    }
+  };
+
   useEffect(() => {
     if (!webrtcRef.current && webrtcUrl && streamKey) {
       webrtcRef.current = new WebRTCStream(webrtcUrl, streamKey);
@@ -36,34 +92,8 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
     };
   }, [webrtcUrl, streamKey]);
 
-  useEffect(() => {
-    const startStreaming = async () => {
-      if (!streamCanvasRef.current || !drawCanvasRef.current || !interactionCanvasRef.current || !webrtcRef.current)
-        return;
-
-      try {
-        await webrtcRef.current.start({
-          streamCanvas: streamCanvasRef.current,
-          drawCanvas: drawCanvasRef.current,
-          interactionCanvas: interactionCanvasRef.current,
-          containerWidth: containerRef.current?.clientWidth || 0,
-          containerHeight: containerRef.current?.clientHeight || 0,
-        });
-      } catch (error) {
-        console.error('Streaming failed:', error);
-        onStreamError?.(error as Error);
-      }
-    };
-
-    if (isStreaming) {
-      startStreaming();
-    } else {
-      webrtcRef.current?.stop();
-    }
-  }, [isStreaming]);
-
   return (
-    <div ref={containerRef} className="relative h-full w-full">
+    <div ref={containerRef} className="relative w-full">
       <StreamCanvas ref={streamCanvasRef} />
       <DrawCanvas ref={drawCanvasRef} drawingState={drawingState} isDrawingMode={isDrawingMode} />
       <InteractionCanvas ref={interactionCanvasRef} isDrawingMode={isDrawingMode} />

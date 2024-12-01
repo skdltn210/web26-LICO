@@ -59,9 +59,7 @@ export default function StudioPage() {
 
   const renderVideoContent = () => {
     const AspectRatioContainer = ({ children }: { children: React.ReactNode }) => (
-      <div className="relative h-full w-full bg-black" style={{ paddingBottom: '56.25%' }}>
-        {children}
-      </div>
+      <div className="relative h-full w-full bg-black">{children}</div>
     );
 
     if (videoMode === 'player') {
