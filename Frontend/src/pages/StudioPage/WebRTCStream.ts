@@ -1,23 +1,61 @@
 import { config } from '@config/env';
 
+interface CanvasInputs {
+  streamCanvas: HTMLCanvasElement;
+  drawCanvas: HTMLCanvasElement;
+  interactionCanvas: HTMLCanvasElement;
+  containerWidth: number;
+  containerHeight: number;
+}
+
 export class WebRTCStream {
-  private compositeCanvas: HTMLCanvasElement | null;
-  private streamKey: string;
   private pc: RTCPeerConnection | null;
   private stream: MediaStream | null;
   private webrtcUrl: string;
+  private streamKey: string;
+  private compositeCanvas: HTMLCanvasElement;
+  private animationFrameId: number | null;
+  private canvasInputs: CanvasInputs | null;
 
   constructor(url: string, streamKey: string) {
-    this.compositeCanvas = null;
     this.webrtcUrl = url;
     this.streamKey = streamKey;
     this.pc = null;
     this.stream = null;
+    this.animationFrameId = null;
+    this.canvasInputs = null;
+    this.compositeCanvas = document.createElement('canvas');
   }
 
-  async start(compositeCanvas: HTMLCanvasElement) {
+  private updateCompositeCanvas = () => {
+    if (!this.canvasInputs) return;
+
+    const { streamCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } = this.canvasInputs;
+    const ctx = this.compositeCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const scale = window.devicePixelRatio;
+    this.compositeCanvas.width = containerWidth * scale;
+    this.compositeCanvas.height = containerHeight * scale;
+
+    ctx.scale(scale, scale);
+
+    ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+
+    ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
+    ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
+    ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
+
+    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+  };
+
+  async start(canvasInputs: CanvasInputs) {
     try {
-      this.compositeCanvas = compositeCanvas;
+      this.canvasInputs = canvasInputs;
+
+      this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
 
       const videoStream = this.compositeCanvas.captureStream(30);
       this.stream = new MediaStream([...videoStream.getVideoTracks()]);
@@ -87,6 +125,11 @@ export class WebRTCStream {
   }
 
   private cleanup() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
     if (this.pc) {
       this.pc.close();
       this.pc = null;
@@ -97,6 +140,6 @@ export class WebRTCStream {
       this.stream = null;
     }
 
-    this.compositeCanvas = null;
+    this.canvasInputs = null;
   }
 }
