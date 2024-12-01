@@ -25,11 +25,10 @@ interface DrawCanvasProps {
     eraseTool: { width: number };
     textTool: { color: string; width: number };
   };
-  style?: React.CSSProperties;
-  className?: string;
+  isDrawingMode: boolean;
 }
 
-export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ drawingState, style }, ref) => {
+export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ drawingState, isDrawingMode }, ref) => {
   const { paths, startDrawing, continueDrawing, endDrawing } = useDrawing();
   const { textInput, startTextInput, updateText, completeText, cancelText, drawTexts } = useText({
     color: drawingState.textTool.color,
@@ -135,27 +134,22 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     if (!canvas.current || !ctx) return;
 
     const updateCanvas = () => {
-      const container = canvas.current!.parentElement;
-      if (container) {
-        const scale = window.devicePixelRatio * 2;
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
+      const container = canvas.current?.parentElement?.parentElement;
+      if (!container) return;
 
-        canvas.current!.width = containerWidth * scale;
-        canvas.current!.height = containerHeight * scale;
+      const scale = window.devicePixelRatio;
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
 
-        canvas.current!.style.width = `${containerWidth}px`;
-        canvas.current!.style.height = `${containerHeight}px`;
+      canvas.current.width = containerWidth * scale;
+      canvas.current.height = containerHeight * scale;
 
-        ctx.scale(scale, scale);
-      }
+      canvas.current.style.width = `${containerWidth}px`;
+      canvas.current.style.height = `${containerHeight}px`;
 
-      ctx.clearRect(
-        0,
-        0,
-        canvas.current!.width / window.devicePixelRatio,
-        canvas.current!.height / window.devicePixelRatio,
-      );
+      ctx.scale(scale, scale);
+
+      ctx.clearRect(0, 0, containerWidth, containerHeight);
 
       drawImages(ctx);
 
@@ -193,8 +187,8 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       updateCanvas();
     });
 
-    if (canvas.current.parentElement) {
-      resizeObserver.observe(canvas.current.parentElement);
+    if (canvas.current.parentElement?.parentElement) {
+      resizeObserver.observe(canvas.current.parentElement.parentElement);
     }
 
     return () => {
@@ -316,8 +310,7 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
         onMouseUp={endDrawing}
         onMouseLeave={endDrawing}
         onContextMenu={handleCanvasContextMenu}
-        style={style}
-        className="draw-canvas"
+        className={`draw-canvas absolute left-0 top-0 h-full w-full ${isDrawingMode ? 'z-20' : 'z-10'}`}
       />
       {textInput.isVisible && (
         <div

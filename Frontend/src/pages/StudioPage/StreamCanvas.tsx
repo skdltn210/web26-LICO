@@ -86,7 +86,7 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement, StreamCanvasProps>(
 
     return (
       <>
-        <canvas ref={ref} className="absolute left-0 top-0 h-full w-full" />
+        <canvas ref={ref} className="absolute left-0 top-0 z-0 h-full w-full" />
         <video ref={screenVideoRef} autoPlay playsInline className="hidden" />
         <video ref={mediaVideoRef} autoPlay playsInline className="hidden" />
       </>

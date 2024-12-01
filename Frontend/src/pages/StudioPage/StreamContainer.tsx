@@ -73,20 +73,7 @@ export default function StreamContainer({
         screenPosition={screenPosition}
         camPosition={camPosition}
       />
-      {/* <DrawCanvas
-        ref={drawCanvasRef}
-        drawingState={drawingState}
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          height: '100%',
-          width: '100%',
-          zIndex: 2,
-          pointerEvents: isDrawingMode ? 'auto' : 'none',
-          background: 'transparent',
-        }}
-      /> */}
+      <DrawCanvas ref={drawCanvasRef} drawingState={drawingState} isDrawingMode={isDrawingMode} />
       <InteractionCanvas
         ref={interactionCanvasRef}
         screenStream={screenStream}
