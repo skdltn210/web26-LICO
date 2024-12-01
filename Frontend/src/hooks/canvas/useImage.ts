@@ -83,7 +83,7 @@ export function useImage() {
             originalHeight,
           };
 
-          setImages([...images, newImage]);
+          setImages(prevImages => [...prevImages, newImage]);
           resolve();
         };
 

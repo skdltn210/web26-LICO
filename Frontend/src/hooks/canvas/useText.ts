@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Point } from '@/types/canvas';
-import { UseTextProps, TextInputState, CanvasText } from '@/types/canvas';
-import { useCanvasContext } from '@/contexts/CanvasContext';
+import { Point, UseTextProps, TextInputState, CanvasText } from '@/types/canvas';
+import { useCanvasContext } from '@contexts/CanvasContext';
 
 export function useText({ color, fontSize: initialFontSize }: UseTextProps) {
   const { texts, setTexts } = useCanvasContext();
@@ -84,7 +83,7 @@ export function useText({ color, fontSize: initialFontSize }: UseTextProps) {
       originalFontSize: initialFontSize,
     };
 
-    setTexts([...texts, newText]);
+    setTexts(prevTexts => [...prevTexts, newText]);
 
     setTextInput({
       isVisible: false,
