@@ -1,20 +1,10 @@
-import { useState, useEffect, forwardRef } from 'react';
+import { useEffect, forwardRef } from 'react';
 import { useDrawing } from '@hooks/canvas/useDrawing';
 import { useText } from '@hooks/canvas/useText';
 import { useImage } from '@hooks/canvas/useImage';
 import { Point } from '@/types/canvas';
 import pencilCursor from '@assets/icons/pencilCursor.svg?url';
 import eraserCursor from '@assets/icons/eraserCursor.svg?url';
-import { useCanvasContext } from '@/contexts/CanvasContext';
-import { CanvasElementDeleteModal } from './Modals/CanvasElementDeleteModal';
-
-interface ContextMenu {
-  show: boolean;
-  x: number;
-  y: number;
-  type: 'text' | 'image';
-  targetId: string;
-}
 
 interface DrawCanvasProps {
   drawingState: {
@@ -35,15 +25,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
     fontSize: drawingState.textTool.width,
   });
   const { drawImages } = useImage();
-  const { texts, setTexts, images, setImages } = useCanvasContext();
-
-  const [contextMenu, setContextMenu] = useState<ContextMenu>({
-    show: false,
-    x: 0,
-    y: 0,
-    type: 'text',
-    targetId: '',
-  });
 
   const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>): Point => {
     const canvas = ref as React.RefObject<HTMLCanvasElement>;
@@ -54,68 +35,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     };
-  };
-
-  useEffect(() => {
-    const handleClick = () => {
-      setContextMenu(prev => ({ ...prev, show: false }));
-    };
-
-    window.addEventListener('click', handleClick);
-    return () => window.removeEventListener('click', handleClick);
-  }, []);
-
-  const handleCanvasContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const point = getCanvasPoint(e);
-
-    const clickedText = texts.find(text => {
-      return (
-        point.x >= text.position.x &&
-        point.x <= text.position.x + text.position.width &&
-        point.y >= text.position.y &&
-        point.y <= text.position.y + text.position.height
-      );
-    });
-
-    if (clickedText) {
-      setContextMenu({
-        show: true,
-        x: e.clientX,
-        y: e.clientY,
-        type: 'text',
-        targetId: clickedText.id,
-      });
-      return;
-    }
-
-    const clickedImage = images.find(image => {
-      return (
-        point.x >= image.position.x &&
-        point.x <= image.position.x + image.position.width &&
-        point.y >= image.position.y &&
-        point.y <= image.position.y + image.position.height
-      );
-    });
-
-    if (clickedImage) {
-      setContextMenu({
-        show: true,
-        x: e.clientX,
-        y: e.clientY,
-        type: 'image',
-        targetId: clickedImage.id,
-      });
-    }
-  };
-
-  const handleDelete = () => {
-    if (contextMenu.type === 'text') {
-      setTexts(texts.filter(text => text.id !== contextMenu.targetId));
-    } else {
-      setImages(images.filter(image => image.id !== contextMenu.targetId));
-    }
-    setContextMenu(prev => ({ ...prev, show: false }));
   };
 
   useEffect(() => {
@@ -299,7 +218,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
         onMouseMove={handleMouseMove}
         onMouseUp={endDrawing}
         onMouseLeave={endDrawing}
-        onContextMenu={handleCanvasContextMenu}
         className={`draw-canvas absolute left-0 top-0 h-full w-full ${isDrawingMode ? 'z-20' : 'z-10'}`}
       />
       {textInput.isVisible && (
@@ -334,13 +252,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
           />
         </div>
       )}
-      <CanvasElementDeleteModal
-        show={contextMenu.show}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        onDelete={handleDelete}
-        canvasRef={ref}
-      />
     </>
   );
 });

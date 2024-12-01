@@ -85,7 +85,7 @@ export function CanvasElementDeleteModal({ show, x, y, onDelete, canvasRef }: Ca
   return (
     <button
       ref={modalRef}
-      className="absolute z-50 rounded-lg bg-lico-gray-3 px-4 py-2 text-left font-bold text-sm text-lico-orange-2 shadow-lg transition-colors duration-150 hover:bg-lico-gray-2"
+      className="canvas-element-delete-modal absolute z-50 rounded-lg bg-lico-gray-3 px-4 py-2 text-left font-bold text-sm text-lico-orange-2 shadow-lg transition-colors duration-150 hover:bg-lico-gray-2"
       style={{
         visibility: 'hidden',
       }}

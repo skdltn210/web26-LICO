@@ -5,11 +5,27 @@ import { useCanvasContext } from '@/contexts/CanvasContext';
 
 export function useText({ color, fontSize: initialFontSize }: UseTextProps) {
   const { texts, setTexts } = useCanvasContext();
+
   const [textInput, setTextInput] = useState<TextInputState>({
     isVisible: false,
     text: '',
     position: { x: 0, y: 0, width: 0, height: 0 },
   });
+
+  const calculateTextDimensions = (ctx: CanvasRenderingContext2D, text: string, fontSize: number) => {
+    ctx.font = `${fontSize}px Arial`;
+    const metrics = ctx.measureText(text);
+
+    const width = Math.abs(metrics.actualBoundingBoxLeft) + Math.abs(metrics.actualBoundingBoxRight);
+    const height = Math.abs(metrics.actualBoundingBoxAscent) + Math.abs(metrics.actualBoundingBoxDescent);
+
+    const padding = fontSize * 0.1;
+
+    return {
+      width: width + padding * 2,
+      height: height + padding * 2,
+    };
+  };
 
   const startTextInput = (point: Point) => {
     setTextInput({
@@ -29,19 +45,16 @@ export function useText({ color, fontSize: initialFontSize }: UseTextProps) {
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.font = `${initialFontSize}px Arial`;
-      const metrics = ctx.measureText(singleLineText);
 
-      const textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    if (ctx) {
+      const dimensions = calculateTextDimensions(ctx, singleLineText, initialFontSize);
 
       setTextInput(prev => ({
         ...prev,
         text: singleLineText,
         position: {
           ...prev.position,
-          width: metrics.width,
-          height: textHeight || initialFontSize,
+          ...dimensions,
         },
       }));
     }
@@ -57,22 +70,20 @@ export function useText({ color, fontSize: initialFontSize }: UseTextProps) {
       return;
     }
 
-    ctx.font = `${initialFontSize}px Arial`;
-    const metrics = ctx.measureText(textInput.text);
-    const textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    const dimensions = calculateTextDimensions(ctx, textInput.text, initialFontSize);
 
     const newText: CanvasText = {
       id: crypto.randomUUID(),
       text: textInput.text,
       position: {
         ...textInput.position,
-        width: metrics.width,
-        height: textHeight || initialFontSize,
+        ...dimensions,
       },
       color,
       fontSize: initialFontSize,
       originalFontSize: initialFontSize,
     };
+
     setTexts([...texts, newText]);
 
     setTextInput({
@@ -99,15 +110,13 @@ export function useText({ color, fontSize: initialFontSize }: UseTextProps) {
 
       ctx.font = `${scaledFontSize}px Arial`;
       ctx.fillStyle = text.color;
-      ctx.textBaseline = 'top';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
 
-      const metrics = ctx.measureText(text.text);
-      const actualTextHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      const textX = text.position.x + text.position.width / 2;
+      const textY = text.position.y + text.position.height / 2;
 
-      const yOffset = (text.position.height - actualTextHeight) / 2;
-
-      ctx.fillText(text.text, text.position.x, text.position.y + yOffset);
-
+      ctx.fillText(text.text, textX, textY);
       ctx.restore();
     });
   };
