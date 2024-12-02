@@ -45,8 +45,7 @@ export class ChatsService {
   }
 
   async clearChat(channelId: UUID) {
-    this.redisClient.del(`${channelId}:viewers`);
-    this.redisClient.del(`${channelId}:chats`);
+    this.redisClient.multi().del(`${channelId}:viewers`).del(`${channelId}:chats`).exec();
   }
 
   async clovaFiltering(chat) {
