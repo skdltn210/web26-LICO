@@ -48,6 +48,9 @@ export default function StreamGuide({ onClose }: StreamGuideProps) {
               <li>• 웹 스튜디오 탭을 선택하세요.</li>
               <li>• 화면 공유, 카메라, 오디오 권한을 허용하세요.</li>
               <li>• 원하는 화면, 카메라, 마이크를 선택 후 방송을 시작하세요.</li>
+              <li className="text-lico-orange-2">
+                • 송출 브라우저가 최소화되거나 탭이 맨 앞에 있지 않다면 송출이 매끄럽지 않을 수 있습니다.
+              </li>
             </ul>
           </div>
         </div>

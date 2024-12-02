@@ -36,4 +36,9 @@ export const liveApi = {
   finishLive: async (streamingKey: string) => {
     await api.delete(`/lives/onair/${streamingKey}`);
   },
+
+  isOnAir: async (streamingKey: string) => {
+    const { data } = await api.get<boolean>(`/lives/onair/${streamingKey}`);
+    return data;
+  },
 };

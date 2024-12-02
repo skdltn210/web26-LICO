@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MediaSettings, initialMediaSettings } from '@/types/canvas';
 import { useStudioStore } from '@store/useStudioStore';
 
@@ -10,9 +10,11 @@ interface CamMicSettingProps {
 export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
   const { mediaStream, mediaSettings: storeSettings, setMediaStream, setMediaSettings } = useStudioStore();
 
-  const [settings, setSettings] = useState<MediaSettings>(() => storeSettings || initialMediaSettings);
+  const [settings, setSettings] = useState<MediaSettings>(initialMediaSettings);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
   const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
@@ -51,6 +53,13 @@ export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
             video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
             audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
           });
+
+          if (settings.audioEnabled && audioContext && gainNodeRef.current) {
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(gainNodeRef.current);
+            gainNodeRef.current.connect(audioContext.destination);
+          }
+
           setPreviewStream(stream);
         }
       } catch (error) {
@@ -68,7 +77,31 @@ export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
         setPreviewStream(null);
       }
     };
-  }, [isOpen, settings.videoEnabled, settings.audioEnabled, settings.videoDeviceId, settings.audioDeviceId]);
+  }, [isOpen, settings, audioContext]);
+
+  useEffect(() => {
+    if (isOpen && settings.audioEnabled) {
+      const context = new AudioContext();
+      const gainNode = context.createGain();
+      gainNode.gain.value = settings.volume / 100;
+      gainNodeRef.current = gainNode;
+      setAudioContext(context);
+
+      return () => {
+        context.close();
+        gainNodeRef.current = null;
+        setAudioContext(null);
+      };
+    }
+  }, [isOpen, settings.audioEnabled]);
+
+  const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const volume = parseInt(event.target.value, 10);
+    setSettings(prev => ({ ...prev, volume }));
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volume / 100;
+    }
+  };
 
   const handleConfirm = async () => {
     try {
@@ -160,8 +193,8 @@ export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
                       min="0"
                       max="100"
                       value={settings.volume}
+                      onChange={handleVolumeChange}
                       className="w-full accent-lico-orange-2"
-                      onChange={e => setSettings(prev => ({ ...prev, volume: Number(e.target.value) }))}
                     />
                   </div>
                 </>
@@ -201,7 +234,7 @@ export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
                   </select>
 
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-lico-gray-1">좌우반전</span>
+                    <span className="font-bold text-sm text-lico-gray-1">화면 좌우 반전</span>
                     <button
                       type="button"
                       onClick={() => setSettings(prev => ({ ...prev, isCamFlipped: !prev.isCamFlipped }))}
@@ -219,26 +252,20 @@ export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
                 </>
               )}
             </section>
-
-            {settings.videoEnabled && (
-              <section>
-                <h3 className="font-bold text-sm text-lico-gray-1">AR</h3>
-              </section>
-            )}
           </div>
 
-          <div className="mt-8 flex justify-end gap-2">
+          <div className="mt-8 flex justify-between">
             <button
               type="button"
+              className="rounded border border-lico-gray-5 px-4 py-2 font-medium text-sm text-lico-gray-1"
               onClick={onClose}
-              className="rounded-lg bg-lico-gray-2 px-4 py-2 font-bold text-sm text-lico-gray-5 transition-colors hover:bg-lico-gray-1"
             >
               취소
             </button>
             <button
               type="button"
+              className="rounded bg-lico-orange-2 px-4 py-2 font-bold text-sm text-white"
               onClick={handleConfirm}
-              className="rounded-lg bg-lico-orange-2 px-4 py-2 font-bold text-sm text-white transition-colors hover:bg-lico-orange-1"
             >
               확인
             </button>

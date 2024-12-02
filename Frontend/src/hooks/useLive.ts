@@ -64,3 +64,10 @@ export const useFinishLive = () => {
     mutationFn: (streamingKey: string) => liveApi.finishLive(streamingKey),
   });
 };
+
+export const useIsOnAir = (streamingKey: string) => {
+  return useQuery({
+    queryKey: ['isOnAir', streamingKey],
+    queryFn: () => liveApi.isOnAir(streamingKey),
+  });
+};

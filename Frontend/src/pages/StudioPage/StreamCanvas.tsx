@@ -10,6 +10,7 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
   const mediaStream = useStudioStore(state => state.mediaStream);
   const screenPosition = useStudioStore(state => state.screenPosition);
   const camPosition = useStudioStore(state => state.camPosition);
+  const setScreenPosition = useStudioStore(state => state.setScreenPosition);
 
   const getIsCamFlipped = () => {
     if (!mediaStream) return false;
@@ -19,8 +20,36 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
   useEffect(() => {
     if (screenVideoRef.current && screenStream) {
       screenVideoRef.current.srcObject = screenStream;
+
+      screenVideoRef.current.onloadedmetadata = () => {
+        const video = screenVideoRef.current;
+        if (video) {
+          const videoAspectRatio = video.videoWidth / video.videoHeight;
+          const container = (ref as React.MutableRefObject<HTMLCanvasElement>).current?.parentElement?.parentElement;
+
+          if (container) {
+            let newWidth = screenPosition.width;
+            let newHeight = newWidth / videoAspectRatio;
+
+            if (newHeight > container.clientHeight) {
+              newHeight = container.clientHeight;
+              newWidth = newHeight * videoAspectRatio;
+            }
+
+            const newX = (container.clientWidth - newWidth) / 2;
+            const newY = (container.clientHeight - newHeight) / 2;
+
+            setScreenPosition({
+              x: newX,
+              y: newY,
+              width: newWidth,
+              height: newHeight,
+            });
+          }
+        }
+      };
     }
-  }, [screenStream]);
+  }, [screenStream, setScreenPosition]);
 
   useEffect(() => {
     if (mediaVideoRef.current && mediaStream) {
@@ -49,9 +78,9 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
       canvas.current.style.height = `${container.clientHeight}px`;
 
       ctx.scale(scale, scale);
-      ctx.clearRect(0, 0, canvas.current.width, canvas.current.height);
+      ctx.clearRect(0, 0, canvas.current.width / scale, canvas.current.height / scale);
       ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.current.width, canvas.current.height);
+      ctx.fillRect(0, 0, canvas.current.width / scale, canvas.current.height / scale);
 
       if (screenVideo && screenStream) {
         ctx.drawImage(screenVideo, screenPosition.x, screenPosition.y, screenPosition.width, screenPosition.height);

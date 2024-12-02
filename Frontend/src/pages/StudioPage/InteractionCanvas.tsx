@@ -16,8 +16,8 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const [screenAspectRatio, setScreenAspectRatio] = useState(16 / 9);
 
-    const screenAspectRatio = 16 / 9;
     const cameraAspectRatio = 4 / 3;
 
     const {
@@ -33,6 +33,18 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       setImages,
       setDeleteModal,
     } = useStudioStore();
+
+    useEffect(() => {
+      if (screenStream) {
+        const videoTrack = screenStream.getVideoTracks()[0];
+        if (videoTrack) {
+          const settings = videoTrack.getSettings();
+          if (settings.width && settings.height) {
+            setScreenAspectRatio(settings.width / settings.height);
+          }
+        }
+      }
+    }, [screenStream]);
 
     const getCanvasElement = (): HTMLCanvasElement | null => {
       if (!forwardedRef) return null;
@@ -203,7 +215,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
         const height = width / aspectRatio;
         return { ...newPosition, height };
       },
-      [selectedId, images],
+      [selectedId, images, screenAspectRatio],
     );
 
     const updateElementPosition = useCallback(

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay, LuSparkles } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
-import { useFinishLive } from '@hooks/useLive';
+import { useFinishLive, useIsOnAir } from '@hooks/useLive';
 import { useImage } from '@hooks/canvas/useImage';
 import { useStudioStore } from '@store/useStudioStore';
 import ControlButton from './ControlButton';
@@ -36,6 +36,7 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addImage } = useImage();
   const { mutateAsync: finishLive } = useFinishLive();
+  const { data: isOnAir } = useIsOnAir(streamKey);
 
   const showToastMessage = (message: string) => {
     setToastMessage(message);
@@ -102,6 +103,12 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
       if (!validateStreams()) {
         return;
       }
+
+      if (isOnAir) {
+        showToastMessage('이미 같은 스트림키로 방송중입니다');
+        return;
+      }
+
       setIsStreaming(true);
       showToastMessage('방송이 시작되었습니다');
     }
