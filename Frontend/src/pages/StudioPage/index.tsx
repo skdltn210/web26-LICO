@@ -39,7 +39,7 @@ export default function StudioPage() {
   const { mutateAsync: finishLive } = useFinishLive();
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
-  const WEBRTC_URL = `${config.webrtcUrl}/${channelId}`;
+  const WEBRTC_URL = config.webrtcUrl;
 
   const handleTabChange = async (tab: TabType) => {
     setActiveTab(tab);
