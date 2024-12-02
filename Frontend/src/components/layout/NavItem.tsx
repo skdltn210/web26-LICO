@@ -22,7 +22,7 @@ export default function NavItem({ to, icon, label, isExpanded }: NavItemProps) {
     >
       <div className="flex w-5 items-center">{icon}</div>
       <div
-        className={`overflow-hidden transition-all duration-100 ${isExpanded ? 'ml-4 w-32 opacity-100' : 'w-0 opacity-0'} `}
+        className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'ml-4 w-32 opacity-100' : 'w-0 opacity-0'} `}
       >
         <span className="whitespace-nowrap font-bold text-base">{label}</span>
       </div>

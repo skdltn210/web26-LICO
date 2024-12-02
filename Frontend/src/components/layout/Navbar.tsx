@@ -38,7 +38,7 @@ export default function Navbar({ isExpanded, onToggle }: NavbarProps) {
           <div
             className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'w-32 opacity-100' : 'w-0 opacity-0'} `}
           >
-            <NavLink to="/" className="whitespace-nowrap font-bold text-3xl text-lico-orange-2">
+            <NavLink to="/" className="ml-1 whitespace-nowrap font-bold text-3xl text-lico-orange-2">
               LICO
             </NavLink>
           </div>
