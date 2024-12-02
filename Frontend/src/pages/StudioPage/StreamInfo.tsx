@@ -13,7 +13,7 @@ import { useUpdateLive } from '@hooks/useLive';
 
 import { useAuthStore } from '@store/useAuthStore';
 import { CATEGORIES } from '@constants/categories';
-import type { Category } from '@/types/category';
+import type { BaseCategory } from '@/types/category';
 
 interface StreamInfoProps {
   channelId: string;
@@ -25,7 +25,7 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<BaseCategory | null>(null);
 
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -54,7 +54,7 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleCategorySelect = (category: Category) => {
+  const handleCategorySelect = (category: BaseCategory) => {
     setSelectedCategory(category);
   };
 
