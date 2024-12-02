@@ -17,6 +17,7 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
   const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const webrtcRef = useRef<WebRTCStream | null>(null);
+  const dimensionsRef = useRef<{ width: number; height: number } | null>(null);
 
   const drawingState = useStudioStore(state => state.drawingState);
   const isStreaming = useStudioStore(state => state.isStreaming);
@@ -40,6 +41,12 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
     const containerWidth = containerRef.current.clientWidth;
     const containerHeight = (containerWidth * 9) / 16;
 
+    if (dimensionsRef.current?.width === containerWidth && dimensionsRef.current?.height === containerHeight) {
+      return;
+    }
+
+    dimensionsRef.current = { width: containerWidth, height: containerHeight };
+
     [streamCanvasRef, drawCanvasRef, interactionCanvasRef].forEach(canvasRef => {
       if (canvasRef.current) {
         canvasRef.current.width = containerWidth;
@@ -50,10 +57,6 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
     });
 
     containerRef.current.style.height = `${containerHeight}px`;
-
-    if (isStreaming) {
-      startStreaming(containerWidth, containerHeight);
-    }
   };
 
   useEffect(() => {
@@ -70,31 +73,37 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
     return () => {
       observer.disconnect();
     };
-  }, [isStreaming]);
+  }, []);
 
-  const startStreaming = async (width: number, height: number) => {
-    if (!streamCanvasRef.current || !drawCanvasRef.current || !interactionCanvasRef.current || !webrtcRef.current) {
-      return;
-    }
+  useEffect(() => {
+    const handleStreamingChange = async () => {
+      if (isStreaming && dimensionsRef.current) {
+        if (!streamCanvasRef.current || !drawCanvasRef.current || !interactionCanvasRef.current || !webrtcRef.current) {
+          return;
+        }
 
-    try {
-      validateAudioStreams();
+        try {
+          validateAudioStreams();
 
-      await webrtcRef.current.start(
-        {
-          streamCanvas: streamCanvasRef.current,
-          drawCanvas: drawCanvasRef.current,
-          interactionCanvas: interactionCanvasRef.current,
-          containerWidth: width,
-          containerHeight: height,
-        },
-        screenStream,
-        mediaStream,
-      );
-    } catch (error) {
-      onStreamError?.(error as Error);
-    }
-  };
+          await webrtcRef.current.start(
+            {
+              streamCanvas: streamCanvasRef.current,
+              drawCanvas: drawCanvasRef.current,
+              interactionCanvas: interactionCanvasRef.current,
+              containerWidth: dimensionsRef.current.width,
+              containerHeight: dimensionsRef.current.height,
+            },
+            screenStream,
+            mediaStream,
+          );
+        } catch (error) {
+          onStreamError?.(error as Error);
+        }
+      }
+    };
+
+    handleStreamingChange();
+  }, [isStreaming, screenStream, mediaStream]);
 
   useEffect(() => {
     if (!webrtcRef.current && webrtcUrl && streamKey) {
