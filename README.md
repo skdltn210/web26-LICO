@@ -8,7 +8,7 @@
 
 ## 기술스택
 
-  ### 공통
+### Common
   <div align="left"
 <img src="https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white">
 <img src="https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white">
@@ -20,7 +20,7 @@
   </br>
   </div>
   
-  ### Frontend 
+### Frontend 
   <div align="left"
 <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white">
 <img src="https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white">
@@ -34,7 +34,7 @@
  </br>
   </div>
   
- ### Backend
+### Backend
  <div align="left"
 <img src="https://img.shields.io/badge/nest.js-E0234E?style=for-the-badge&logo=nestjs&logoColor=white">
 <img src="https://img.shields.io/badge/typeorm-FE0803?style=for-the-badge&logo=typeorm&logoColor=white">
@@ -47,6 +47,39 @@
 <img src="https://img.shields.io/badge/githubactions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
 <img src="https://img.shields.io/badge/rclone-3F79AD?style=for-the-badge&logo=rclone&logoColor=white">
  </div>
+
+## 의존성
+
+### Common
+- typescript: ~5.6.2
+- eslint: ^8.57.1
+- prettier: ^3.0.0-^3.3.3
+### Frontend Dependencies
+- @tanstack/react-query: ^5.59.20
+- axios: ^1.7.7 
+- hls.js: ^1.5.17
+- react: ^18.3.1
+- react-dom: ^18.3.1
+- react-icons: ^5.3.0
+- react-router-dom: ^6.27.0
+- socket.io-client: ^4.8.1
+- zustand: ^5.0.1
+- vite: ^5.4.10
+- tailwindcss: ^3.4.14
+- postcss: ^8.4.47
+
+### Backend Dependencies
+- @nestjs/common: ^10.0.0
+- @nestjs/core: ^10.0.0
+- @nestjs/jwt: ^10.2.0
+- @nestjs/passport: ^10.0.3
+- @nestjs/platform-socket.io: ^10.4.7
+- @nestjs/typeorm: ^10.0.2
+- mysql2: ^3.11.3
+- typeorm: ^0.3.20
+- winston: ^3.15.0
+- jest: ^29.5.0
+- ts-node: ^10.9.1
 
 ## 주요기능
 
