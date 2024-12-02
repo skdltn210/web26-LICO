@@ -11,7 +11,7 @@ import LoginPage from '@pages/LoginPage';
 import MyPage from '@pages/MyPage';
 import LoginCallback from '@pages/LoginPage/LoginCallback';
 import ChatPopupPage from '@pages/ChatPopupPage';
-import ProtectedRoute from './ProtectedRoute';
+import { ProtectedRoute, AuthRoute } from './ProtectedRoute';
 
 export default function AppRoutes() {
   return (
@@ -26,7 +26,14 @@ export default function AppRoutes() {
         <Route path="/category/:categoryId" element={<CategoryDetailPage />} />
         <Route path="/live/:id" element={<LivePage />} />
         <Route path="/lives" element={<LivesPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/login"
+          element={
+            <AuthRoute>
+              <LoginPage />
+            </AuthRoute>
+          }
+        />
 
         <Route
           path="/following"
