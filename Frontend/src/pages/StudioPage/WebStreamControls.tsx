@@ -104,7 +104,7 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
         return;
       }
 
-      if (isOnAir) {
+      if (!isOnAir) {
         showToastMessage('이미 같은 스트림키로 방송중입니다');
         return;
       }
