@@ -102,7 +102,7 @@ export default function StudioPage() {
                 onClick={() => setIsGuideOpen(true)}
                 className="inline-flex items-center hover:text-lico-orange-2"
               >
-                <LuInfo className="h-5 w-5 text-lico-gray-1" />
+                <LuInfo className="h-5 w-5 text-lico-gray-1 hover:text-lico-orange-2" />
               </button>
               <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
                 <button

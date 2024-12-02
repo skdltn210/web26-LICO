@@ -254,17 +254,17 @@ export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
             </section>
           </div>
 
-          <div className="mt-8 flex justify-between">
+          <div className="mt-8 flex justify-end gap-2">
             <button
               type="button"
-              className="rounded border border-lico-gray-5 px-4 py-2 font-medium text-sm text-lico-gray-1"
+              className="rounded bg-lico-gray-2 px-4 py-2 font-medium text-sm text-lico-gray-4 hover:bg-lico-gray-1 hover:text-lico-orange-2"
               onClick={onClose}
             >
               취소
             </button>
             <button
               type="button"
-              className="rounded bg-lico-orange-2 px-4 py-2 font-bold text-sm text-white"
+              className="rounded bg-lico-orange-2 px-4 py-2 font-bold text-sm text-white hover:bg-lico-orange-1"
               onClick={handleConfirm}
             >
               확인

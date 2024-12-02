@@ -33,8 +33,17 @@ export default function StreamGuide({ onClose }: StreamGuideProps) {
                   rel="noopener noreferrer"
                   className="text-lico-orange-2 hover:text-lico-orange-1"
                 >
-                  OBS Studio
-                </a>
+                  Open Broadcaster Software (OBS)
+                </a>{' '}
+                또는{' '}
+                <a
+                  href="https://prismlive.com/ko_kr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-lico-orange-2 hover:text-lico-orange-1"
+                >
+                  PRISM Live Studio
+                </a>{' '}
                 를 다운로드하세요.
               </li>
               <li>• 설정 &gt; 방송에서 서비스를 사용자 지정으로 설정하고 스트림 URL과 스트림 키를 붙여 넣어주세요.</li>
