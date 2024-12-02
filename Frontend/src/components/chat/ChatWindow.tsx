@@ -1,18 +1,18 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useState, useEffect } from 'react';
 import { FaAngleDown } from 'react-icons/fa';
 import { getConsistentTextColor } from '@utils/chatUtils';
 import { chatApi } from '@apis/chat';
 import { useAuthStore } from '@store/useAuthStore';
-import { config } from '@config/env';
 import useLayoutStore from '@store/useLayoutStore';
 import ChatHeader from '@components/chat/ChatHeader';
 import ChatInput from '@components/chat/ChatInput';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
 import PendingMessageNotification from '@components/chat/PendingMessageNotification';
 import ChatSettingsMenu from '@components/chat/ChatSettingsMenu';
+import useChatMessages from '@hooks/chat/useChatMessages';
+import useChatScroll from '@hooks/chat/useChatScroll';
+import useChatSocket from '@hooks/chat/useChatSocket';
 import ChatMessage from './ChatMessage';
-import type { Message } from '@/types/live';
 
 interface ChatWindowProps {
   onAir: boolean;
@@ -24,40 +24,29 @@ interface SelectedMessage {
   element: HTMLElement;
 }
 
-const MESSAGE_LIMIT = 200;
 const CLEAN_BOT_MESSAGE = '클린봇이 삭제한 메세지입니다.';
 
-const updateMessagesWithLimit = (prevMessages: Message[], newMessages: Message[]) => {
-  const updatedMessages = [...prevMessages, ...newMessages];
-  return updatedMessages.slice(-MESSAGE_LIMIT);
-};
-
 export default function ChatWindow({ onAir, id }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [showScrollButton, setShowScrollButton] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
-  const [isScrollPaused, setIsScrollPaused] = useState(false);
   const [showChatSettingsMenu, setShowChatSettingsMenu] = useState(false);
   const [cleanBotEnabled, setCleanBotEnabled] = useState(false);
-  const [showPendingMessages, setShowPendingMessages] = useState(false);
-  const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
-  const chatRef = useRef<HTMLDivElement | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<Socket | null>(null);
-  const accessToken = useAuthStore(state => state.accessToken);
+  const [timestampEnabled, setTimestampEnabled] = useState(false);
+  const user = useAuthStore(state => state.user);
   const { toggleChat } = useLayoutStore();
 
-  const isLoggedIn = accessToken !== null;
+  const { socket, isConnected } = useChatSocket(id, onAir);
+  const { chatRef, bottomRef, showScrollButton, isScrollPaused, scrollToBottom, setIsScrollPaused } = useChatScroll();
+  const {
+    messages,
+    pendingMessages,
+    showPendingMessages,
+    addMessages,
+    addToPending,
+    applyPendingMessages,
+    setMessages,
+  } = useChatMessages();
 
-  const scrollToBottom = () => {
-    if (!chatRef.current) return;
-    chatRef.current.scrollTop = chatRef.current.scrollHeight;
-  };
-
-  const handleNewMessage = async (content: string) => {
-    setIsScrollPaused(false);
-    await chatApi.sendChat({ channelId: id, message: content });
-  };
+  const isLoggedIn = user !== null;
 
   const handleUserClick = (userId: number, messageElement: HTMLElement) => {
     if (selectedMessage?.userId === userId) {
@@ -71,13 +60,13 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     setSelectedMessage(null);
   };
 
-  const handlePendingMessageNotification = () => {
-    setMessages(prevMessages => {
-      const updatedMessages = [...prevMessages, ...pendingMessages];
-      return updatedMessages.slice(-MESSAGE_LIMIT);
-    });
-    setPendingMessages([]);
-    setShowPendingMessages(false);
+  const handleNewMessage = async (content: string) => {
+    setIsScrollPaused(false);
+    await chatApi.sendChat({ channelId: id, message: content });
+  };
+
+  const handlePendingMessageClick = () => {
+    applyPendingMessages();
     setTimeout(() => {
       scrollToBottom();
     }, 100);
@@ -85,89 +74,59 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
   const handleCleanBotChange = (enabled: boolean) => {
     setCleanBotEnabled(enabled);
+
+    setMessages(prevMessages => {
+      return prevMessages.map(message => {
+        if (enabled) {
+          if (message.content === CLEAN_BOT_MESSAGE || message.filteringResult) {
+            return message;
+          }
+          return {
+            ...message,
+            content: CLEAN_BOT_MESSAGE,
+            original: message.content,
+            filteringResult: false,
+          };
+        }
+        if (message.content !== CLEAN_BOT_MESSAGE) {
+          return message;
+        }
+        return {
+          ...message,
+          content: message.original ?? CLEAN_BOT_MESSAGE,
+          original: undefined,
+          filteringResult: false,
+        };
+      });
+    });
   };
 
-  const chatHandler = useCallback(
-    (data: string[]) => {
-      const newMessages = data
-        .map(v => JSON.parse(v))
-        .map(msg => ({
-          ...msg,
-          content: msg.filteringResult ? msg.content : CLEAN_BOT_MESSAGE,
-        }));
+  const handleTimestampToggleChange = (enabled: boolean) => {
+    setTimestampEnabled(enabled);
+  };
 
+  const handlePopupChat = () => {
+    window.open(`/chat-popup?channelId=${id}`, '_blank', 'width=400,height=600');
+  };
+
+  useEffect((): (() => void) | void => {
+    if (!socket || !onAir || !isConnected) return;
+
+    const handleChat = (data: string[]) => {
+      const newMessages = data.map(v => JSON.parse(v));
       if (isScrollPaused) {
-        setShowPendingMessages(true);
-        setPendingMessages(prev => [...prev, ...newMessages]);
+        addToPending(newMessages);
       } else {
-        setMessages(prevMessages => updateMessagesWithLimit(prevMessages, newMessages));
+        addMessages(newMessages);
       }
-    },
-    [isScrollPaused],
-  );
-
-  useEffect(() => {
-    if (isScrollPaused) return;
-
-    scrollToBottom();
-  }, [isScrollPaused, messages]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const isScrolled = !entry.isIntersecting;
-        setShowScrollButton(isScrolled);
-        setIsScrollPaused(isScrolled);
-        if (!isScrolled && pendingMessages.length > 0) {
-          setMessages(prevMessages => updateMessagesWithLimit(prevMessages, pendingMessages));
-          setPendingMessages([]);
-          setShowPendingMessages(false);
-        }
-      },
-      {
-        root: chatRef.current,
-        threshold: 1,
-        rootMargin: '100px',
-      },
-    );
-
-    if (bottomRef.current) {
-      observer.observe(bottomRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [pendingMessages]);
-
-  useEffect(() => {
-    if (!onAir) return undefined;
-    if (socketRef.current?.connected) return undefined;
-
-    const socket = io(`${config.chatUrl}`, {
-      transports: ['websocket'],
-    });
-
-    socket.emit('join', { channelId: id });
-    socketRef.current = socket;
-
-    return () => {
-      socket.disconnect();
-      socket.removeAllListeners();
-      socketRef.current = null;
     };
-  }, [onAir, id]);
 
-  useEffect(() => {
-    const socket = socketRef.current;
-    if (!socket) return undefined;
-
-    socket.off('chat').on('chat', chatHandler);
-
-    const handleFilter = (data: { chatId: string; filteringResult: boolean }[]) => {
-      const filteredMessage = data[0];
-      if (!cleanBotEnabled || filteredMessage.filteringResult) return;
+    const handleFilter = (data: Array<{ chatId: string; filteringResult: boolean }>) => {
+      const filterData = data[0];
+      if (!cleanBotEnabled || filterData.filteringResult) return;
 
       setMessages(prevMessages => {
-        const messageIndex = prevMessages.findIndex(msg => msg.chatId === filteredMessage.chatId);
+        const messageIndex = prevMessages.findIndex(msg => msg.chatId === filterData.chatId);
 
         if (messageIndex === -1 || prevMessages[messageIndex].content === CLEAN_BOT_MESSAGE) {
           return prevMessages;
@@ -177,19 +136,27 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         updatedMessages[messageIndex] = {
           ...updatedMessages[messageIndex],
           content: CLEAN_BOT_MESSAGE,
+          original: updatedMessages[messageIndex].content,
           filteringResult: false,
         };
+
         return updatedMessages;
       });
     };
 
-    socket.off('filter').on('filter', handleFilter);
+    socket.on('chat', handleChat);
+    socket.on('filter', handleFilter);
 
     return () => {
-      socket.off('chat');
-      socket.off('filter');
+      socket.off('chat', handleChat);
+      socket.off('filter', handleFilter);
     };
-  }, [chatHandler, cleanBotEnabled]);
+  }, [socket, onAir, isScrollPaused, addMessages, addToPending, cleanBotEnabled, setMessages, isConnected]);
+
+  useEffect(() => {
+    if (isScrollPaused) return;
+    scrollToBottom();
+  }, [isScrollPaused, messages, scrollToBottom]);
 
   return (
     <div className="relative flex h-full flex-col border-l border-lico-gray-3 bg-lico-gray-4">
@@ -199,6 +166,9 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
           onClose={() => setShowChatSettingsMenu(false)}
           cleanBotEnabled={cleanBotEnabled}
           onCleanBotChange={handleCleanBotChange}
+          timestampEnabled={timestampEnabled}
+          onTimestampToggleChange={handleTimestampToggleChange}
+          onClickPopupChat={handlePopupChat}
         />
       )}
       <div
@@ -219,6 +189,9 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
                 color={getConsistentTextColor(message.nickname)}
                 filteringResult={message.filteringResult}
                 onUserClick={(userId, element) => handleUserClick(userId, element)}
+                cleanBotEnabled={cleanBotEnabled}
+                timestamp={message.timestamp}
+                timestampEnabled={timestampEnabled}
               />
             ))}
           </div>
@@ -242,7 +215,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         {showPendingMessages && (
           <button
             type="button"
-            onClick={handlePendingMessageNotification}
+            onClick={handlePendingMessageClick}
             className="absolute -top-24 z-40 mt-6 w-full p-4 opacity-90"
           >
             <PendingMessageNotification pendingMessages={pendingMessages} />
