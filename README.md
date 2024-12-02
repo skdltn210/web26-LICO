@@ -1,5 +1,3 @@
-![image](https://github.com/user-attachments/assets/a4043c9a-b760-4c05-9770-78e863d1e04a)
-
 ## 프로젝트소개
 
 ![039662A4-0D41-41F0-AEB6-ABA1A7484A56](https://github.com/user-attachments/assets/16eb7136-a0ee-4c95-a580-119cc66c3e75)
