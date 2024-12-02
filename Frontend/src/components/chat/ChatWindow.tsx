@@ -30,7 +30,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const [showChatSettingsMenu, setShowChatSettingsMenu] = useState(false);
   const [cleanBotEnabled, setCleanBotEnabled] = useState(false);
-  const accessToken = useAuthStore(state => state.accessToken);
+  const [timestampEnabled, setTimestampEnabled] = useState(false);
   const user = useAuthStore(state => state.user);
   const { toggleChat } = useLayoutStore();
 
@@ -101,6 +101,10 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     });
   };
 
+  const handleTimestampToggleChange = (enabled: boolean) => {
+    setTimestampEnabled(enabled);
+  };
+
   const handlePopupChat = () => {
     window.open(`/chat-popup?channelId=${id}`, '_blank', 'width=400,height=600');
   };
@@ -162,6 +166,9 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
           onClose={() => setShowChatSettingsMenu(false)}
           cleanBotEnabled={cleanBotEnabled}
           onCleanBotChange={handleCleanBotChange}
+          timestampEnabled={timestampEnabled}
+          onTimestampToggleChange={handleTimestampToggleChange}
+          onClickPopupChat={handlePopupChat}
         />
       )}
       <div
@@ -183,6 +190,8 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
                 filteringResult={message.filteringResult}
                 onUserClick={(userId, element) => handleUserClick(userId, element)}
                 cleanBotEnabled={cleanBotEnabled}
+                timestamp={message.timestamp}
+                timestampEnabled={timestampEnabled}
               />
             ))}
           </div>
