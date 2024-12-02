@@ -78,7 +78,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     setMessages(prevMessages => {
       return prevMessages.map(message => {
         if (enabled) {
-          if (message.content === CLEAN_BOT_MESSAGE || message.filteringResult) {
+          if (message.filteringResult) {
             return message;
           }
           return {
@@ -123,7 +123,8 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
     const handleFilter = (data: Array<{ chatId: string; filteringResult: boolean }>) => {
       const filterData = data[0];
-      if (!cleanBotEnabled || filterData.filteringResult) return;
+
+      if (filterData.filteringResult) return;
 
       setMessages(prevMessages => {
         const messageIndex = prevMessages.findIndex(msg => msg.chatId === filterData.chatId);
@@ -133,12 +134,20 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         }
 
         const updatedMessages = [...prevMessages];
-        updatedMessages[messageIndex] = {
-          ...updatedMessages[messageIndex],
-          content: CLEAN_BOT_MESSAGE,
-          original: updatedMessages[messageIndex].content,
-          filteringResult: false,
-        };
+
+        if (!cleanBotEnabled) {
+          updatedMessages[messageIndex] = {
+            ...updatedMessages[messageIndex],
+            filteringResult: false,
+          };
+        } else {
+          updatedMessages[messageIndex] = {
+            ...updatedMessages[messageIndex],
+            content: CLEAN_BOT_MESSAGE,
+            original: updatedMessages[messageIndex].content,
+            filteringResult: false,
+          };
+        }
 
         return updatedMessages;
       });
