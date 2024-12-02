@@ -42,14 +42,22 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
     setShowToast(true);
   };
 
-  const validateAudioTracks = () => {
+  const validateStreams = () => {
+    const hasScreenVideo = screenStream !== null && screenStream.getVideoTracks().length > 0;
+    const hasMediaVideo = mediaStream !== null && mediaStream.getVideoTracks().length > 0;
     const hasScreenAudio = screenStream !== null && screenStream.getAudioTracks().length > 0;
     const hasMediaAudio = mediaStream !== null && mediaStream.getAudioTracks().length > 0;
+
+    if (!hasScreenVideo && !hasMediaVideo) {
+      showToastMessage('화면공유 또는 카메라를 설정해주세요');
+      return false;
+    }
 
     if (!hasScreenAudio && !hasMediaAudio) {
       showToastMessage('화면공유 / 마이크 설정에서 오디오 트랙을 추가해주세요');
       return false;
     }
+
     return true;
   };
 
@@ -91,7 +99,7 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
       }
       setIsStreaming(false);
     } else {
-      if (!validateAudioTracks()) {
+      if (!validateStreams()) {
         return;
       }
       setIsStreaming(true);
