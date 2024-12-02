@@ -42,10 +42,9 @@ export default function ChannelCard({
   };
 
   return (
-    <div className="mb-4">
+    <div className="relative mb-4 min-w-60">
       <Link
         to={`/live/${id}`}
-        className="relative block min-w-60"
         aria-label={`${streamerName}의 ${title} 스트림으로 이동`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
