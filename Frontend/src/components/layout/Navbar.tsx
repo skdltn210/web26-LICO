@@ -79,7 +79,7 @@ export default function Navbar({ isExpanded, onToggle }: NavbarProps) {
               onClick={handleLogout}
               onMouseEnter={() => !isExpanded && setShowLogoutTooltip(true)}
               onMouseLeave={() => setShowLogoutTooltip(false)}
-              className="relative flex h-12 items-center rounded-lg px-4 text-left text-lico-gray-1 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"
+              className="relative flex h-12 items-center rounded-lg px-4 text-left text-lico-gray-1 hover:bg-lico-gray-3 hover:text-lico-orange-2"
             >
               <div className="flex w-5 items-center">
                 <LuLogOut className="h-5 w-5" />

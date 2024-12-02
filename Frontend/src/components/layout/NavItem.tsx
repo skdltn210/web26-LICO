@@ -15,14 +15,14 @@ export default function NavItem({ to, icon, label, isExpanded }: NavItemProps) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `relative flex h-12 items-center rounded-lg px-4 text-lico-gray-1 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2 ${isActive ? 'text-lico-orange-2' : ''} `
+        `relative flex h-12 items-center rounded-lg px-4 text-lico-gray-1 hover:bg-lico-gray-3 hover:text-lico-orange-2 ${isActive ? 'text-lico-orange-2' : ''} `
       }
       onMouseEnter={() => !isExpanded && setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
       <div className="flex w-5 items-center">{icon}</div>
       <div
-        className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'ml-4 w-32 opacity-100' : 'w-0 opacity-0'} `}
+        className={`overflow-hidden transition-all duration-100 ${isExpanded ? 'ml-4 w-32 opacity-100' : 'w-0 opacity-0'} `}
       >
         <span className="whitespace-nowrap font-bold text-base">{label}</span>
       </div>
