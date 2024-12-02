@@ -24,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.usersService.findById(id);
   
     if (user && user.oauthPlatform === provider) {
-      return user; // req.user에 사용자 정보 첨부
+      return user;
     }
     return null;
   }

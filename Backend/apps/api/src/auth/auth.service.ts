@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 
-type OAuthPlatform = 'google' | 'github' | 'naver'; // platform 타입 정의 추가
+type OAuthPlatform = 'google' | 'github' | 'naver';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +15,7 @@ export class AuthService {
 
   async validateOAuthLogin(
     oauthUid: string,
-    oauthPlatform: OAuthPlatform, // 타입 수정
+    oauthPlatform: OAuthPlatform,
     profileData: {
       nickname: string;
       profileImage?: string;
