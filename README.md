@@ -4,7 +4,8 @@
 
 ![lico (7)](https://github.com/user-attachments/assets/50437fdd-3357-4fd5-af3b-bcfc3e6fa6d6)
 
-#### LICO (LIve + COnnection) - 더 쉽고 가까운 라이브 스트리밍 서비스
+### LICO (LIve + COnnection) - 더 쉽고 가까운 라이브 스트리밍 서비스
+### [바로가기](https://lico.digital/)
 
 ## 기술스택
 
