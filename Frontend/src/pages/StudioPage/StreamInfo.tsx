@@ -7,9 +7,8 @@ import CategoryBadge from '@components/common/Badges/CategoryBadge';
 import Toast from '@components/common/Toast';
 
 import { useClickOutside } from '@hooks/useClickOutside';
-import { useLiveDetail } from '@hooks/useLive';
+import { useLiveDetail, useUpdateLive } from '@hooks/useLive';
 import { useSearch } from '@hooks/useSearch';
-import { useUpdateLive } from '@hooks/useLive';
 
 import { useAuthStore } from '@store/useAuthStore';
 import { CATEGORIES } from '@constants/categories';
