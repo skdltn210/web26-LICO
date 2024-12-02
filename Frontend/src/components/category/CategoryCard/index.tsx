@@ -6,11 +6,11 @@ export interface CategoryCardProps {
   id: number;
   name: string;
   image: string;
-  totalViewers?: number;
-  totalLives?: number;
+  totalViewers: number;
+  totalLives: number;
 }
 
-export default function CategoryCard({ id, name, image, totalViewers = 0, totalLives = 0 }: CategoryCardProps) {
+export default function CategoryCard({ id, name, image, totalViewers, totalLives }: CategoryCardProps) {
   const navigate = useNavigate();
 
   const handleClick = () => {
