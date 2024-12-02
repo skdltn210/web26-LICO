@@ -15,6 +15,8 @@ import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 import { useFinishLive } from '@hooks/useLive';
 import { useStudioStore } from '@store/useStudioStore';
+import { LuInfo } from 'react-icons/lu';
+import StreamGuide from './Modals/StreamGuide';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
@@ -23,6 +25,7 @@ export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('External');
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   const screenStream = useStudioStore(state => state.screenStream);
   const mediaStream = useStudioStore(state => state.mediaStream);
@@ -93,7 +96,14 @@ export default function StudioPage() {
           {renderVideoContent()}
 
           <div className="mt-4">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="inline-flex items-center hover:text-lico-orange-2"
+              >
+                <LuInfo className="h-5 w-5 text-lico-gray-1" />
+              </button>
               <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
                 <button
                   type="button"
@@ -167,6 +177,7 @@ export default function StudioPage() {
         </aside>
       )}
       {chatState === 'hidden' && <ChatOpenButton className="text-lico-gray-2" onClick={toggleChat} />}
+      {isGuideOpen && <StreamGuide onClose={() => setIsGuideOpen(false)} />}
     </div>
   );
 }
