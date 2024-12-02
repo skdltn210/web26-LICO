@@ -41,7 +41,7 @@ export class UsersService {
 
   async findByOAuthUid(
     oauthUid: string,
-    oauthPlatform: 'naver' | 'github' | 'google',
+    oauthPlatform: 'naver' | 'github' | 'google'|'lico',
   ): Promise<UserEntity | null> {
     return this.usersRepository.findOne({
       where: { oauthUid, oauthPlatform },
