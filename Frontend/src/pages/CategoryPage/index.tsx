@@ -16,8 +16,8 @@ export default function CategoryPage() {
           id: category.id,
           name: category.name,
           image: category.image,
-          totalViewers: 0,
-          totalLives: 0,
+          totalViewers: category.viewerCount,
+          totalLives: category.liveCount,
         }))}
       />
     </div>

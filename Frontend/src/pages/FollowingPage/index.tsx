@@ -15,7 +15,7 @@ export default function FollowingPage() {
       categoryId: follow.categoriesId,
       profileImgUrl: follow.usersProfileImage,
       thumbnailUrl: `${config.storageUrl}/${follow.channelId}/thumbnail.jpg`,
-      viewers: 0,
+      viewers: follow.viewers,
       isLive: follow.onAir,
       createdAt: new Date().toISOString(),
     })) ?? [];

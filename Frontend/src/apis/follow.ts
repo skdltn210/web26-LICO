@@ -16,4 +16,9 @@ export const followApi = {
     const { data } = await api.delete(`/follow/${streamerId}`);
     return data;
   },
+
+  getFollowerCount: async (streamerId: number) => {
+    const { data } = await api.get(`/follow/count/${streamerId}`);
+    return data;
+  },
 };
