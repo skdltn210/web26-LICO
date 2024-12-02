@@ -53,3 +53,10 @@ export const useFollow = () => {
     isFollowed,
   };
 };
+
+export const useFollowerCount = (streamerId: number) => {
+  return useQuery({
+    queryKey: ['followerCount', streamerId],
+    queryFn: () => followApi.getFollowerCount(streamerId),
+  });
+};

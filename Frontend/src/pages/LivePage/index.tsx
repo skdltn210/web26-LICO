@@ -72,7 +72,7 @@ export default function LivePage() {
               <StreamerInfo
                 streamerName={liveDetail.usersNickname}
                 channelDescription={currentDescription}
-                followers={0}
+                streamerId={liveDetail.streamerId}
               />
             </>
           )}
