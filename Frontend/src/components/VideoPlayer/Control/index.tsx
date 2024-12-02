@@ -6,7 +6,7 @@ import type { HLSQuality } from '@/types/hlsQuality';
 interface ControlsProps {
   isPlaying: boolean;
   isFullScreen: boolean;
-  videoPlayerState: string;
+  isTheaterMode: boolean;
   showControls: boolean;
   volume: number;
   isMuted: boolean;
@@ -26,7 +26,7 @@ const CONTROL_ICON_SIZE = 24;
 export default function Controls({
   isPlaying,
   isFullScreen,
-  videoPlayerState,
+  isTheaterMode,
   showControls,
   volume,
   isMuted,
@@ -91,8 +91,8 @@ export default function Controls({
             type="button"
             onClick={onFullScreenToggle}
             className="hover:text-lico-orange-2"
-            aria-label={videoPlayerState === 'theater' ? '전체화면 종료' : '전체화면'}
-            aria-pressed={videoPlayerState === 'theater'}
+            aria-label={isTheaterMode ? '전체화면 종료' : '전체화면'}
+            aria-pressed={isTheaterMode}
           >
             {isFullScreen ? <LuMinimize size={CONTROL_ICON_SIZE} /> : <LuMaximize size={CONTROL_ICON_SIZE} />}
           </button>

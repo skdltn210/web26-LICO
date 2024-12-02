@@ -1,9 +1,8 @@
 import { useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { config } from '@config/env';
 import { useLiveDetail, useLiveStatus } from '@hooks/useLive';
 import useMediaQuery from '@hooks/useMediaQuery';
-import useLayoutStore from '@store/useLayoutStore';
 import ChatWindow from '@components/chat/ChatWindow';
 import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
 import NotFound from '@components/error/NotFound';
@@ -11,26 +10,36 @@ import LoadingSpinner from '@components/common/LoadingSpinner';
 import VideoPlayer from '@components/VideoPlayer';
 import LiveInfo from '@pages/LivePage/LiveInfo';
 import StreamerInfo from '@pages/LivePage/StreamerInfo';
+import useViewMode from '@store/useViewMode';
+
+const MEDIUM_BREAKPOINT = '(min-width: 700px)';
 
 export default function LivePage() {
   const { id } = useParams<{ id: string }>();
-  const { chatState, videoPlayerState, toggleChat, handleBreakpoint } = useLayoutStore();
   const { data: liveDetail, isLoading: isLoadingDetail, error: detailError } = useLiveDetail(id!);
   const { data: liveStatus, error: statusError } = useLiveStatus(id!);
+  const { isTheaterMode } = useViewMode();
+  const [isChatExpanded, setIsChatExpanded] = useState<boolean>(true);
+  const [isChatLocked, setIsChatLocked] = useState<boolean>(false);
 
-  const isLarge = useMediaQuery('(min-width: 1200px)');
-  const isMedium = useMediaQuery('(min-width: 700px)');
   const STREAM_URL = `${config.storageUrl}/${id}/index.m3u8`;
 
+  const isMediumScreen = useMediaQuery(MEDIUM_BREAKPOINT);
+  const isVerticalLayout = !isMediumScreen;
+
+  const isChatVisible = isChatExpanded;
+  const shouldShowChatToggle = isMediumScreen && !isChatExpanded;
+
+  const handleChatToggle = () => {
+    setIsChatLocked(isChatExpanded);
+    setIsChatExpanded(!isChatExpanded);
+  };
+
   useEffect(() => {
-    if (isLarge) {
-      handleBreakpoint('FULL');
-    } else if (isMedium) {
-      handleBreakpoint('NAV_COLLAPSED');
-    } else {
-      handleBreakpoint('CHAT_HIDDEN');
+    if (!isChatLocked && !isTheaterMode) {
+      setIsChatExpanded(isMediumScreen);
     }
-  }, [isLarge, isMedium, handleBreakpoint]);
+  }, [isChatLocked, isMediumScreen, isTheaterMode]);
 
   if (isLoadingDetail)
     return (
@@ -47,15 +56,12 @@ export default function LivePage() {
   const currentOnAir = liveStatus?.onAir ?? liveDetail.onAir;
   const currentDescription = liveStatus?.livesDescription ?? liveDetail.livesDescription;
 
-  const isChatToggleVisible = isMedium && chatState === 'hidden';
-  const isTheaterMode = videoPlayerState === 'theater';
-  const isVerticalMode = !isMedium;
-
   return (
-    <div className={`flex h-screen ${isTheaterMode && isVerticalMode ? 'flex-col' : ''}`}>
+    <div className={`flex h-screen ${isTheaterMode && isVerticalLayout ? 'flex-col' : ''}`}>
       <div className="relative flex-1">
         <div className="flex h-full flex-col overflow-y-auto scrollbar-hide">
           <VideoPlayer streamUrl={STREAM_URL} onAir={currentOnAir} />
+
           {!isTheaterMode && (
             <>
               <LiveInfo
@@ -79,14 +85,18 @@ export default function LivePage() {
         </div>
       </div>
 
-      {chatState === 'expanded' && (
-        <div className={`${isTheaterMode && isVerticalMode ? 'w-full overflow-hidden' : 'w-[360px]'}`}>
-          <ChatWindow id={id} onAir={currentOnAir} />
+      {isChatVisible && (
+        <div
+          className={`transition-all duration-500 ease-in-out ${isChatVisible ? 'translate-x-0' : 'translate-x-full'} ${
+            isTheaterMode && isVerticalLayout ? 'w-full overflow-hidden' : 'w-[360px]'
+          } `}
+        >
+          <ChatWindow id={id} onAir={currentOnAir} onToggleChat={handleChatToggle} />
         </div>
       )}
 
-      {((isTheaterMode && chatState === 'hidden') || (!isTheaterMode && isChatToggleVisible)) && (
-        <ChatOpenButton onClick={toggleChat} />
+      {((isTheaterMode && !isChatVisible) || (!isTheaterMode && shouldShowChatToggle)) && (
+        <ChatOpenButton onClick={handleChatToggle} />
       )}
     </div>
   );
