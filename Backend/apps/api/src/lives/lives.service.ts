@@ -190,6 +190,6 @@ export class LivesService {
 
   async readOnAir(streamingKey: UUID) {
     const live = await this.livesRepository.findOne({ where: { streamingKey } });
-    return live.onAir;
+    return { onAir: live.onAir };
   }
 }
