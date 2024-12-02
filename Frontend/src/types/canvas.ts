@@ -110,7 +110,7 @@ export interface MediaSettings {
   videoDeviceId?: string;
   audioDeviceId?: string;
   isCamFlipped?: boolean;
-  volume?: number;
+  volume: number;
 }
 
 export const initialMediaSettings: MediaSettings = {
