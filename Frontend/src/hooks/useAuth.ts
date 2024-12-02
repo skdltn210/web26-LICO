@@ -37,9 +37,26 @@ export function useAuth() {
     }
   };
 
-  const login = (provider: Provider) => {
-    const url = getOAuthUrl(provider);
-    window.location.href = url;
+  const login = async (provider: Provider) => {
+    try {
+      if (provider === 'lico') {
+        const response = await authApi.handleCallback({ provider, code: '', state: null });
+        if (response.success) {
+          setAuth({
+            accessToken: response.accessToken,
+            user: response.user,
+          });
+          navigate(-2);
+        }
+        return;
+      }
+
+      const url = getOAuthUrl(provider);
+      window.location.href = url;
+    } catch (error) {
+      console.error('로그인 처리 중 오류:', error);
+      navigate('/login');
+    }
   };
 
   const handleCallback = async (params: AuthCallbackParams) => {

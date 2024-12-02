@@ -34,6 +34,12 @@ export default function LoginPage() {
               <Github size={22} />
               <span className="font-medium">깃허브 로그인</span>
             </button>
+            <button
+              onClick={() => login('lico')}
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-lico-orange-2 px-6 py-3 text-white transition-opacity hover:bg-lico-orange-1"
+            >
+              <span className="font-medium">게스트 로그인</span>
+            </button>
           </div>
         </div>
       </div>

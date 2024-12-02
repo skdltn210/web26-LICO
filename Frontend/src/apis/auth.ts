@@ -14,6 +14,11 @@ export const authApi = {
 
   async handleCallback(params: AuthCallbackParams): Promise<AuthResponse> {
     const { provider, code, state } = params;
+    if (provider === 'lico') {
+      const response = await api.get<AuthResponse>(`/auth/${provider}/callback`);
+      return response.data;
+    }
+
     const response = await api.get<AuthResponse>(`/auth/${provider}/callback`, {
       params: { code, state },
     });
