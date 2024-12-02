@@ -2,6 +2,7 @@ import { Strategy } from 'passport-custom';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { adjectives, nouns } from './nickname-data'
 
 @Injectable()
 export class LicoStrategy extends PassportStrategy(Strategy, 'lico') {
@@ -9,10 +10,15 @@ export class LicoStrategy extends PassportStrategy(Strategy, 'lico') {
     try {
       const oauthUid = crypto.randomBytes(16).toString('hex');
 
+      // 랜덤 닉네임 생성
+      const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+      const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+      const nickname = `${randomAdjective} ${randomNoun}`;
+
       const userData = {
         oauthUid,
         provider: 'lico' as 'lico',
-        nickname: `User_${oauthUid.substring(0, 8)}`,
+        nickname,
         profileImage: null,
         email: null,
       };
