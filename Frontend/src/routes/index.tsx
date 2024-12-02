@@ -11,6 +11,7 @@ import LoginPage from '@pages/LoginPage';
 import MyPage from '@pages/MyPage';
 import LoginCallback from '@pages/LoginPage/LoginCallback';
 import ChatPopupPage from '@pages/ChatPopupPage';
+import NotFound from '@components/error/NotFound';
 import ProtectedRoute from './ProtectedRoute';
 
 export default function AppRoutes() {
@@ -27,6 +28,7 @@ export default function AppRoutes() {
         <Route path="/live/:id" element={<LivePage />} />
         <Route path="/lives" element={<LivesPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<NotFound />} />
 
         <Route
           path="/following"
