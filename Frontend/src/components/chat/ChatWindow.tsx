@@ -31,6 +31,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const [showChatSettingsMenu, setShowChatSettingsMenu] = useState(false);
   const [cleanBotEnabled, setCleanBotEnabled] = useState(false);
   const accessToken = useAuthStore(state => state.accessToken);
+  const user = useAuthStore(state => state.user);
   const { toggleChat } = useLayoutStore();
 
   const { socket, isConnected } = useChatSocket(id, onAir);
@@ -45,7 +46,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
     setMessages,
   } = useChatMessages();
 
-  const isLoggedIn = accessToken !== null;
+  const isLoggedIn = user !== null;
 
   const handleUserClick = (userId: number, messageElement: HTMLElement) => {
     if (selectedMessage?.userId === userId) {
@@ -73,6 +74,9 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
   const handleCleanBotChange = (enabled: boolean) => {
     setCleanBotEnabled(enabled);
+
+  const handlePopupChat = () => {
+    window.open(`/chat-popup?channelId=${id}`, '_blank', 'width=400,height=600');
   };
 
   useEffect((): (() => void) | void => {

@@ -10,6 +10,7 @@ interface ChatSettingsMenuProps {
   };
   cleanBotEnabled: boolean;
   onCleanBotChange: (enabled: boolean) => void;
+  onClickPopupChat: () => void;
 }
 
 function ChatSettingsMenu({
@@ -38,7 +39,7 @@ function ChatSettingsMenu({
 
         <button
           type="button"
-          onClick={() => window.open('/chat-popup', '_blank', 'width=400,height=600')}
+          onClick={onClickPopupChat}
           className="flex w-full items-center justify-between rounded-md px-3 py-2 hover:bg-lico-gray-4"
         >
           <div className="flex items-center gap-3 font-bold text-lg text-lico-gray-2">

@@ -22,7 +22,7 @@ function ChatProfileModal({ userId, onClose, anchorEl }: ChatProfileModalProps) 
     <>
       <button type="button" aria-label="모달 닫기" className="fixed inset-0 z-10 cursor-default" onClick={onClose} />
       <div
-        className="absolute z-30 flex min-h-36 w-80 items-center justify-center rounded-lg border-2 border-lico-orange-2 bg-lico-gray-4 p-4"
+        className="absolute left-0 right-0 z-30 mr-3 flex items-center justify-center rounded-lg border-2 border-lico-orange-2 bg-lico-gray-4 p-4"
         style={{
           top:
             window.innerHeight - rect.bottom > INPUT_HEIGHT + MODAL_HEIGHT
