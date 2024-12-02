@@ -150,9 +150,6 @@ export class WebRTCStream {
 
     const scale = window.devicePixelRatio;
 
-    const halfStreamWidth = Math.floor(streamCanvas.width / 2);
-    const halfStreamHeight = Math.floor(streamCanvas.height / 2);
-
     this.compositeCanvas.width = Math.floor(containerWidth * scale);
     this.compositeCanvas.height = Math.floor(containerHeight * scale);
 
@@ -160,13 +157,16 @@ export class WebRTCStream {
     ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
 
     ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+    ctx.fillRect(0, 0, containerWidth, containerHeight);
 
     try {
-      ctx.drawImage(streamCanvas, 0, 0, halfStreamWidth, halfStreamHeight, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
+
       ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
       ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error drawing on composite canvas:', error);
+    }
 
     this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
   };
@@ -180,7 +180,7 @@ export class WebRTCStream {
     if (this.pc) {
       const senders = this.pc.getSenders();
       for (const sender of senders) {
-        await this.pc.removeTrack(sender);
+        this.pc.removeTrack(sender);
       }
 
       this.pc.close();
