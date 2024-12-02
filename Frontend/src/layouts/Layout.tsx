@@ -1,10 +1,27 @@
+import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from '@components/layout/Navbar';
-import { useState } from 'react';
+import useMediaQuery from '@hooks/useMediaQuery';
 
 export default function Layout() {
   const [isExpanded, setIsExpanded] = useState(true);
-  const handleNavbarToggle = () => setIsExpanded(!isExpanded);
+  const [isLocked, setIsLocked] = useState(false);
+  const isMedium = useMediaQuery('(min-width: 700px)');
+
+  const handleNavbarToggle = () => {
+    if (!isExpanded) {
+      setIsLocked(false);
+    } else {
+      setIsLocked(true);
+    }
+    setIsExpanded(!isExpanded);
+  };
+
+  useEffect(() => {
+    if (!isLocked) {
+      setIsExpanded(isMedium);
+    }
+  }, [isMedium, isLocked]);
 
   return (
     <div className="flex h-screen">
