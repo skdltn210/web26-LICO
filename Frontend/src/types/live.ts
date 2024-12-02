@@ -56,4 +56,5 @@ export interface Message {
   timestamp: string;
   chatId: string;
   filteringResult: boolean;
+  original?: string;
 }

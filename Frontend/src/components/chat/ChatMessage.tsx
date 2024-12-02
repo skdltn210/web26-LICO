@@ -6,6 +6,7 @@ interface ChatMessageProps {
   color?: string;
   onUserClick: (userId: number, element: HTMLElement) => void;
   filteringResult: boolean;
+  cleanBotEnabled: boolean;
 }
 
 export default function ChatMessage({
@@ -16,6 +17,7 @@ export default function ChatMessage({
   color = 'text-lico-orange-2',
   onUserClick,
   filteringResult,
+  cleanBotEnabled,
 }: ChatMessageProps) {
   return (
     <button
@@ -27,7 +29,7 @@ export default function ChatMessage({
         {timestamp && <span className="font-medium text-xs text-lico-gray-2">{timestamp}</span>}
         <span className={`max-w-40 truncate whitespace-nowrap font-bold text-base ${color}`}>{nickname}</span>
         <p
-          className={`flex items-center break-all text-start font-medium text-sm ${filteringResult ? 'text-lico-gray-1' : 'text-lico-gray-2'}`}
+          className={`whitespace-normal break-all text-left font-medium text-sm leading-relaxed ${!filteringResult && cleanBotEnabled ? 'text-lico-gray-2' : 'text-lico-gray-1'}`}
         >
           {content}
         </p>

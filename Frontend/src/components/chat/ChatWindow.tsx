@@ -75,6 +75,32 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
   const handleCleanBotChange = (enabled: boolean) => {
     setCleanBotEnabled(enabled);
 
+    setMessages(prevMessages => {
+      return prevMessages.map(message => {
+        if (enabled) {
+          if (message.content === CLEAN_BOT_MESSAGE || message.filteringResult) {
+            return message;
+          }
+          return {
+            ...message,
+            content: CLEAN_BOT_MESSAGE,
+            original: message.content,
+            filteringResult: false,
+          };
+        }
+        if (message.content !== CLEAN_BOT_MESSAGE) {
+          return message;
+        }
+        return {
+          ...message,
+          content: message.original ?? CLEAN_BOT_MESSAGE,
+          original: undefined,
+          filteringResult: false,
+        };
+      });
+    });
+  };
+
   const handlePopupChat = () => {
     window.open(`/chat-popup?channelId=${id}`, '_blank', 'width=400,height=600');
   };
@@ -106,6 +132,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
         updatedMessages[messageIndex] = {
           ...updatedMessages[messageIndex],
           content: CLEAN_BOT_MESSAGE,
+          original: updatedMessages[messageIndex].content,
           filteringResult: false,
         };
 
@@ -155,6 +182,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
                 color={getConsistentTextColor(message.nickname)}
                 filteringResult={message.filteringResult}
                 onUserClick={(userId, element) => handleUserClick(userId, element)}
+                cleanBotEnabled={cleanBotEnabled}
               />
             ))}
           </div>
