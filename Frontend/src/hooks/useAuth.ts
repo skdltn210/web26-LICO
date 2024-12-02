@@ -50,7 +50,7 @@ export function useAuth() {
           accessToken: response.accessToken,
           user: response.user,
         });
-        navigate('/');
+        navigate(-2);
       }
     } catch {
       navigate('/login');
