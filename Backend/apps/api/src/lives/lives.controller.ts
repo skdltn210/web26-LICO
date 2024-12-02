@@ -74,6 +74,11 @@ export class LivesController {
     this.livesService.endLive(streamingKey);
   }
 
+  @Get('/onair/:streamingKey')
+  async getOnAir(@Param('streamingKey') streamingKey: UUID) {
+    return await this.livesService.readOnAir(streamingKey);
+  }
+
   @Get('/status/:channelId')
   async getStatus(@Param('channelId') channelId: UUID): Promise<StatusDto> {
     return await this.livesService.readStatus(channelId);
