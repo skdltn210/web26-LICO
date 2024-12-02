@@ -1,38 +1,25 @@
 import { useState, useEffect } from 'react';
-
-interface MediaSettings {
-  videoEnabled: boolean;
-  audioEnabled: boolean;
-  videoDeviceId?: string;
-  audioDeviceId?: string;
-  isCamFlipped?: boolean;
-  volume?: number;
-}
+import { MediaSettings, initialMediaSettings } from '@/types/canvas';
+import { useStudioStore } from '@store/useStudioStore';
 
 interface CamMicSettingProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (settings: MediaSettings) => void;
-  initialSettings: MediaSettings | null;
 }
 
-export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSettings }: CamMicSettingProps) {
+export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
+  const { mediaStream, mediaSettings: storeSettings, setMediaStream, setMediaSettings } = useStudioStore();
+
+  const [settings, setSettings] = useState<MediaSettings>(() => storeSettings || initialMediaSettings);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
-  const [settings, setSettings] = useState<MediaSettings>(() => ({
-    videoEnabled: false,
-    audioEnabled: false,
-    isCamFlipped: false,
-    volume: 75,
-    ...initialSettings,
-  }));
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       navigator.mediaDevices
         .enumerateDevices()
-        .then(async devices => {
+        .then(devices => {
           const audioDevs = devices.filter(device => device.kind === 'audioinput');
           const videoDevs = devices.filter(device => device.kind === 'videoinput');
 
@@ -51,47 +38,63 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
   }, [isOpen]);
 
   useEffect(() => {
-    const startMediaStream = async () => {
-      if (!settings.videoEnabled && !settings.audioEnabled) {
-        return;
-      }
+    if (isOpen && storeSettings) {
+      setSettings(storeSettings);
+    }
+  }, [isOpen, storeSettings]);
 
+  useEffect(() => {
+    const setupPreview = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
-          audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
-        });
-        setMediaStream(stream);
-      } catch (err) {
-        console.error('Error getting media stream:', err);
-      }
-    };
-
-    const stopMediaStream = () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        setMediaStream(null);
+        if (settings.videoEnabled || settings.audioEnabled) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
+            audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
+          });
+          setPreviewStream(stream);
+        }
+      } catch (error) {
+        console.error('Error setting up preview:', error);
       }
     };
 
     if (isOpen) {
-      startMediaStream();
+      setupPreview();
     }
 
     return () => {
-      stopMediaStream();
+      if (previewStream) {
+        previewStream.getTracks().forEach(track => track.stop());
+        setPreviewStream(null);
+      }
     };
   }, [isOpen, settings.videoEnabled, settings.audioEnabled, settings.videoDeviceId, settings.audioDeviceId]);
 
-  useEffect(() => {
-    if (isOpen && initialSettings) {
-      setSettings(initialSettings);
-    }
-  }, [isOpen, initialSettings]);
+  const handleConfirm = async () => {
+    try {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+      }
 
-  const handleConfirm = () => {
-    onConfirm(settings);
-    onClose();
+      if (!settings.videoEnabled && !settings.audioEnabled) {
+        setMediaStream(null);
+        setMediaSettings(settings);
+        onClose();
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
+        audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
+      });
+
+      (stream as any).isCamFlipped = settings.isCamFlipped;
+      setMediaStream(stream);
+      setMediaSettings(settings);
+      onClose();
+    } catch (error) {
+      console.error('Error setting up media devices:', error);
+    }
   };
 
   if (!isOpen) return null;
@@ -102,7 +105,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
         <div className="w-[496px] rounded-lg bg-lico-gray-3 p-6">
           <h1 className="mb-2 font-bold text-xl text-lico-gray-1">카메라/마이크 설정</h1>
           <div className="h-64 w-full overflow-hidden rounded-lg bg-black">
-            {settings.videoEnabled && mediaStream && (
+            {settings.videoEnabled && previewStream && (
               <video
                 autoPlay
                 playsInline
@@ -110,7 +113,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                 className={`h-full w-full object-cover ${settings.isCamFlipped ? 'scale-x-[-1]' : ''}`}
                 ref={video => {
                   if (video) {
-                    video.srcObject = mediaStream;
+                    video.srcObject = previewStream;
                   }
                 }}
               />

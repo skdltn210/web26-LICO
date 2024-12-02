@@ -1,20 +1,10 @@
-import { useState, useEffect, forwardRef } from 'react';
+import { useEffect, forwardRef } from 'react';
 import { useDrawing } from '@hooks/canvas/useDrawing';
 import { useText } from '@hooks/canvas/useText';
 import { useImage } from '@hooks/canvas/useImage';
 import { Point } from '@/types/canvas';
 import pencilCursor from '@assets/icons/pencilCursor.svg?url';
 import eraserCursor from '@assets/icons/eraserCursor.svg?url';
-import { useCanvasContext } from '@/contexts/CanvasContext';
-import { CanvasElementDeleteModal } from './Modals/CanvasElementDeleteModal';
-
-interface ContextMenu {
-  show: boolean;
-  x: number;
-  y: number;
-  type: 'text' | 'image';
-  targetId: string;
-}
 
 interface DrawCanvasProps {
   drawingState: {
@@ -25,25 +15,16 @@ interface DrawCanvasProps {
     eraseTool: { width: number };
     textTool: { color: string; width: number };
   };
-  style?: React.CSSProperties;
+  isDrawingMode: boolean;
 }
 
-export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ drawingState, style }, ref) => {
+export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ drawingState, isDrawingMode }, ref) => {
   const { paths, startDrawing, continueDrawing, endDrawing } = useDrawing();
   const { textInput, startTextInput, updateText, completeText, cancelText, drawTexts } = useText({
     color: drawingState.textTool.color,
     fontSize: drawingState.textTool.width,
   });
   const { drawImages } = useImage();
-  const { texts, setTexts, images, setImages } = useCanvasContext();
-
-  const [contextMenu, setContextMenu] = useState<ContextMenu>({
-    show: false,
-    x: 0,
-    y: 0,
-    type: 'text',
-    targetId: '',
-  });
 
   const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>): Point => {
     const canvas = ref as React.RefObject<HTMLCanvasElement>;
@@ -57,105 +38,28 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
   };
 
   useEffect(() => {
-    const handleClick = () => {
-      setContextMenu(prev => ({ ...prev, show: false }));
-    };
-
-    window.addEventListener('click', handleClick);
-    return () => window.removeEventListener('click', handleClick);
-  }, []);
-
-  const handleCanvasContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    const point = getCanvasPoint(e);
-
-    const clickedText = texts.find(text => {
-      const canvas = (ref as React.RefObject<HTMLCanvasElement>).current;
-      if (!canvas) return false;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return false;
-
-      ctx.font = `${text.fontSize}px Arial`;
-      const metrics = ctx.measureText(text.text);
-
-      return (
-        point.x >= text.position.x &&
-        point.x <= text.position.x + metrics.width &&
-        point.y >= text.position.y &&
-        point.y <= text.position.y + text.fontSize
-      );
-    });
-
-    if (clickedText) {
-      setContextMenu({
-        show: true,
-        x: e.clientX,
-        y: e.clientY,
-        type: 'text',
-        targetId: clickedText.id,
-      });
-      return;
-    }
-
-    const clickedImage = images.find(image => {
-      return (
-        point.x >= image.position.x &&
-        point.x <= image.position.x + image.width &&
-        point.y >= image.position.y &&
-        point.y <= image.position.y + image.height
-      );
-    });
-
-    if (clickedImage) {
-      setContextMenu({
-        show: true,
-        x: e.clientX,
-        y: e.clientY,
-        type: 'image',
-        targetId: clickedImage.id,
-      });
-    }
-  };
-
-  const handleDelete = () => {
-    if (contextMenu.type === 'text') {
-      setTexts(texts.filter(text => text.id !== contextMenu.targetId));
-    } else {
-      setImages(images.filter(image => image.id !== contextMenu.targetId));
-    }
-    setContextMenu(prev => ({ ...prev, show: false }));
-  };
-
-  useEffect(() => {
     const canvas = ref as React.RefObject<HTMLCanvasElement>;
     const ctx = canvas.current?.getContext('2d', { alpha: true });
 
     if (!canvas.current || !ctx) return;
 
     const updateCanvas = () => {
-      const container = canvas.current!.parentElement;
-      if (container) {
-        const scale = window.devicePixelRatio;
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
+      const container = canvas.current?.parentElement?.parentElement;
+      if (!container) return;
 
-        canvas.current!.width = containerWidth * scale;
-        canvas.current!.height = containerHeight * scale;
-        canvas.current!.style.width = `${containerWidth}px`;
-        canvas.current!.style.height = `${containerHeight}px`;
+      const scale = window.devicePixelRatio;
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
 
-        ctx.scale(scale, scale);
-      }
+      canvas.current.width = containerWidth * scale;
+      canvas.current.height = containerHeight * scale;
 
-      ctx.clearRect(
-        0,
-        0,
-        canvas.current!.width / window.devicePixelRatio,
-        canvas.current!.height / window.devicePixelRatio,
-      );
+      canvas.current.style.width = `${containerWidth}px`;
+      canvas.current.style.height = `${containerHeight}px`;
 
-      drawImages(ctx);
+      ctx.scale(scale, scale);
+
+      ctx.clearRect(0, 0, containerWidth, containerHeight);
 
       paths.forEach(path => {
         if (path.points.length < 2) return;
@@ -182,6 +86,7 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       });
 
       ctx.globalCompositeOperation = 'source-over';
+      drawImages(ctx);
       drawTexts(ctx);
     };
 
@@ -191,8 +96,8 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
       updateCanvas();
     });
 
-    if (canvas.current.parentElement) {
-      resizeObserver.observe(canvas.current.parentElement);
+    if (canvas.current.parentElement?.parentElement) {
+      resizeObserver.observe(canvas.current.parentElement.parentElement);
     }
 
     return () => {
@@ -313,8 +218,7 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
         onMouseMove={handleMouseMove}
         onMouseUp={endDrawing}
         onMouseLeave={endDrawing}
-        onContextMenu={handleCanvasContextMenu}
-        style={style}
+        className={`draw-canvas absolute left-0 top-0 h-full w-full ${isDrawingMode ? 'z-20' : 'z-10'}`}
       />
       {textInput.isVisible && (
         <div
@@ -348,13 +252,6 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, DrawCanvasProps>(({ draw
           />
         </div>
       )}
-      <CanvasElementDeleteModal
-        show={contextMenu.show}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        onDelete={handleDelete}
-        canvasRef={ref}
-      />
     </>
   );
 });

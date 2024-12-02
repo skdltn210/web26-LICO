@@ -1,42 +1,71 @@
 import { useState, useRef } from 'react';
-import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay } from 'react-icons/lu';
+import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay, LuSparkles } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
+import { useFinishLive } from '@hooks/useLive';
+import { useImage } from '@hooks/canvas/useImage';
+import { useStudioStore } from '@store/useStudioStore';
 import ControlButton from './ControlButton';
 import CamMicSetting from './Modals/CamMicSetting';
 import Palette from './Modals/Palette';
 import TextSetting from './Modals/TextSetting';
-import { MediaSettings, WebStreamControlsProps } from '@/types/canvas';
-import { useFinishLive } from '@hooks/useLive';
-import { useImage } from '@hooks/canvas/useImage';
+import Toast from '@components/common/Toast';
 
-export default function WebStreamControls({
-  screenStream,
-  mediaStream,
-  isStreaming,
-  drawingState,
-  onScreenStreamChange,
-  onMediaStreamChange,
-  onStreamingChange,
-  onDrawingStateChange,
-  streamKey,
-}: WebStreamControlsProps) {
+interface WebStreamControlsProps {
+  streamKey: string;
+}
+
+export default function WebStreamControls({ streamKey }: WebStreamControlsProps) {
+  const {
+    screenStream,
+    mediaStream,
+    isStreaming,
+    drawingState,
+    activeTool,
+    setScreenStream,
+    setMediaStream,
+    setIsStreaming,
+    setDrawingState,
+    setMediaSettings,
+    setActiveTool,
+    clearAll,
+  } = useStudioStore();
+
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [mediaSettings, setMediaSettings] = useState<MediaSettings | null>(() => ({
-    videoEnabled: false,
-    audioEnabled: false,
-  }));
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addImage } = useImage();
-
-  const [activeTool, setActiveTool] = useState<'text' | 'draw' | 'erase' | null>(null);
-
   const { mutateAsync: finishLive } = useFinishLive();
+
+  const showToastMessage = (message: string) => {
+    setToastMessage(message);
+    setShowToast(true);
+  };
+
+  const validateStreams = () => {
+    const hasScreenVideo = screenStream !== null && screenStream.getVideoTracks().length > 0;
+    const hasMediaVideo = mediaStream !== null && mediaStream.getVideoTracks().length > 0;
+    const hasScreenAudio = screenStream !== null && screenStream.getAudioTracks().length > 0;
+    const hasMediaAudio = mediaStream !== null && mediaStream.getAudioTracks().length > 0;
+
+    if (!hasScreenVideo && !hasMediaVideo) {
+      showToastMessage('화면공유 또는 카메라를 설정해주세요');
+      return false;
+    }
+
+    if (!hasScreenAudio && !hasMediaAudio) {
+      showToastMessage('화면공유 / 마이크 설정에서 오디오 트랙을 추가해주세요');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleScreenShare = async () => {
     try {
       if (screenStream) {
         screenStream.getTracks().forEach(track => track.stop());
-        onScreenStreamChange(null);
+        setScreenStream(null);
         return;
       }
 
@@ -44,7 +73,7 @@ export default function WebStreamControls({
         video: true,
         audio: true,
       });
-      onScreenStreamChange(stream);
+      setScreenStream(stream);
     } catch (error) {
       console.error('Error sharing screen:', error);
     }
@@ -53,37 +82,10 @@ export default function WebStreamControls({
   const handleMediaSetting = () => {
     if (mediaStream) {
       mediaStream.getTracks().forEach(track => track.stop());
-      onMediaStreamChange(null);
+      setMediaStream(null);
       setMediaSettings(null);
     } else {
       setIsSettingsModalOpen(true);
-    }
-  };
-
-  const handleSettingsConfirm = async (settings: MediaSettings) => {
-    try {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-      }
-
-      if (!settings.videoEnabled && !settings.audioEnabled) {
-        onMediaStreamChange(null);
-        setMediaSettings(settings);
-        return;
-      }
-
-      const constraints: MediaStreamConstraints = {
-        video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
-        audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      (stream as any).isCamFlipped = settings.isCamFlipped;
-
-      onMediaStreamChange(stream);
-      setMediaSettings(settings);
-    } catch (error) {
-      console.error('Error setting up media devices:', error);
     }
   };
 
@@ -91,45 +93,29 @@ export default function WebStreamControls({
     if (isStreaming) {
       try {
         await finishLive(streamKey);
-        console.log('Live stream ended successfully.');
+        showToastMessage('방송이 종료되었습니다');
       } catch (error) {
         console.error('Error ending the live stream:', error);
       }
+      setIsStreaming(false);
+    } else {
+      if (!validateStreams()) {
+        return;
+      }
+      setIsStreaming(true);
+      showToastMessage('방송이 시작되었습니다');
     }
-    onStreamingChange(!isStreaming);
   };
 
   const handleToolSelect = (tool: 'text' | 'draw' | 'erase' | null) => {
-    if (activeTool === tool) {
-      setActiveTool(null);
-      onDrawingStateChange({
-        ...drawingState,
-        isDrawing: false,
-        isErasing: false,
-        isTexting: false,
-      });
-      return;
-    }
+    const newTool = activeTool === tool ? null : tool;
+    setActiveTool(newTool);
 
-    setActiveTool(tool);
-    onDrawingStateChange({
+    setDrawingState({
       ...drawingState,
-      isDrawing: tool === 'draw',
-      isErasing: tool === 'erase',
-      isTexting: tool === 'text',
-    });
-  };
-
-  const handleDrawingStateChange = (
-    newState: Partial<typeof drawingState.drawTool>,
-    tool: 'text' | 'draw' | 'erase',
-  ) => {
-    onDrawingStateChange({
-      ...drawingState,
-      [tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool']: {
-        ...drawingState[tool === 'text' ? 'textTool' : tool === 'draw' ? 'drawTool' : 'eraseTool'],
-        ...newState,
-      },
+      isDrawing: newTool === 'draw',
+      isErasing: newTool === 'erase',
+      isTexting: newTool === 'text',
     });
   };
 
@@ -179,12 +165,7 @@ export default function WebStreamControls({
                 isEnabled={activeTool === 'text'}
                 onClick={() => handleToolSelect('text')}
               />
-              {activeTool === 'text' && (
-                <TextSetting
-                  toolState={drawingState.textTool}
-                  onStateChange={state => handleDrawingStateChange(state, 'text')}
-                />
-              )}
+              {activeTool === 'text' && <TextSetting />}
             </div>
             <div className="relative">
               <ControlButton
@@ -193,13 +174,7 @@ export default function WebStreamControls({
                 isEnabled={activeTool === 'draw'}
                 onClick={() => handleToolSelect('draw')}
               />
-              {activeTool === 'draw' && (
-                <Palette
-                  toolState={drawingState.drawTool}
-                  onStateChange={state => handleDrawingStateChange(state, 'draw')}
-                  isErasing={false}
-                />
-              )}
+              {activeTool === 'draw' && <Palette isErasing={false} />}
             </div>
             <div className="relative">
               <ControlButton
@@ -208,14 +183,9 @@ export default function WebStreamControls({
                 isEnabled={activeTool === 'erase'}
                 onClick={() => handleToolSelect('erase')}
               />
-              {activeTool === 'erase' && (
-                <Palette
-                  toolState={drawingState.eraseTool}
-                  onStateChange={state => handleDrawingStateChange(state, 'erase')}
-                  isErasing={true}
-                />
-              )}
+              {activeTool === 'erase' && <Palette isErasing={true} />}
             </div>
+            <ControlButton icon={LuSparkles} label="초기화" isEnabled={false} onClick={() => clearAll()} />
           </div>
         </div>
 
@@ -237,13 +207,9 @@ export default function WebStreamControls({
           {isStreaming ? '방송 종료하기' : '방송 시작하기'}
         </button>
 
-        <CamMicSetting
-          isOpen={isSettingsModalOpen}
-          onClose={() => setIsSettingsModalOpen(false)}
-          onConfirm={handleSettingsConfirm}
-          initialSettings={mediaSettings}
-        />
+        <CamMicSetting isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
       </div>
+      <Toast message={toastMessage} isOpen={showToast} onClose={() => setShowToast(false)} />
     </>
   );
 }

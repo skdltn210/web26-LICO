@@ -13,9 +13,10 @@ import NotFound from '@components/error/NotFound';
 import { config } from '@config/env';
 import { useStreamingKey } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
-import { DrawingState } from '@/types/canvas';
 import { useFinishLive } from '@hooks/useLive';
-import { CanvasProvider } from '@/contexts/CanvasContext';
+import { useStudioStore } from '@store/useStudioStore';
+import { LuInfo } from 'react-icons/lu';
+import StreamGuide from './Modals/StreamGuide';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
@@ -24,27 +25,13 @@ export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('External');
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [drawingState, setDrawingState] = useState<DrawingState>({
-    isDrawing: false,
-    isErasing: false,
-    isTexting: false,
-    drawTool: {
-      color: '#ffffff',
-      width: 5,
-    },
-    eraseTool: {
-      color: '#ffffff',
-      width: 20,
-    },
-    textTool: {
-      color: '#ffffff',
-      width: 10,
-    },
-  });
+  const screenStream = useStudioStore(state => state.screenStream);
+  const mediaStream = useStudioStore(state => state.mediaStream);
+  const setScreenStream = useStudioStore(state => state.setScreenStream);
+  const setMediaStream = useStudioStore(state => state.setMediaStream);
+  const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
   const { data: streamKey } = useStreamingKey();
@@ -52,7 +39,7 @@ export default function StudioPage() {
   const { mutateAsync: finishLive } = useFinishLive();
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
-  const WEBRTC_URL = config.webrtcUrl;
+  const WEBRTC_URL = `${config.webrtcUrl}/${channelId}`;
 
   const handleTabChange = async (tab: TabType) => {
     setActiveTab(tab);
@@ -73,35 +60,19 @@ export default function StudioPage() {
     }
   };
 
-  const handleScreenStreamChange = (stream: MediaStream | null) => {
-    setScreenStream(stream);
-  };
-
-  const handleMediaStreamChange = (stream: MediaStream | null) => {
-    setMediaStream(stream);
-  };
-
-  const handleStreamingChange = (streaming: boolean) => {
-    setIsStreaming(streaming);
-  };
-
-  const handleDrawingStateChange = (newState: DrawingState) => {
-    setDrawingState(newState);
-  };
-
   const renderVideoContent = () => {
+    const AspectRatioContainer = ({ children }: { children: React.ReactNode }) => (
+      <div className="relative h-full w-full bg-black">{children}</div>
+    );
+
     if (videoMode === 'player') {
       return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
     }
+
     return (
-      <StreamContainer
-        screenStream={screenStream}
-        mediaStream={mediaStream}
-        isStreaming={isStreaming}
-        webrtcUrl={WEBRTC_URL}
-        streamKey={streamKey?.toString() || ''}
-        drawingState={drawingState}
-      />
+      <AspectRatioContainer>
+        <StreamContainer streamKey={streamKey?.toString() || ''} webrtcUrl={WEBRTC_URL} />
+      </AspectRatioContainer>
     );
   };
 
@@ -118,14 +89,21 @@ export default function StudioPage() {
   if (!channelId || !liveDetail) return <NotFound />;
 
   return (
-    <CanvasProvider>
-      <div className="flex h-screen">
-        <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
-          <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
-          <div className="mt-4 h-3/5">{renderVideoContent()}</div>
+    <div className="flex h-screen">
+      <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
+        <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
+        <div className="space-y-4">
+          {renderVideoContent()}
 
           <div className="mt-4">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="inline-flex items-center hover:text-lico-orange-2"
+              >
+                <LuInfo className="h-5 w-5 text-lico-gray-1" />
+              </button>
               <div className="inline-flex rounded-lg bg-lico-gray-4 p-1" role="tablist">
                 <button
                   type="button"
@@ -171,44 +149,35 @@ export default function StudioPage() {
                 </button>
               </div>
             </div>
-
-            <div className="mt-4 rounded-lg bg-lico-gray-4 p-6">
-              {activeTab === 'External' && (
-                <div id="External-panel" role="tabpanel">
-                  <StreamSettings streamKey={streamKey?.toString() || ''} />
-                </div>
-              )}
-              {activeTab === 'WebStudio' && (
-                <div id="WebStudio-panel" role="tabpanel">
-                  <WebStreamControls
-                    screenStream={screenStream}
-                    mediaStream={mediaStream}
-                    isStreaming={isStreaming}
-                    drawingState={drawingState}
-                    onScreenStreamChange={handleScreenStreamChange}
-                    onMediaStreamChange={handleMediaStreamChange}
-                    onStreamingChange={handleStreamingChange}
-                    onDrawingStateChange={handleDrawingStateChange}
-                    streamKey={streamKey?.toString() || ''}
-                  />
-                </div>
-              )}
-              {activeTab === 'Info' && (
-                <div id="info-panel" role="tabpanel">
-                  <StreamInfo channelId={channelId} />
-                </div>
-              )}
-            </div>
           </div>
-        </main>
 
-        {chatState === 'expanded' && (
-          <aside className="min-w-[360px] overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
-            <ChatWindow id={channelId} onAir={liveDetail.onAir} />
-          </aside>
-        )}
-        {chatState === 'hidden' && <ChatOpenButton className="text-lico-gray-2" onClick={toggleChat} />}
-      </div>
-    </CanvasProvider>
+          <div className="mt-4 rounded-lg bg-lico-gray-4 p-6">
+            {activeTab === 'External' && (
+              <div id="External-panel" role="tabpanel">
+                <StreamSettings streamKey={streamKey?.toString() || ''} />
+              </div>
+            )}
+            {activeTab === 'WebStudio' && (
+              <div id="WebStudio-panel" role="tabpanel">
+                <WebStreamControls streamKey={streamKey?.toString() || ''} />
+              </div>
+            )}
+            {activeTab === 'Info' && (
+              <div id="info-panel" role="tabpanel">
+                <StreamInfo channelId={channelId} />
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      {chatState === 'expanded' && (
+        <aside className="min-w-[360px] overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
+          <ChatWindow id={channelId} onAir={liveDetail.onAir} />
+        </aside>
+      )}
+      {chatState === 'hidden' && <ChatOpenButton className="text-lico-gray-2" onClick={toggleChat} />}
+      {isGuideOpen && <StreamGuide onClose={() => setIsGuideOpen(false)} />}
+    </div>
   );
 }

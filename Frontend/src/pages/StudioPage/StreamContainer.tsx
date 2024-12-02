@@ -1,28 +1,109 @@
-import { useState, useRef, useEffect } from 'react';
-import StreamCanvas from './StreamCanvas';
+import { useRef, useEffect } from 'react';
+import { StreamCanvas } from './StreamCanvas';
 import { DrawCanvas } from './DrawCanvas';
+import { InteractionCanvas } from './InteractionCanvas';
 import { WebRTCStream } from './WebRTCStream';
-import { StreamContainerProps } from '@/types/canvas';
+import { useStudioStore } from '@store/useStudioStore';
 
-export default function StreamContainer({
-  screenStream,
-  mediaStream,
-  isStreaming,
-  webrtcUrl,
-  streamKey,
-  onStreamError,
-  drawingState,
-}: StreamContainerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+interface StreamContainerProps {
+  webrtcUrl: string;
+  streamKey: string;
+  onStreamError?: (error: Error) => void;
+}
+
+export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }: StreamContainerProps) {
+  const streamCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
+  const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const webrtcRef = useRef<WebRTCStream | null>(null);
-  const [streamCanvas, setStreamCanvas] = useState<HTMLCanvasElement | null>(null);
+  const dimensionsRef = useRef<{ width: number; height: number } | null>(null);
+
+  const drawingState = useStudioStore(state => state.drawingState);
+  const isStreaming = useStudioStore(state => state.isStreaming);
+  const screenStream = useStudioStore(state => state.screenStream);
+  const mediaStream = useStudioStore(state => state.mediaStream);
 
   const isDrawingMode = drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing;
 
-  const handleCanvasUpdate = (canvas: HTMLCanvasElement) => {
-    setStreamCanvas(canvas);
+  const validateAudioStreams = () => {
+    const hasScreenAudio = screenStream !== null && screenStream.getAudioTracks().length > 0;
+    const hasMediaAudio = mediaStream !== null && mediaStream.getAudioTracks().length > 0;
+
+    if (!hasScreenAudio && !hasMediaAudio) {
+      throw new Error('At least one audio source (screen share or microphone) is required');
+    }
   };
+
+  const updateCanvasDimensions = () => {
+    if (!containerRef.current) return;
+
+    const containerWidth = containerRef.current.clientWidth;
+    const containerHeight = (containerWidth * 9) / 16;
+
+    if (dimensionsRef.current?.width === containerWidth && dimensionsRef.current?.height === containerHeight) {
+      return;
+    }
+
+    dimensionsRef.current = { width: containerWidth, height: containerHeight };
+
+    [streamCanvasRef, drawCanvasRef, interactionCanvasRef].forEach(canvasRef => {
+      if (canvasRef.current) {
+        canvasRef.current.width = containerWidth;
+        canvasRef.current.height = containerHeight;
+        canvasRef.current.style.width = `${containerWidth}px`;
+        canvasRef.current.style.height = `${containerHeight}px`;
+      }
+    });
+
+    containerRef.current.style.height = `${containerHeight}px`;
+  };
+
+  useEffect(() => {
+    updateCanvasDimensions();
+
+    const observer = new ResizeObserver(() => {
+      updateCanvasDimensions();
+    });
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleStreamingChange = async () => {
+      if (isStreaming && dimensionsRef.current) {
+        if (!streamCanvasRef.current || !drawCanvasRef.current || !interactionCanvasRef.current || !webrtcRef.current) {
+          return;
+        }
+
+        try {
+          validateAudioStreams();
+
+          await webrtcRef.current.start(
+            {
+              streamCanvas: streamCanvasRef.current,
+              drawCanvas: drawCanvasRef.current,
+              interactionCanvas: interactionCanvasRef.current,
+              containerWidth: dimensionsRef.current.width,
+              containerHeight: dimensionsRef.current.height,
+            },
+            screenStream,
+            mediaStream,
+          );
+        } catch (error) {
+          onStreamError?.(error as Error);
+        }
+      }
+    };
+
+    handleStreamingChange();
+  }, [isStreaming, screenStream, mediaStream]);
 
   useEffect(() => {
     if (!webrtcRef.current && webrtcUrl && streamKey) {
@@ -37,58 +118,11 @@ export default function StreamContainer({
     };
   }, [webrtcUrl, streamKey]);
 
-  useEffect(() => {
-    const startStreaming = async () => {
-      if (!streamCanvas || !drawCanvasRef.current || !webrtcRef.current) return;
-
-      try {
-        await webrtcRef.current.start(streamCanvas, drawCanvasRef.current, screenStream, mediaStream);
-      } catch (error) {
-        console.error('Streaming failed:', error);
-        onStreamError?.(error as Error);
-      }
-    };
-
-    if (isStreaming) {
-      startStreaming();
-    } else {
-      webrtcRef.current?.stop();
-    }
-  }, [isStreaming, screenStream, mediaStream, onStreamError, streamCanvas]);
-
   return (
-    <div ref={containerRef} className="relative h-full w-full bg-black">
-      <div className="relative h-full w-full">
-        <StreamCanvas
-          screenStream={screenStream}
-          mediaStream={mediaStream}
-          onCanvasUpdate={handleCanvasUpdate}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            height: '100%',
-            width: '100%',
-            zIndex: isDrawingMode ? 1 : 3,
-            pointerEvents: isDrawingMode ? 'none' : 'auto',
-          }}
-        />
-
-        <DrawCanvas
-          ref={drawCanvasRef}
-          drawingState={drawingState}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            height: '100%',
-            width: '100%',
-            zIndex: isDrawingMode ? 3 : 1,
-            pointerEvents: isDrawingMode ? 'auto' : 'none',
-            background: 'transparent',
-          }}
-        />
-      </div>
+    <div ref={containerRef} className="relative w-full">
+      <StreamCanvas ref={streamCanvasRef} />
+      <DrawCanvas ref={drawCanvasRef} drawingState={drawingState} isDrawingMode={isDrawingMode} />
+      <InteractionCanvas ref={interactionCanvasRef} isDrawingMode={isDrawingMode} />
     </div>
   );
 }
