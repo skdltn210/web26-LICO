@@ -28,12 +28,16 @@ export interface ToolState {
   width: number;
 }
 
+export interface EraserToolState {
+  width: number;
+}
+
 export interface DrawingState {
   isDrawing: boolean;
   isErasing: boolean;
   isTexting: boolean;
   drawTool: ToolState;
-  eraseTool: ToolState;
+  eraseTool: EraserToolState;
   textTool: ToolState;
 }
 
@@ -46,13 +50,9 @@ export interface MediaSettings {
 }
 
 export interface StreamContainerProps {
-  screenStream: MediaStream | null;
-  mediaStream: MediaStream | null;
-  isStreaming: boolean;
   webrtcUrl: string;
   streamKey: string;
   onStreamError?: (error: Error) => void;
-  drawingState: DrawingState;
 }
 
 export interface WebStreamControlsProps {
@@ -69,28 +69,53 @@ export interface WebStreamControlsProps {
 
 export interface CanvasImage {
   id: string;
-  element: HTMLImageElement;
-  position: Point;
-  width: number;
-  height: number;
+  element: HTMLImageElement | HTMLCanvasElement;
+  position: Position;
   aspectRatio: number;
+  originalWidth: number;
+  originalHeight: number;
 }
 
 export interface TextInputState {
   isVisible: boolean;
   text: string;
-  position: Point;
+  position: Position;
 }
 
 export interface CanvasText {
   id: string;
   text: string;
-  position: Point;
+  position: Position;
   color: string;
   fontSize: number;
+  originalFontSize: number;
 }
 
 export interface UseTextProps {
   color: string;
   fontSize: number;
 }
+
+export interface DeleteModalState {
+  show: boolean;
+  x: number;
+  y: number;
+  type: 'text' | 'image';
+  targetId: string;
+}
+
+export interface MediaSettings {
+  videoEnabled: boolean;
+  audioEnabled: boolean;
+  videoDeviceId?: string;
+  audioDeviceId?: string;
+  isCamFlipped?: boolean;
+  volume: number;
+}
+
+export const initialMediaSettings: MediaSettings = {
+  videoEnabled: false,
+  audioEnabled: false,
+  isCamFlipped: false,
+  volume: 75,
+};

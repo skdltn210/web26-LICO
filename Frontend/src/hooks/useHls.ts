@@ -48,8 +48,7 @@ const useHls = (
         hlsInstance = new Hls({
           startLevel: options.startLevel ?? -1,
           backBufferLength: 0,
-          liveSyncDuration: 1,
-          liveMaxLatencyDuration: 2,
+          liveSyncDurationCount: 1,
           liveDurationInfinity: true,
           maxBufferHole: 1,
         });

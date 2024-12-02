@@ -1,9 +1,8 @@
+import { useState } from 'react';
 import { LuUser } from 'react-icons/lu';
+import { formatNumber } from '@utils/format';
 import CategoryBadge from '@components/common/Badges/CategoryBadge';
 import FollowButton from '@components/common/Buttons/FollowButton';
-import { useState } from 'react';
-
-import { formatNumber } from '@utils/format';
 import StreamingTimer from '@pages/LivePage/StreamingTimer';
 
 interface LiveInfoProps {

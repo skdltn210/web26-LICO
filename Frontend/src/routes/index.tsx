@@ -10,12 +10,15 @@ import StudioPage from '@pages/StudioPage';
 import LoginPage from '@pages/LoginPage';
 import MyPage from '@pages/MyPage';
 import LoginCallback from '@pages/LoginPage/LoginCallback';
+import ChatPopupPage from '@pages/ChatPopupPage';
 import ProtectedRoute from './ProtectedRoute';
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth/:provider/callback" element={<LoginCallback />} />
+
+      <Route path="/chat-popup" element={<ChatPopupPage />} />
 
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
@@ -24,6 +27,7 @@ export default function AppRoutes() {
         <Route path="/live/:id" element={<LivePage />} />
         <Route path="/lives" element={<LivesPage />} />
         <Route path="/login" element={<LoginPage />} />
+
         <Route
           path="/following"
           element={

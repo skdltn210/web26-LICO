@@ -1,38 +1,27 @@
-import { useState, useEffect } from 'react';
-
-interface MediaSettings {
-  videoEnabled: boolean;
-  audioEnabled: boolean;
-  videoDeviceId?: string;
-  audioDeviceId?: string;
-  isCamFlipped?: boolean;
-  volume?: number;
-}
+import { useState, useEffect, useRef } from 'react';
+import { MediaSettings, initialMediaSettings } from '@/types/canvas';
+import { useStudioStore } from '@store/useStudioStore';
 
 interface CamMicSettingProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (settings: MediaSettings) => void;
-  initialSettings: MediaSettings | null;
 }
 
-export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSettings }: CamMicSettingProps) {
+export default function CamMicSetting({ isOpen, onClose }: CamMicSettingProps) {
+  const { mediaStream, mediaSettings: storeSettings, setMediaStream, setMediaSettings } = useStudioStore();
+
+  const [settings, setSettings] = useState<MediaSettings>(initialMediaSettings);
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
-  const [settings, setSettings] = useState<MediaSettings>(() => ({
-    videoEnabled: false,
-    audioEnabled: false,
-    isCamFlipped: false,
-    volume: 75,
-    ...initialSettings,
-  }));
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const [previewStream, setPreviewStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       navigator.mediaDevices
         .enumerateDevices()
-        .then(async devices => {
+        .then(devices => {
           const audioDevs = devices.filter(device => device.kind === 'audioinput');
           const videoDevs = devices.filter(device => device.kind === 'videoinput');
 
@@ -51,47 +40,94 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
   }, [isOpen]);
 
   useEffect(() => {
-    const startMediaStream = async () => {
-      if (!settings.videoEnabled && !settings.audioEnabled) {
-        return;
-      }
+    if (isOpen && storeSettings) {
+      setSettings(storeSettings);
+    }
+  }, [isOpen, storeSettings]);
 
+  useEffect(() => {
+    const setupPreview = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
-          audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
-        });
-        setMediaStream(stream);
-      } catch (err) {
-        console.error('Error getting media stream:', err);
-      }
-    };
+        if (settings.videoEnabled || settings.audioEnabled) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
+            audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
+          });
 
-    const stopMediaStream = () => {
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        setMediaStream(null);
+          if (settings.audioEnabled && audioContext && gainNodeRef.current) {
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(gainNodeRef.current);
+            gainNodeRef.current.connect(audioContext.destination);
+          }
+
+          setPreviewStream(stream);
+        }
+      } catch (error) {
+        console.error('Error setting up preview:', error);
       }
     };
 
     if (isOpen) {
-      startMediaStream();
+      setupPreview();
     }
 
     return () => {
-      stopMediaStream();
+      if (previewStream) {
+        previewStream.getTracks().forEach(track => track.stop());
+        setPreviewStream(null);
+      }
     };
-  }, [isOpen, settings.videoEnabled, settings.audioEnabled, settings.videoDeviceId, settings.audioDeviceId]);
+  }, [isOpen, settings, audioContext]);
 
   useEffect(() => {
-    if (isOpen && initialSettings) {
-      setSettings(initialSettings);
-    }
-  }, [isOpen, initialSettings]);
+    if (isOpen && settings.audioEnabled) {
+      const context = new AudioContext();
+      const gainNode = context.createGain();
+      gainNode.gain.value = settings.volume / 100;
+      gainNodeRef.current = gainNode;
+      setAudioContext(context);
 
-  const handleConfirm = () => {
-    onConfirm(settings);
-    onClose();
+      return () => {
+        context.close();
+        gainNodeRef.current = null;
+        setAudioContext(null);
+      };
+    }
+  }, [isOpen, settings.audioEnabled]);
+
+  const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const volume = parseInt(event.target.value, 10);
+    setSettings(prev => ({ ...prev, volume }));
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volume / 100;
+    }
+  };
+
+  const handleConfirm = async () => {
+    try {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+      }
+
+      if (!settings.videoEnabled && !settings.audioEnabled) {
+        setMediaStream(null);
+        setMediaSettings(settings);
+        onClose();
+        return;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: settings.videoEnabled ? { deviceId: settings.videoDeviceId } : false,
+        audio: settings.audioEnabled ? { deviceId: settings.audioDeviceId } : false,
+      });
+
+      (stream as any).isCamFlipped = settings.isCamFlipped;
+      setMediaStream(stream);
+      setMediaSettings(settings);
+      onClose();
+    } catch (error) {
+      console.error('Error setting up media devices:', error);
+    }
   };
 
   if (!isOpen) return null;
@@ -102,7 +138,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
         <div className="w-[496px] rounded-lg bg-lico-gray-3 p-6">
           <h1 className="mb-2 font-bold text-xl text-lico-gray-1">카메라/마이크 설정</h1>
           <div className="h-64 w-full overflow-hidden rounded-lg bg-black">
-            {settings.videoEnabled && mediaStream && (
+            {settings.videoEnabled && previewStream && (
               <video
                 autoPlay
                 playsInline
@@ -110,7 +146,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                 className={`h-full w-full object-cover ${settings.isCamFlipped ? 'scale-x-[-1]' : ''}`}
                 ref={video => {
                   if (video) {
-                    video.srcObject = mediaStream;
+                    video.srcObject = previewStream;
                   }
                 }}
               />
@@ -157,8 +193,8 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                       min="0"
                       max="100"
                       value={settings.volume}
+                      onChange={handleVolumeChange}
                       className="w-full accent-lico-orange-2"
-                      onChange={e => setSettings(prev => ({ ...prev, volume: Number(e.target.value) }))}
                     />
                   </div>
                 </>
@@ -198,7 +234,7 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                   </select>
 
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-lico-gray-1">좌우반전</span>
+                    <span className="font-bold text-sm text-lico-gray-1">화면 좌우 반전</span>
                     <button
                       type="button"
                       onClick={() => setSettings(prev => ({ ...prev, isCamFlipped: !prev.isCamFlipped }))}
@@ -216,26 +252,20 @@ export default function CamMicSetting({ isOpen, onClose, onConfirm, initialSetti
                 </>
               )}
             </section>
-
-            {settings.videoEnabled && (
-              <section>
-                <h3 className="font-bold text-sm text-lico-gray-1">AR</h3>
-              </section>
-            )}
           </div>
 
-          <div className="mt-8 flex justify-end gap-2">
+          <div className="mt-8 flex justify-between">
             <button
               type="button"
+              className="rounded border border-lico-gray-5 px-4 py-2 font-medium text-sm text-lico-gray-1"
               onClick={onClose}
-              className="rounded-lg bg-lico-gray-2 px-4 py-2 font-bold text-sm text-lico-gray-5 transition-colors hover:bg-lico-gray-1"
             >
               취소
             </button>
             <button
               type="button"
+              className="rounded bg-lico-orange-2 px-4 py-2 font-bold text-sm text-white"
               onClick={handleConfirm}
-              className="rounded-lg bg-lico-orange-2 px-4 py-2 font-bold text-sm text-white transition-colors hover:bg-lico-orange-1"
             >
               확인
             </button>

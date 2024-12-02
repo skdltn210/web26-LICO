@@ -23,10 +23,10 @@ export class UserEntity {
   @Column({
     name: 'oauth_platform',
     type: 'enum',
-    enum: ['naver', 'github', 'google'],
+    enum: ['naver', 'github', 'google', 'lico'],
     nullable: false,
   })
-  oauthPlatform: 'naver' | 'github' | 'google';
+  oauthPlatform: 'naver' | 'github' | 'google'| 'lico';
 
   @Column({ name: 'users_nickname', type: 'varchar', length: 50 })
   nickname: string;

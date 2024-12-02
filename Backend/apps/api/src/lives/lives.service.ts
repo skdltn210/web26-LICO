@@ -27,7 +27,6 @@ export class LivesService {
     private chatsService: ChatsService,
     @InjectRedis() private redisClient: Redis,
   ) {
-    this.redisClient.flushall();
     this.redisClient.config('SET', 'notify-keyspace-events', 'Ex');
     const subscriber = this.redisClient.duplicate();
     subscriber.subscribe('__keyevent@0__:expired');
@@ -187,5 +186,10 @@ export class LivesService {
       liveCount: Number(stats.liveCount) || 0,
       viewerCount: Number(stats.viewerCount) || 0,
     };
+  }
+
+  async readOnAir(streamingKey: UUID) {
+    const live = await this.livesRepository.findOne({ where: { streamingKey } });
+    return { onAir: live.onAir };
   }
 }

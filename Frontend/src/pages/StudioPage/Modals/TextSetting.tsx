@@ -1,12 +1,10 @@
 import { ChangeEvent } from 'react';
-import { ToolState } from '@/types/canvas';
+import { useStudioStore } from '@store/useStudioStore';
 
-interface ToolSettingProps {
-  toolState: ToolState;
-  onStateChange: (state: Partial<ToolState>) => void;
-}
+export default function TextSetting() {
+  const drawingState = useStudioStore(state => state.drawingState);
+  const setDrawingState = useStudioStore(state => state.setDrawingState);
 
-export default function TextSetting({ toolState, onStateChange }: ToolSettingProps) {
   const presetColors = [
     { color: '#FFFFFF', label: '흰색' },
     { color: '#000000', label: '검정' },
@@ -17,25 +15,49 @@ export default function TextSetting({ toolState, onStateChange }: ToolSettingPro
   ];
 
   const handleColorClick = (color: string) => {
-    onStateChange({ color });
+    setDrawingState({
+      ...drawingState,
+      textTool: {
+        ...drawingState.textTool,
+        color,
+      },
+    });
   };
 
   const handleCustomColorChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onStateChange({ color: e.target.value });
+    setDrawingState({
+      ...drawingState,
+      textTool: {
+        ...drawingState.textTool,
+        color: e.target.value,
+      },
+    });
   };
 
   const handleFontSizeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
     if (value === '') {
-      onStateChange({ width: 0 });
+      setDrawingState({
+        ...drawingState,
+        textTool: {
+          ...drawingState.textTool,
+          width: 0,
+        },
+      });
       return;
     }
 
     const size = parseInt(value);
     if (!isNaN(size)) {
       const clampedSize = Math.min(Math.max(0, size), 100);
-      onStateChange({ width: clampedSize });
+      setDrawingState({
+        ...drawingState,
+        textTool: {
+          ...drawingState.textTool,
+          width: clampedSize,
+        },
+      });
     }
   };
 
@@ -43,13 +65,25 @@ export default function TextSetting({ toolState, onStateChange }: ToolSettingPro
     const value = e.target.value;
 
     if (value === '' || parseInt(value) < 1) {
-      onStateChange({ width: 1 });
+      setDrawingState({
+        ...drawingState,
+        textTool: {
+          ...drawingState.textTool,
+          width: 1,
+        },
+      });
       return;
     }
 
     const size = parseInt(value);
     const clampedSize = Math.min(Math.max(1, size), 100);
-    onStateChange({ width: clampedSize });
+    setDrawingState({
+      ...drawingState,
+      textTool: {
+        ...drawingState.textTool,
+        width: clampedSize,
+      },
+    });
   };
 
   return (
@@ -63,7 +97,7 @@ export default function TextSetting({ toolState, onStateChange }: ToolSettingPro
               type="button"
               onClick={() => handleColorClick(color)}
               className={`h-6 w-6 rounded-full border ${
-                toolState.color === color ? 'ring-2 ring-lico-orange-2 ring-offset-2' : ''
+                drawingState.textTool.color === color ? 'ring-2 ring-lico-orange-2 ring-offset-2' : ''
               }`}
               style={{ backgroundColor: color }}
               title={label}
@@ -71,7 +105,7 @@ export default function TextSetting({ toolState, onStateChange }: ToolSettingPro
           ))}
           <input
             type="color"
-            value={toolState.color}
+            value={drawingState.textTool.color}
             onChange={handleCustomColorChange}
             className="h-6 w-6 cursor-pointer rounded-full"
             title="커스텀 색상"
@@ -85,7 +119,7 @@ export default function TextSetting({ toolState, onStateChange }: ToolSettingPro
             type="number"
             min="1"
             max="100"
-            value={toolState.width || ''}
+            value={drawingState.textTool.width || ''}
             onChange={handleFontSizeChange}
             onBlur={handleFontSizeBlur}
             className="w-20 rounded-lg bg-lico-gray-4 px-3 py-2 text-sm text-lico-gray-1"

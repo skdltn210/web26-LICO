@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -19,6 +19,9 @@ import { winstonConfig } from './config/logger.config';
 import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { MonitoringInterceptor } from './common/interceptors/monitoring.interceptor';
+import { CloudInsightService } from './common/services/cloud-insight.service';
+import { RequestTimeMiddleware } from './common/middleware/request-time.middleware';
 
 @Module({
   imports: [
@@ -47,13 +50,23 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
   controllers: [AppController],
   providers: [
     AppService,
-      {
+    CloudInsightService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MonitoringInterceptor,
+    },
+    {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
-    },],
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestTimeMiddleware).forRoutes('*');
+  }
+}

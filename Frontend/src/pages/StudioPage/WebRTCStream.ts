@@ -1,101 +1,105 @@
 import { config } from '@config/env';
 
+interface CanvasInputs {
+  streamCanvas: HTMLCanvasElement;
+  drawCanvas: HTMLCanvasElement;
+  interactionCanvas: HTMLCanvasElement;
+  containerWidth: number;
+  containerHeight: number;
+}
+
 export class WebRTCStream {
-  private videoCanvas: HTMLCanvasElement | null;
-  private drawingCanvas: HTMLCanvasElement | null;
-  private compositeCanvas: HTMLCanvasElement | null;
-  private streamKey: string;
   private pc: RTCPeerConnection | null;
-  private screenStream: MediaStream | null;
-  private camStream: MediaStream | null;
-  private audioStream: MediaStream | null;
+  private stream: MediaStream | null;
   private webrtcUrl: string;
-  private animationFrame: number | null;
+  private streamKey: string;
+  private compositeCanvas: HTMLCanvasElement;
+  private animationFrameId: number | null;
+  private canvasInputs: CanvasInputs | null;
+  private isConnecting: boolean = false;
 
   constructor(url: string, streamKey: string) {
-    this.videoCanvas = null;
-    this.drawingCanvas = null;
-    this.compositeCanvas = null;
     this.webrtcUrl = url;
     this.streamKey = streamKey;
     this.pc = null;
-    this.camStream = null;
-    this.screenStream = null;
-    this.audioStream = null;
-    this.animationFrame = null;
+    this.stream = null;
+    this.animationFrameId = null;
+    this.canvasInputs = null;
+    this.compositeCanvas = document.createElement('canvas');
   }
 
-  async start(
-    videoCanvas: HTMLCanvasElement,
-    drawingCanvas: HTMLCanvasElement,
-    screenStream: MediaStream | null,
-    camStream: MediaStream | null,
-  ) {
+  async start(canvasInputs: CanvasInputs, screenStream: MediaStream | null, mediaStream: MediaStream | null) {
+    if (this.isConnecting) {
+      return;
+    }
+
     try {
-      this.videoCanvas = videoCanvas;
-      this.drawingCanvas = drawingCanvas;
+      this.isConnecting = true;
 
-      this.compositeCanvas = document.createElement('canvas');
-      this.compositeCanvas.width = videoCanvas.width;
-      this.compositeCanvas.height = videoCanvas.height;
+      await this.cleanup();
 
-      this.startCompositing();
+      this.canvasInputs = canvasInputs;
+      this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const videoStream = this.compositeCanvas.captureStream(30);
-      this.camStream = new MediaStream([...videoStream.getVideoTracks()]);
+      const videoTrack = videoStream.getVideoTracks()[0];
+
+      if (!videoTrack) {
+        throw new Error('No video track available from canvas');
+      }
+
+      this.stream = new MediaStream([videoTrack]);
 
       if (screenStream) {
-        this.screenStream = screenStream;
-        const screenAudioTracks = this.screenStream.getAudioTracks();
+        const screenAudioTracks = screenStream.getAudioTracks();
         screenAudioTracks.forEach(track => {
-          this.camStream?.addTrack(track.clone());
+          if (this.stream) {
+            this.stream.addTrack(track.clone());
+          }
         });
       }
 
-      if (camStream) {
-        this.audioStream = camStream;
-        const micAudioTracks = this.audioStream.getAudioTracks();
+      if (mediaStream) {
+        const micAudioTracks = mediaStream.getAudioTracks();
         micAudioTracks.forEach(track => {
-          this.camStream?.addTrack(track.clone());
+          if (this.stream) {
+            this.stream.addTrack(track.clone());
+          }
         });
       }
 
       await this.connectWHIP();
     } catch (error) {
-      this.cleanup();
+      await this.cleanup();
       throw error;
+    } finally {
+      this.isConnecting = false;
     }
   }
 
-  private startCompositing() {
-    if (!this.compositeCanvas || !this.videoCanvas || !this.drawingCanvas) return;
-
-    const ctx = this.compositeCanvas.getContext('2d');
-    if (!ctx) return;
-
-    const updateFrame = () => {
-      ctx.drawImage(this.videoCanvas!, 0, 0);
-      ctx.drawImage(this.drawingCanvas!, 0, 0);
-
-      this.animationFrame = requestAnimationFrame(updateFrame);
-    };
-
-    updateFrame();
-  }
-
   private async connectWHIP() {
+    if (!this.stream) {
+      throw new Error('No stream available');
+    }
+
     this.pc = new RTCPeerConnection({
       iceServers: [],
     });
 
-    if (this.camStream) {
-      const tracks = this.camStream.getTracks();
-      tracks.forEach(track => {
-        if (this.camStream) {
-          this.pc?.addTrack(track, this.camStream);
-        }
-      });
-    }
+    const tracks = this.stream.getTracks();
+    tracks.forEach(track => {
+      if (this.stream) {
+        this.pc?.addTrack(track, this.stream);
+      }
+    });
+
+    this.pc.onconnectionstatechange = () => {
+      if (this.pc?.connectionState === 'failed') {
+        this.cleanup();
+      }
+    };
 
     try {
       const offer = await this.pc.createOffer();
@@ -104,25 +108,22 @@ export class WebRTCStream {
       const whipEndpoint = config.whipUrl;
       const streamUrl = `${this.webrtcUrl}/${this.streamKey}`;
 
-      const requestBody = {
-        api: whipEndpoint,
-        streamurl: streamUrl,
-        sdp: offer.sdp,
-      };
-
       const response = await fetch(whipEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          api: whipEndpoint,
+          streamurl: streamUrl,
+          sdp: offer.sdp,
+        }),
       });
 
       const jsonResponse = await response.json();
-      console.log(jsonResponse);
 
       if (jsonResponse.code !== 0 || !jsonResponse.sdp) {
-        throw new Error(`SRS Error: ${JSON.stringify(jsonResponse)}`);
+        throw new Error(`WHIP Error: ${JSON.stringify(jsonResponse)}`);
       }
 
       await this.pc.setRemoteDescription(
@@ -132,43 +133,73 @@ export class WebRTCStream {
         }),
       );
     } catch (error) {
-      this.cleanup();
       throw error;
     }
   }
 
-  stop() {
-    this.cleanup();
-  }
+  private updateCompositeCanvas = () => {
+    if (!this.canvasInputs) {
+      return;
+    }
 
-  private cleanup() {
-    if (this.animationFrame) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
+    const { streamCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } = this.canvasInputs;
+    const ctx = this.compositeCanvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    const scale = window.devicePixelRatio;
+
+    this.compositeCanvas.width = Math.floor(containerWidth * scale);
+    this.compositeCanvas.height = Math.floor(containerHeight * scale);
+
+    ctx.scale(scale, scale);
+    ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, containerWidth, containerHeight);
+
+    try {
+      ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
+
+      ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
+    } catch (error) {
+      console.error('Error drawing on composite canvas:', error);
+    }
+
+    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+  };
+
+  private async cleanup() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
 
     if (this.pc) {
+      const senders = this.pc.getSenders();
+      for (const sender of senders) {
+        this.pc.removeTrack(sender);
+      }
+
       this.pc.close();
       this.pc = null;
     }
 
-    if (this.camStream) {
-      this.camStream.getTracks().forEach(track => track.stop());
-      this.camStream = null;
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => {
+        track.stop();
+      });
+      this.stream = null;
     }
 
-    if (this.screenStream) {
-      this.screenStream.getTracks().forEach(track => track.stop());
-      this.screenStream = null;
-    }
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    if (this.audioStream) {
-      this.audioStream.getTracks().forEach(track => track.stop());
-      this.audioStream = null;
-    }
+    this.canvasInputs = null;
+  }
 
-    this.videoCanvas = null;
-    this.drawingCanvas = null;
-    this.compositeCanvas = null;
+  stop() {
+    this.cleanup();
   }
 }
