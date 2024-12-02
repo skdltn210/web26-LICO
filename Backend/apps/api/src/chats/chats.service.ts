@@ -45,6 +45,7 @@ export class ChatsService {
   }
 
   async clearChat(channelId: UUID) {
+    this.redisClient.del(`${channelId}:viewers`);
     this.redisClient.del(`${channelId}:chats`);
   }
 
