@@ -89,12 +89,13 @@ export class FollowService {
 
   // 팔로워 수
   async getFollowerCount(streamerId: number): Promise<number> {
-    const count = await this.usersRepository
+    const result = await this.usersRepository
       .createQueryBuilder('user')
-      .innerJoin('user.followers', 'follower')
+      .leftJoin('user.followers', 'follower')
       .where('user.id = :streamerId', { streamerId })
-      .getCount();
+      .select('COUNT(follower.id)', 'count')
+      .getRawOne();
   
-    return count;
+    return parseInt(result.count, 10);
   }
 }

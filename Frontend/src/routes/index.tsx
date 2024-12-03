@@ -12,6 +12,7 @@ import MyPage from '@pages/MyPage';
 import LoginCallback from '@pages/LoginPage/LoginCallback';
 import ChatPopupPage from '@pages/ChatPopupPage';
 import { ProtectedRoute, AuthRoute } from './ProtectedRoute';
+import NotFound from '@components/error/NotFound';
 
 export default function AppRoutes() {
   return (
@@ -34,6 +35,7 @@ export default function AppRoutes() {
             </AuthRoute>
           }
         />
+        <Route path="*" element={<NotFound />} />
 
         <Route
           path="/following"

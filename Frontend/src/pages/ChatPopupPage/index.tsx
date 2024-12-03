@@ -14,7 +14,7 @@ export default function ChatPopupPage() {
 
   return (
     <div className="h-screen w-screen">
-      <ChatWindow id={channelId} onAir />
+      <ChatWindow id={channelId} onAir onToggleChat={() => {}} />
     </div>
   );
 }

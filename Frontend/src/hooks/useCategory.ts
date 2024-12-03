@@ -16,6 +16,7 @@ export const useCategories = () => {
   return useQuery<Category[], AxiosError>({
     queryKey: categoryKeys.all,
     queryFn: categoryApi.getCategories,
+    staleTime: 1000 * 10,
   });
 };
 
@@ -35,6 +36,7 @@ export const useCategoryLives = (categoryId: string) => {
         limit: ITEMS_PER_PAGE,
         offset: pageParam as number,
       }),
+    staleTime: 1000 * 10,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.length || lastPage.length < 20) return undefined;
       return allPages.length * 20;

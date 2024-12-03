@@ -48,7 +48,7 @@ export default function LivesPage() {
   return (
     <div className="relative p-12">
       <div className="mb-3 px-4 font-bold text-2xl text-lico-gray-1">전체 방송</div>
-      <div className="mb-3 flex gap-2 px-4">
+      <div className="mb-6 flex gap-2 px-4">
         <SortButton
           label="인기"
           isActive={sortType === 'viewers'}
@@ -68,6 +68,7 @@ export default function LivesPage() {
           onClick={() => setSortType('recommendation')}
         />
       </div>
+
       <ChannelGrid
         channels={data.pages.flat().map(live => ({
           id: live.channelId,

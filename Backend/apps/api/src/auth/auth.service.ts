@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { ConfigService } from '@nestjs/config';
 
-type OAuthPlatform = 'google' | 'github' | 'naver';
+type OAuthPlatform = 'google' | 'github' | 'naver' | 'lico';
 
 @Injectable()
 export class AuthService {

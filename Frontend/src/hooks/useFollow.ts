@@ -11,6 +11,7 @@ export const useFollow = () => {
   const { data: follows, isLoading: isLoadingFollows } = useQuery({
     queryKey: ['follows'],
     queryFn: followApi.getFollow,
+    staleTime: 1000 * 10,
     enabled: isLoggedIn,
   });
 
