@@ -2,7 +2,7 @@ import { useAuth } from '@hooks/useAuth';
 import { Naver, Google, Github } from '@assets/icons/socialLoginIcons';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, guestLogin } = useAuth();
 
   return (
     <div className="flex min-h-screen flex-col p-12">
@@ -35,7 +35,7 @@ export default function LoginPage() {
               <span className="font-medium">깃허브 로그인</span>
             </button>
             <button
-              onClick={() => login('lico')}
+              onClick={() => guestLogin()}
               className="flex w-full items-center justify-center gap-3 rounded-lg bg-lico-orange-2 px-6 py-3 text-white transition-opacity hover:bg-lico-orange-1"
             >
               <span className="font-medium">게스트 로그인</span>

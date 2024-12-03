@@ -1,4 +1,4 @@
-export type Provider = 'google' | 'naver' | 'github' | 'lico';
+export type Provider = 'google' | 'naver' | 'github';
 
 export interface AuthResponse {
   success: boolean;

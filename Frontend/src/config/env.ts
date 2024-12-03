@@ -20,10 +20,6 @@ export const config = {
       clientId: import.meta.env.VITE_GITHUB_CLIENT_ID,
       redirectUri: `${import.meta.env.VITE_AUTH_REDIRECT_BASE_URL}/auth/github/callback`,
     },
-    lico: {
-      clientId: '',
-      redirectUri: '',
-    },
   },
   webrtcUrl: import.meta.env.VITE_WEBRTC_URL,
   whipUrl: import.meta.env.VITE_WHIP_URL,
