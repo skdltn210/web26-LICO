@@ -1,17 +1,13 @@
 import { useEffect, useState, forwardRef, useCallback } from 'react';
 import { useCanvasElement } from '@hooks/canvas/useCanvasElement';
-import { Position, Point, CanvasImage, CanvasText } from '@/types/canvas';
+import { Position, Point, CanvasImage, CanvasText, InteractionCanvasProps } from '@/types/canvas';
 import { CanvasElementDeleteModal } from './Modals/CanvasElementDeleteModal';
 import { useStudioStore } from '@/store/useStudioStore';
 
 type SelectedElement = 'screen' | 'camera' | 'text' | 'image' | null;
 
-interface InteractionCanvasProps {
-  isDrawingMode: boolean;
-}
-
 export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvasProps>(
-  ({ isDrawingMode }, forwardedRef) => {
+  ({ isDrawingMode, isTextingMode, className }, forwardedRef) => {
     const [selectedElement, setSelectedElement] = useState<SelectedElement>(null);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -461,6 +457,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       };
 
       const handleGlobalMouseUp = () => {
+        if (isDrawingMode || isTextingMode) return;
         setIsDragging(false);
         handleResizeEnd();
       };
@@ -474,6 +471,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       };
     }, [
       isDrawingMode,
+      isTextingMode,
       isDragging,
       isResizing,
       selectedElement,
@@ -537,11 +535,14 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       <>
         <canvas
           ref={forwardedRef}
-          className={`absolute left-0 top-0 h-full w-full ${isDrawingMode ? 'z-10' : 'z-20'}`}
+          className={`absolute left-0 top-0 h-full w-full ${className}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={() => handleResizeEnd()}
           onContextMenu={handleElementRightClick}
+          style={{
+            pointerEvents: !isDrawingMode && !isTextingMode ? 'auto' : 'none',
+          }}
         />
         <CanvasElementDeleteModal canvasRef={forwardedRef} />
       </>

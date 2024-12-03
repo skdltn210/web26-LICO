@@ -38,7 +38,7 @@ export function useImage() {
           const img = new Image();
 
           img.onload = () => {
-            const drawCanvas = document.querySelector<HTMLCanvasElement>('.draw-canvas');
+            const drawCanvas = document.querySelector<HTMLCanvasElement>('.image-text-canvas');
             if (!drawCanvas) {
               return reject(new Error('DrawCanvas not found'));
             }

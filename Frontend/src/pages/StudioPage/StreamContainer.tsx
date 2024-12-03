@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { StreamCanvas } from './StreamCanvas';
+import { ImageTextCanvas } from './ImageTextCanvas';
 import { DrawCanvas } from './DrawCanvas';
 import { InteractionCanvas } from './InteractionCanvas';
 import { WebRTCStream } from './WebRTCStream';
@@ -13,6 +14,7 @@ interface StreamContainerProps {
 
 export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }: StreamContainerProps) {
   const streamCanvasRef = useRef<HTMLCanvasElement>(null);
+  const imageTextCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
   const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +26,32 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
   const screenStream = useStudioStore(state => state.screenStream);
   const mediaStream = useStudioStore(state => state.mediaStream);
 
-  const isDrawingMode = drawingState.isDrawing || drawingState.isTexting || drawingState.isErasing;
+  const isDrawingMode = drawingState.isDrawing || drawingState.isErasing;
+  const isTextingMode = drawingState.isTexting;
+
+  const getZIndexClasses = () => {
+    if (isDrawingMode) {
+      return {
+        interaction: 'z-10',
+        imageText: 'z-20',
+        draw: 'z-30',
+      };
+    }
+    if (isTextingMode) {
+      return {
+        interaction: 'z-10',
+        draw: 'z-20',
+        imageText: 'z-30',
+      };
+    }
+    return {
+      imageText: 'z-10',
+      draw: 'z-20',
+      interaction: 'z-30',
+    };
+  };
+
+  const zIndexClasses = getZIndexClasses();
 
   const validateAudioStreams = () => {
     const hasScreenAudio = screenStream !== null && screenStream.getAudioTracks().length > 0;
@@ -78,7 +105,13 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
   useEffect(() => {
     const handleStreamingChange = async () => {
       if (isStreaming && dimensionsRef.current) {
-        if (!streamCanvasRef.current || !drawCanvasRef.current || !interactionCanvasRef.current || !webrtcRef.current) {
+        if (
+          !streamCanvasRef.current ||
+          !imageTextCanvasRef.current ||
+          !drawCanvasRef.current ||
+          !interactionCanvasRef.current ||
+          !webrtcRef.current
+        ) {
           return;
         }
 
@@ -88,6 +121,7 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
           await webrtcRef.current.start(
             {
               streamCanvas: streamCanvasRef.current,
+              imageTextCanvas: imageTextCanvasRef.current,
               drawCanvas: drawCanvasRef.current,
               interactionCanvas: interactionCanvasRef.current,
               containerWidth: dimensionsRef.current.width,
@@ -121,8 +155,26 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
   return (
     <div ref={containerRef} className="relative w-full">
       <StreamCanvas ref={streamCanvasRef} />
-      <DrawCanvas ref={drawCanvasRef} drawingState={drawingState} isDrawingMode={isDrawingMode} />
-      <InteractionCanvas ref={interactionCanvasRef} isDrawingMode={isDrawingMode} />
+      <ImageTextCanvas
+        ref={imageTextCanvasRef}
+        drawingState={drawingState}
+        isDrawingMode={isDrawingMode}
+        isTextingMode={isTextingMode}
+        className={zIndexClasses.imageText}
+      />
+      <DrawCanvas
+        ref={drawCanvasRef}
+        drawingState={drawingState}
+        isDrawingMode={isDrawingMode}
+        isTextingMode={isTextingMode}
+        className={zIndexClasses.draw}
+      />
+      <InteractionCanvas
+        ref={interactionCanvasRef}
+        isDrawingMode={isDrawingMode}
+        isTextingMode={isTextingMode}
+        className={zIndexClasses.interaction}
+      />
     </div>
   );
 }

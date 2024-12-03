@@ -2,6 +2,7 @@ import { config } from '@config/env';
 
 interface CanvasInputs {
   streamCanvas: HTMLCanvasElement;
+  imageTextCanvas: HTMLCanvasElement;
   drawCanvas: HTMLCanvasElement;
   interactionCanvas: HTMLCanvasElement;
   containerWidth: number;
@@ -142,7 +143,8 @@ export class WebRTCStream {
       return;
     }
 
-    const { streamCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } = this.canvasInputs;
+    const { streamCanvas, imageTextCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } =
+      this.canvasInputs;
     const ctx = this.compositeCanvas.getContext('2d');
     if (!ctx) {
       return;
@@ -161,7 +163,7 @@ export class WebRTCStream {
 
     try {
       ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
-
+      ctx.drawImage(imageTextCanvas, 0, 0, containerWidth, containerHeight);
       ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
       ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
     } catch (error) {
