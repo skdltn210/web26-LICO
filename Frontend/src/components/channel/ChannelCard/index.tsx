@@ -42,28 +42,30 @@ export default function ChannelCard({
   };
 
   return (
-    <Link
-      to={`/live/${id}`}
-      className="relative mb-4 block min-w-60"
-      aria-label={`${streamerName}의 ${title} 스트림으로 이동`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="relative aspect-video">
-        <ChannelThumbnail title={title} thumbnailUrl={thumbnailUrl} viewers={viewers} />
-        {showPreview && (
-          <div className="absolute inset-0 overflow-hidden rounded-xl">
-            <HoverPreviewPlayer channelId={id} />
-          </div>
-        )}
-      </div>
+    <div className="relative mb-4 min-w-60">
+      <Link
+        to={`/live/${id}`}
+        aria-label={`${streamerName}의 ${title} 스트림으로 이동`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="relative aspect-video">
+          <ChannelThumbnail title={title} thumbnailUrl={thumbnailUrl} viewers={viewers} />
+          {showPreview && (
+            <div className="absolute inset-0 overflow-hidden rounded-xl">
+              <HoverPreviewPlayer channelId={id} />
+            </div>
+          )}
+        </div>
+      </Link>
       <ChannelInfo
+        id={id}
         title={title}
         streamerName={streamerName}
         category={category}
         categoryId={categoryId}
         profileImgUrl={profileImgUrl}
       />
-    </Link>
+    </div>
   );
 }
