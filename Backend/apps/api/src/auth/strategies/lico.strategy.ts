@@ -19,7 +19,7 @@ export class LicoStrategy extends PassportStrategy(Strategy, 'lico') {
         oauthUid,
         provider: 'lico' as 'lico',
         nickname,
-        profileImage: null,
+        profileImage: `https://kr.object.ncloudstorage.com/lico.image/default-profile-image/lico_profile.png`,
         email: null,
       };
 
