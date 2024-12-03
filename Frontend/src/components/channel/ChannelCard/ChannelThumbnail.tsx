@@ -60,10 +60,10 @@ function ChannelThumbnail({ title, thumbnailUrl, viewers }: ChannelThumbnailProp
       />
       {!isLoading && !imgError && (
         <div className="flex gap-2">
-          <Badge text="LIVE" className="absolute left-2 top-2 bg-red-600 font-bold text-sm text-white" />
+          <Badge text="LIVE" className="absolute left-2 top-2 bg-[#E02120] font-bold text-sm text-white" />
           <Badge
             text={`${formatNumber(viewers)}명`}
-            className="absolute bottom-2 left-2 bg-orange-500 font-bold text-sm text-white"
+            className="absolute bottom-2 left-2 bg-lico-orange-2 font-bold text-sm text-white"
           />
         </div>
       )}

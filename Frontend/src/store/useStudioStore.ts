@@ -92,6 +92,7 @@ export const useStudioStore = create<StudioState>(set => ({
       texts: [],
       images: [],
       drawingState: initialDrawingState,
+      activeTool: null,
     }),
 
   deleteModal: {

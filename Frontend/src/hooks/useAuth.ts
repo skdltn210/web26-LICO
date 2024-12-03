@@ -50,7 +50,7 @@ export function useAuth() {
           accessToken: response.accessToken,
           user: response.user,
         });
-        navigate('/');
+        navigate(-2);
       }
     } catch {
       navigate('/login');
@@ -78,10 +78,23 @@ export function useAuth() {
     }
   };
 
+  const guestLogin = async () => {
+    try {
+      const response = await authApi.guestLogin();
+      setAuth({
+        accessToken: response.accessToken,
+        user: response.user,
+      });
+    } catch {
+      navigate('/login');
+    }
+  };
+
   return {
     login,
     handleCallback,
     logout,
     refreshToken,
+    guestLogin,
   };
 }
