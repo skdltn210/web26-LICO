@@ -30,7 +30,6 @@
 <img src="https://img.shields.io/badge/zustand-513517?style=for-the-badge&logo=&logoColor=white">
 <img src="https://img.shields.io/badge/reactrouter-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white">
 <img src="https://img.shields.io/badge/webrtc-333333?style=for-the-badge&logo=webrtc&logoColor=white">
-<img src="https://img.shields.io/badge/aframe-ef2d5e?style=for-the-badge&logo=aframe&logoColor=white">
 <img src="https://img.shields.io/badge/canvas-e72429?style=for-the-badge&logo=canvas&logoColor=white">
  </br>
   </div>
