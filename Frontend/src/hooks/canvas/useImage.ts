@@ -38,12 +38,12 @@ export function useImage() {
           const img = new Image();
 
           img.onload = () => {
-            const drawCanvas = document.querySelector<HTMLCanvasElement>('.image-text-canvas');
-            if (!drawCanvas) {
-              return reject(new Error('DrawCanvas not found'));
+            const imageTextCanvas = document.querySelector<HTMLCanvasElement>('.image-text-canvas');
+            if (!imageTextCanvas) {
+              return reject(new Error('imageTextCanvas not found'));
             }
 
-            const container = drawCanvas.parentElement?.parentElement;
+            const container = imageTextCanvas.parentElement?.parentElement;
             if (!container) {
               return reject(new Error('Container not found'));
             }

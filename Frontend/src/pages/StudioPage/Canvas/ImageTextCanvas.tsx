@@ -87,7 +87,7 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
         <canvas
           ref={ref}
           onMouseDown={handleMouseDown}
-          className={`absolute left-0 top-0 h-full w-full ${className}`}
+          className={`absolute left-0 top-0 h-full w-full ${className} image-text-canvas`}
           style={{
             cursor: drawingState.isTexting ? 'text' : 'default',
             pointerEvents: isTextingMode ? 'auto' : 'none',
