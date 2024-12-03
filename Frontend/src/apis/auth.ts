@@ -21,7 +21,7 @@ export const authApi = {
   },
 
   async guestLogin(): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/lico/guest');
+    const response = await api.get<AuthResponse>('/auth/lico/guest');
     return response.data;
   },
 };

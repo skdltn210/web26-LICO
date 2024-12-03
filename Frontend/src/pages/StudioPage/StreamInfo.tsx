@@ -10,7 +10,6 @@ import { useClickOutside } from '@hooks/useClickOutside';
 import { useLiveDetail, useUpdateLive } from '@hooks/useLive';
 import { useSearch } from '@hooks/useSearch';
 
-import { useAuthStore } from '@store/useAuthStore';
 import { CATEGORIES } from '@constants/categories';
 import type { BaseCategory } from '@/types/category';
 
@@ -19,7 +18,6 @@ interface StreamInfoProps {
 }
 
 export default function StreamInfo({ channelId }: StreamInfoProps) {
-  const { user } = useAuthStore();
   const { data: liveDetail, isLoading } = useLiveDetail(channelId);
 
   const [title, setTitle] = useState('');
@@ -31,25 +29,15 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
   const updateLive = useUpdateLive();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (liveDetail?.livesName) {
-        setTitle(liveDetail.livesName);
-      } else {
-        setTitle(`${user?.nickname}의 라이브 방송`);
-      }
-      if (liveDetail?.livesDescription) {
-        setDescription(liveDetail.livesDescription);
-      } else {
-        setDescription(`${user?.nickname}의 라이브 방송입니다`);
-      }
-      if (liveDetail?.categoriesId) {
-        const category = CATEGORIES.find(cat => cat.id === liveDetail.categoriesId);
-        if (category) {
-          setSelectedCategory(category);
-        }
+    if (!isLoading && liveDetail) {
+      setTitle(liveDetail.livesName);
+      setDescription(liveDetail.livesDescription);
+      const category = CATEGORIES.find(cat => cat.id === liveDetail.categoriesId);
+      if (category) {
+        setSelectedCategory(category);
       }
     }
-  }, [liveDetail, isLoading, user?.nickname]);
+  }, [liveDetail, isLoading]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -181,27 +169,6 @@ export default function StreamInfo({ channelId }: StreamInfoProps) {
           </div>
         </div>
 
-        {/* <div>
-        <label htmlFor="tags" className="mb-2 block font-bold text-lico-gray-1">
-          태그<span className="text-lico-gray-2"> (최대 5개)</span>
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="tags"
-            type="text"
-            className="flex-1 rounded bg-lico-gray-5 p-2 font-medium text-sm text-lico-gray-1 outline-none focus:ring-2 focus:ring-lico-orange-2"
-            placeholder="태그 입력"
-            aria-label="태그 입력"
-          />
-          <button
-            type="button"
-            className="whitespace-nowrap rounded-md bg-lico-gray-3 px-3 py-2 font-medium text-sm text-lico-gray-1 hover:bg-lico-gray-1 hover:text-lico-orange-2"
-            aria-label="태그 추가"
-          >
-            추가
-          </button>
-        </div>
-      </div> */}
         <button
           type="submit"
           className="mt-2 flex items-center justify-center rounded bg-lico-orange-2 px-4 py-2 font-bold text-lico-gray-5 transition-colors hover:bg-lico-orange-1"
