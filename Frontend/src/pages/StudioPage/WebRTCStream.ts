@@ -18,10 +18,6 @@ export class WebRTCStream {
   private animationFrameId: number | null;
   private canvasInputs: CanvasInputs | null;
   private isConnecting: boolean = false;
-  private senders: {
-    video: RTCRtpSender | null;
-    audio: RTCRtpSender[];
-  } = { video: null, audio: [] };
 
   constructor(url: string, streamKey: string) {
     this.webrtcUrl = url;
@@ -31,53 +27,73 @@ export class WebRTCStream {
     this.animationFrameId = null;
     this.canvasInputs = null;
     this.compositeCanvas = document.createElement('canvas');
+  }
 
-    const ctx = this.compositeCanvas.getContext('2d');
-    if (ctx) {
-      ctx.imageSmoothingEnabled = false;
+  async start(canvasInputs: CanvasInputs, screenStream: MediaStream | null, mediaStream: MediaStream | null) {
+    if (this.isConnecting) {
+      return;
+    }
+
+    try {
+      this.isConnecting = true;
+
+      await this.cleanup();
+
+      this.canvasInputs = canvasInputs;
+      this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const videoStream = this.compositeCanvas.captureStream(30);
+      const videoTrack = videoStream.getVideoTracks()[0];
+
+      if (!videoTrack) {
+        throw new Error('No video track available from canvas');
+      }
+
+      this.stream = new MediaStream([videoTrack]);
+
+      if (screenStream) {
+        const screenAudioTracks = screenStream.getAudioTracks();
+        screenAudioTracks.forEach(track => {
+          if (this.stream) {
+            this.stream.addTrack(track.clone());
+          }
+        });
+      }
+
+      if (mediaStream) {
+        const micAudioTracks = mediaStream.getAudioTracks();
+        micAudioTracks.forEach(track => {
+          if (this.stream) {
+            this.stream.addTrack(track.clone());
+          }
+        });
+      }
+
+      await this.connectWHIP();
+    } catch (error) {
+      await this.cleanup();
+      throw error;
+    } finally {
+      this.isConnecting = false;
     }
   }
 
-  private updateCompositeCanvas = () => {
-    if (!this.canvasInputs) {
-      return;
+  private async connectWHIP() {
+    if (!this.stream) {
+      throw new Error('No stream available');
     }
-
-    const { streamCanvas, imageTextCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } =
-      this.canvasInputs;
-
-    const ctx = this.compositeCanvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    const scale = window.devicePixelRatio;
-    this.compositeCanvas.width = Math.floor(containerWidth * scale);
-    this.compositeCanvas.height = Math.floor(containerHeight * scale);
-
-    ctx.scale(scale, scale);
-    ctx.clearRect(0, 0, containerWidth, containerHeight);
-
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, containerWidth, containerHeight);
-
-    try {
-      ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
-      ctx.drawImage(imageTextCanvas, 0, 0, containerWidth, containerHeight);
-      ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
-      ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
-    } catch (error) {
-      console.error('Error compositing canvas layers:', error);
-    }
-
-    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
-  };
-
-  private async initializeConnection() {
-    if (this.pc) return;
 
     this.pc = new RTCPeerConnection({
       iceServers: [],
+    });
+
+    const tracks = this.stream.getTracks();
+    tracks.forEach(track => {
+      if (this.stream) {
+        this.pc?.addTrack(track, this.stream);
+      }
     });
 
     this.pc.onconnectionstatechange = () => {
@@ -122,70 +138,40 @@ export class WebRTCStream {
     }
   }
 
-  private async updateStreamTracks(videoTrack: MediaStreamTrack | null, audioTracks: MediaStreamTrack[]) {
-    if (!this.pc) return;
-
-    if (videoTrack) {
-      if (this.senders.video) {
-        await this.senders.video.replaceTrack(videoTrack);
-      } else {
-        this.senders.video = this.pc.addTrack(videoTrack);
-      }
+  private updateCompositeCanvas = () => {
+    if (!this.canvasInputs) {
+      return;
     }
 
-    const currentAudioTracks = this.senders.audio.map(sender => sender.track);
-    const newAudioTracks = audioTracks;
-
-    for (const sender of this.senders.audio) {
-      if (!newAudioTracks.includes(sender.track!)) {
-        this.pc.removeTrack(sender);
-      }
+    const { streamCanvas, imageTextCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } =
+      this.canvasInputs;
+    const ctx = this.compositeCanvas.getContext('2d');
+    if (!ctx) {
+      return;
     }
 
-    for (const track of newAudioTracks) {
-      if (!currentAudioTracks.includes(track)) {
-        this.senders.audio.push(this.pc.addTrack(track));
-      }
-    }
+    const scale = window.devicePixelRatio;
 
-    this.senders.audio = this.senders.audio.filter(sender => newAudioTracks.includes(sender.track!));
-  }
+    this.compositeCanvas.width = Math.floor(containerWidth * scale);
+    this.compositeCanvas.height = Math.floor(containerHeight * scale);
 
-  async start(canvasInputs: CanvasInputs, screenStream: MediaStream | null, mediaStream: MediaStream | null) {
-    if (this.isConnecting) return;
+    ctx.scale(scale, scale);
+    ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, containerWidth, containerHeight);
 
     try {
-      this.isConnecting = true;
-      this.canvasInputs = canvasInputs;
-
-      const videoStream = this.compositeCanvas.captureStream(30);
-      const videoTrack = videoStream.getVideoTracks()[0];
-
-      if (!videoTrack) {
-        throw new Error('No video track available from canvas');
-      }
-
-      const audioTracks: MediaStreamTrack[] = [];
-      if (screenStream) {
-        audioTracks.push(...screenStream.getAudioTracks());
-      }
-      if (mediaStream) {
-        audioTracks.push(...mediaStream.getAudioTracks());
-      }
-
-      if (!this.pc) {
-        await this.initializeConnection();
-        this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
-      }
-
-      await this.updateStreamTracks(videoTrack, audioTracks);
+      ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(imageTextCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
     } catch (error) {
-      console.error('Failed to start/update stream:', error);
-      throw error;
-    } finally {
-      this.isConnecting = false;
+      console.error('Error drawing on composite canvas:', error);
     }
-  }
+
+    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+  };
 
   private async cleanup() {
     if (this.animationFrameId) {
