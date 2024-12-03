@@ -27,10 +27,12 @@
 <img src="https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white">
 <img src="https://img.shields.io/badge/tailwindcss-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white">
 <img src="https://img.shields.io/badge/tanstackquery-FF4154?style=for-the-badge&logo=reactquery&logoColor=white">
+<img src="https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white">
 <img src="https://img.shields.io/badge/zustand-513517?style=for-the-badge&logo=&logoColor=white">
 <img src="https://img.shields.io/badge/reactrouter-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white">
 <img src="https://img.shields.io/badge/webrtc-333333?style=for-the-badge&logo=webrtc&logoColor=white">
 <img src="https://img.shields.io/badge/canvas-e72429?style=for-the-badge&logo=canvas&logoColor=white">
+<img src="https://img.shields.io/badge/netlify-00c7b7?style=for-the-badge&logo=netlify&logoColor=white">
  </br>
   </div>
   
