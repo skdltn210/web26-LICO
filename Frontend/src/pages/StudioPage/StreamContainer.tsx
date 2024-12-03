@@ -1,8 +1,8 @@
 import { useRef, useEffect } from 'react';
-import { StreamCanvas } from './StreamCanvas';
-import { ImageTextCanvas } from './ImageTextCanvas';
-import { DrawCanvas } from './DrawCanvas';
-import { InteractionCanvas } from './InteractionCanvas';
+import { StreamCanvas } from './Canvas/StreamCanvas';
+import { ImageTextCanvas } from './Canvas/ImageTextCanvas';
+import { DrawCanvas } from './Canvas/DrawCanvas';
+import { InteractionCanvas } from './Canvas/InteractionCanvas';
 import { WebRTCStream } from './WebRTCStream';
 import { useStudioStore } from '@store/useStudioStore';
 

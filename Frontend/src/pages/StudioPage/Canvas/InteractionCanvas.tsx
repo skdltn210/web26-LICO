@@ -1,7 +1,7 @@
 import { useEffect, useState, forwardRef, useCallback } from 'react';
 import { useCanvasElement } from '@hooks/canvas/useCanvasElement';
 import { Position, Point, CanvasImage, CanvasText, InteractionCanvasProps } from '@/types/canvas';
-import { CanvasElementDeleteModal } from './Modals/CanvasElementDeleteModal';
+import { CanvasElementDeleteModal } from '../Modals/CanvasElementDeleteModal';
 import { useStudioStore } from '@/store/useStudioStore';
 
 type SelectedElement = 'screen' | 'camera' | 'text' | 'image' | null;
