@@ -66,6 +66,7 @@ export default function ChannelCard({
         )}
       </div>
       <ChannelInfo
+        id={id}
         title={title}
         streamerName={streamerName}
         category={category}

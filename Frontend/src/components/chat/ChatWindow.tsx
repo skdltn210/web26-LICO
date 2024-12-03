@@ -3,7 +3,6 @@ import { FaAngleDown } from 'react-icons/fa';
 import { getConsistentTextColor } from '@utils/chatUtils';
 import { chatApi } from '@apis/chat';
 import { useAuthStore } from '@store/useAuthStore';
-import useLayoutStore from '@store/useLayoutStore';
 import ChatHeader from '@components/chat/ChatHeader';
 import ChatInput from '@components/chat/ChatInput';
 import ChatProfileModal from '@components/chat/ChatProfileModal';
@@ -17,6 +16,7 @@ import ChatMessage from './ChatMessage';
 interface ChatWindowProps {
   onAir: boolean;
   id: string;
+  onToggleChat: () => void;
 }
 
 interface SelectedMessage {
@@ -26,13 +26,12 @@ interface SelectedMessage {
 
 const CLEAN_BOT_MESSAGE = '클린봇이 삭제한 메세지입니다.';
 
-export default function ChatWindow({ onAir, id }: ChatWindowProps) {
+export default function ChatWindow({ onAir, id, onToggleChat }: ChatWindowProps) {
   const [selectedMessage, setSelectedMessage] = useState<SelectedMessage | null>(null);
   const [showChatSettingsMenu, setShowChatSettingsMenu] = useState(false);
   const [cleanBotEnabled, setCleanBotEnabled] = useState(false);
   const [timestampEnabled, setTimestampEnabled] = useState(false);
   const user = useAuthStore(state => state.user);
-  const { toggleChat } = useLayoutStore();
 
   const { socket, isConnected } = useChatSocket(id, onAir);
   const { chatRef, bottomRef, showScrollButton, isScrollPaused, scrollToBottom, setIsScrollPaused } = useChatScroll();
@@ -169,7 +168,7 @@ export default function ChatWindow({ onAir, id }: ChatWindowProps) {
 
   return (
     <div className="relative flex h-full flex-col border-l border-lico-gray-3 bg-lico-gray-4">
-      <ChatHeader onClose={toggleChat} onSettingsClick={() => setShowChatSettingsMenu(!showChatSettingsMenu)} />
+      <ChatHeader onClose={onToggleChat} onSettingsClick={() => setShowChatSettingsMenu(!showChatSettingsMenu)} />
       {showChatSettingsMenu && (
         <ChatSettingsMenu
           onClose={() => setShowChatSettingsMenu(false)}

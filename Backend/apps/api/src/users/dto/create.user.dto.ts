@@ -3,8 +3,8 @@ export class CreateUserDto {
   @IsString()
   oauthUid: string;
   
-  @IsEnum(['naver', 'github', 'google'])
-  oauthPlatform: 'naver' | 'github' | 'google';
+  @IsEnum(['naver', 'github', 'google', 'lico'])
+  oauthPlatform: 'naver' | 'github' | 'google'| 'lico';
   
   @IsString()
   @IsOptional()
