@@ -7,6 +7,9 @@
 ### LICO (LIve + COnnection) - 더 쉽고 가까운 라이브 스트리밍 서비스
 ### [바로가기](https://lico.digital/)
 
+리코는 더 쉽고 간편하게 인터넷 방송을 할 수 있는 라이브 스트리밍 서비스입니다.
+보다 더 많은 사람들이 쉽게 인터넷 방송을 시작할 수 있도록 WebRTC 기술을 활용한 웹스튜디오 기능을 지원하여 OBS, PRISM STUDIO등의 
+동영상 송출 소프트웨어 설정의 어려움과 진입장벽을 낮추었습니다.
 ## 기술스택
 
 ### Common
@@ -84,6 +87,26 @@
 - ts-node: ^10.9.1
 
 ## 주요기능
+
+### OAuth 및 게스트 로그인
+![login](https://github.com/user-attachments/assets/7d962991-72af-4b64-bade-98a95f247251)
+Oauth를 이용한 간편한 로그인을 지원하며 서비스 체험을 위한 게스트 계정 기능을 지원합니다.
+
+### 방송 시청
+![방송 시청 및 채팅](https://github.com/user-attachments/assets/f0ef5344-a3f0-4b04-81a2-0608bf699e89)
+현재 진행중인 방송의 시청이 가능합니다.
+
+### 채팅 및 AI 채팅 필터링
+![채팅](https://github.com/user-attachments/assets/304148fb-1ef9-44c9-9a94-edc2623e59fe)
+방송을 시청중인 다른 유저와 채팅을 통해 소통이 가능하며 CLOVA STUDIO를 이용한 클린봇(AI 채팅 필터링) 기능을 통해 부적절한 채팅을 보지 않을 수 있습니다.
+
+### 방송 송출
+![외부 송출](https://github.com/user-attachments/assets/b9f51196-06b1-439c-bafb-5e450af1b4b7)
+OBS등 인터넷 방송 보조 프로그램을 통해 방송 송출이 가능합니다.
+
+### 웹 스튜디오
+![웹스튜디오](https://github.com/user-attachments/assets/b1f88508-f5ea-4dff-b5a4-2e408de3c2a6)
+웹스튜디오를 이용해 별도의 프로그램 설치 없이도 방송 송출이 가능합니다.
 
 ## 프로젝트 발표 영상
 
