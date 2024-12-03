@@ -128,5 +128,5 @@ OBS등 인터넷 방송 보조 프로그램을 통해 방송 송출이 가능합
 ✨ [그라운드룰](https://far-woodwind-e60.notion.site/276b04231b684386890ce1b77b92ab3a) |
 📅 [회의록](https://far-woodwind-e60.notion.site/9c384ef0c9db45d985eb868bbc63a282) |
 📚 [개발일지](https://far-woodwind-e60.notion.site/12daf9f4d256808f8c3ed26e0a4ab309) | 
-🔥[트러블슈팅](https://far-woodwind-e60.notion.site/12daf9f4d256802985dce28210c4f062?pvs=4)
-
+🔥 [트러블슈팅](https://far-woodwind-e60.notion.site/12daf9f4d256802985dce28210c4f062?pvs=4) |
+📌 [WIKI](https://github.com/boostcampwm-2024/web26-LICO/wiki)
