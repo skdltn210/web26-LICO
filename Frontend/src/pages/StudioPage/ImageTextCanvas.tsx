@@ -11,6 +11,19 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
     });
     const { drawImages } = useImage();
 
+    useEffect(() => {
+      if (!isTextingMode && textInput.isVisible) {
+        const canvas = ref as React.RefObject<HTMLCanvasElement>;
+        const ctx = canvas.current?.getContext('2d') || null;
+
+        if (textInput.text) {
+          completeText(ctx);
+        } else {
+          cancelText();
+        }
+      }
+    }, [isTextingMode]);
+
     const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>): Point => {
       const canvas = ref as React.RefObject<HTMLCanvasElement>;
       if (!canvas.current) return { x: 0, y: 0 };
@@ -25,7 +38,6 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
     useEffect(() => {
       const canvas = ref as React.RefObject<HTMLCanvasElement>;
       const ctx = canvas.current?.getContext('2d', { alpha: true });
-
       if (!canvas.current || !ctx) return;
 
       const updateCanvas = () => {
@@ -38,7 +50,6 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
 
         canvas.current.width = containerWidth * scale;
         canvas.current.height = containerHeight * scale;
-
         canvas.current.style.width = `${containerWidth}px`;
         canvas.current.style.height = `${containerHeight}px`;
 
@@ -50,17 +61,12 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
 
       updateCanvas();
 
-      const resizeObserver = new ResizeObserver(() => {
-        updateCanvas();
-      });
-
+      const resizeObserver = new ResizeObserver(updateCanvas);
       if (canvas.current.parentElement?.parentElement) {
         resizeObserver.observe(canvas.current.parentElement.parentElement);
       }
 
-      return () => {
-        resizeObserver.disconnect();
-      };
+      return () => resizeObserver.disconnect();
     }, [ref, drawTexts, drawImages]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -81,13 +87,13 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
         <canvas
           ref={ref}
           onMouseDown={handleMouseDown}
-          className={`absolute left-0 top-0 h-full w-full ${className} image-text-canvas`}
+          className={`absolute left-0 top-0 h-full w-full ${className}`}
           style={{
             cursor: drawingState.isTexting ? 'text' : 'default',
             pointerEvents: isTextingMode ? 'auto' : 'none',
           }}
         />
-        {textInput.isVisible && (
+        {textInput.isVisible && isTextingMode && (
           <div
             className="absolute"
             style={{
