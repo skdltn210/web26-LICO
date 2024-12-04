@@ -82,6 +82,17 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
       }
     };
 
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && textInput.isVisible) {
+          cancelText();
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [textInput.isVisible, cancelText]);
+
     return (
       <>
         <canvas

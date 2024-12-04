@@ -98,6 +98,9 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
+          setSelectedElement(null);
+          setSelectedId(null);
+
           setDeleteModal({
             show: false,
             x: 0,
