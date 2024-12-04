@@ -1,6 +1,7 @@
 ## 프로젝트소개
 
-![039662A4-0D41-41F0-AEB6-ABA1A7484A56](https://github.com/user-attachments/assets/16eb7136-a0ee-4c95-a580-119cc66c3e75)
+![그림2](https://github.com/user-attachments/assets/04c87379-0e11-4ac6-b2cf-2b3ec5a83949)
+
 
 ### LICO (LIve + COnnection) - 더 쉽고 가까운 라이브 스트리밍 서비스
 ### [바로가기](https://lico.digital/)
