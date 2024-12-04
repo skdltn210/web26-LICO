@@ -1,10 +1,40 @@
+import { FaFire } from 'react-icons/fa';
+import { LuClock, LuThumbsUp } from 'react-icons/lu';
 import ChannelGrid from '@components/channel/ChannelGrid';
-import { useLiveDetail } from '@hooks/useLive';
+import SortButton from '@components/common/Buttons/SortButton';
+import { useLives } from '@hooks/useLive';
+import { useSortStore } from '@store/useSortStore';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import { config } from '@config/env.ts';
+import { useEffect, useRef } from 'react';
 
-export default function LivesPage() {
-  const { data: channelData, isLoading } = useLiveDetail('e465ef6d-a875-4f96-a695-efc7a542a9e8');
+const ITEMS_PER_PAGE = 20;
+
+export default function HomePage() {
+  const { sortType, setSortType } = useSortStore();
+  const observerRef = useRef<HTMLDivElement>(null);
+
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useLives({
+    sort: sortType,
+    limit: ITEMS_PER_PAGE,
+  });
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1, rootMargin: '500px' },
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading)
     return (
@@ -12,29 +42,48 @@ export default function LivesPage() {
         <LoadingSpinner />
       </div>
     );
-  if (!channelData)
-    return (
-      <div className="relative p-12">
-        <div className="mb-3 px-4 font-bold text-2xl text-lico-gray-1">개발중</div>
-      </div>
-    );
-
-  const channel = {
-    id: channelData.streamerId.toString(),
-    title: channelData.livesName,
-    streamerName: channelData.usersNickname,
-    profileImgUrl: channelData.usersProfileImage,
-    viewers: 0,
-    category: channelData.categoriesName,
-    categoryId: channelData.categoriesId,
-    thumbnailUrl: `${config.storageUrl}/${channelData.streamerId}/thumbnail.jpg`,
-    createdAt: new Date().toISOString(),
-  };
+  if (error) return <div>에러가 발생했습니다</div>;
+  if (!data) return null;
 
   return (
     <div className="relative p-12">
       <div className="mb-3 px-4 font-bold text-2xl text-lico-gray-1">HOME</div>
-      <ChannelGrid channels={[channel]} />
+      <div className="mb-6 flex gap-2 px-4">
+        <SortButton
+          label="인기"
+          isActive={sortType === 'viewers'}
+          icon={FaFire}
+          onClick={() => setSortType('viewers')}
+        />
+        <SortButton
+          label="최신"
+          isActive={sortType === 'latest'}
+          icon={LuClock}
+          onClick={() => setSortType('latest')}
+        />
+        <SortButton
+          label="추천"
+          isActive={sortType === 'recommendation'}
+          icon={LuThumbsUp}
+          onClick={() => setSortType('recommendation')}
+        />
+      </div>
+
+      <ChannelGrid
+        channels={data.pages.flat().map(live => ({
+          id: live.channelId,
+          title: live.livesName,
+          streamerName: live.usersNickname,
+          profileImgUrl: live.usersProfileImage,
+          viewers: live.viewers,
+          category: live.categoriesName,
+          categoryId: live.categoriesId,
+          thumbnailUrl: `${config.storageUrl}/${live.channelId}/thumbnail.jpg`,
+          createdAt: new Date().toISOString(),
+        }))}
+      />
+
+      <div ref={observerRef} className="absolute bottom-[500px] h-10" />
     </div>
   );
 }
