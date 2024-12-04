@@ -2,8 +2,6 @@
 
 ![039662A4-0D41-41F0-AEB6-ABA1A7484A56](https://github.com/user-attachments/assets/16eb7136-a0ee-4c95-a580-119cc66c3e75)
 
-![lico (7)](https://github.com/user-attachments/assets/50437fdd-3357-4fd5-af3b-bcfc3e6fa6d6)
-
 ### LICO (LIve + COnnection) - 더 쉽고 가까운 라이브 스트리밍 서비스
 ### [바로가기](https://lico.digital/)
 
@@ -11,7 +9,7 @@
 보다 더 많은 사람들이 쉽게 인터넷 방송을 시작할 수 있도록 WebRTC 기술을 활용한 웹스튜디오 기능을 지원하여 OBS, PRISM STUDIO등의 
 동영상 송출 소프트웨어 설정의 어려움과 진입장벽을 낮추었습니다.
 ## 기술스택
-
+![lico (7)](https://github.com/user-attachments/assets/50437fdd-3357-4fd5-af3b-bcfc3e6fa6d6)
 ### Common
   <div align="left"
 <img src="https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white">
