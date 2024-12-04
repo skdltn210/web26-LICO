@@ -14,12 +14,16 @@ import {
 import { LivesDto } from '../dto/lives.dto';
 import { LiveDto } from '../dto/live.dto';
 import { StatusDto } from '../dto/status.dto';
+import { Index } from 'typeorm';
 
+
+@Index(['onAir', 'categoriesId'])
 @Entity('lives')
 export class LiveEntity {
   @PrimaryGeneratedColumn({ name: 'lives_id' })
   id: number;
 
+  @Index()
   @Column({ name: 'categories_id', type: 'int', nullable: true })
   categoriesId: number | null;
 
@@ -39,6 +43,7 @@ export class LiveEntity {
   @Column({ name: 'streaming_key', type: 'varchar', length: 36 })
   streamingKey: string;
 
+  @Index()
   @Column({ name: 'onair', type: 'boolean', nullable: true })
   onAir: boolean | null;
 

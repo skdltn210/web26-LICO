@@ -15,11 +15,13 @@ export class LicoStrategy extends PassportStrategy(Strategy, 'lico') {
       const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
       const nickname = `${randomAdjective} ${randomNoun}`;
 
+      const profileNumber = Math.floor(Math.random() * 31)
+
       const userData = {
         oauthUid,
         provider: 'lico' as 'lico',
         nickname,
-        profileImage: `https://kr.object.ncloudstorage.com/lico.image/default-profile-image/lico_profile.png`,
+        profileImage: `https://kr.object.ncloudstorage.com/lico.image/default-profile-image/lico_${profileNumber}.png`,
         email: null,
       };
 
