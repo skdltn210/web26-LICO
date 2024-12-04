@@ -6,12 +6,14 @@ type CategoryGridProps = {
 
 export default function CategoryGrid({ categories }: CategoryGridProps) {
   return (
-    <ul className="grid min-w-[851px] grid-cols-5 gap-4 px-4">
-      {categories.map(category => (
-        <li key={category.id} className="min-w-[151px]">
-          <CategoryCard {...category} />
-        </li>
-      ))}
-    </ul>
+    <div className="container mx-auto px-4">
+      <ul className="grid grid-cols-3 gap-4 cards-4:grid-cols-4 cards-5:grid-cols-5 cards-6:grid-cols-6">
+        {categories.map(category => (
+          <li key={category.id} className="min-w-[151px]">
+            <CategoryCard {...category} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

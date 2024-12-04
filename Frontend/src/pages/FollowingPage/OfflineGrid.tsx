@@ -9,7 +9,7 @@ export default function OfflineGrid({ channels }: OfflineGridProps) {
   return (
     <ul className="flex flex-wrap gap-4">
       {channels.map(channel => (
-        <li className="w-[72px]">
+        <li key={channel.id} className="w-[72px]">
           <OfflineCard id={channel.id} profileImgUrl={channel.profileImgUrl} streamerName={channel.streamerName} />
         </li>
       ))}

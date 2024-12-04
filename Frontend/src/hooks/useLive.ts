@@ -17,6 +17,7 @@ export const useLives = (params: Omit<LiveParams, 'offset'>) => {
   return useInfiniteQuery<Live[], AxiosError>({
     queryKey: liveKeys.sorted(params),
     queryFn: ({ pageParam }) => liveApi.getLives({ ...params, offset: pageParam as number }),
+    staleTime: 1000 * 10,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage.length || lastPage.length < 20) return undefined;
       return allPages.length * 20;

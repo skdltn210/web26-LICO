@@ -1,22 +1,19 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { LuMonitor, LuLayoutGrid, LuHeart, LuVideo, LuMenu, LuLogIn, LuLogOut, LuUser } from 'react-icons/lu';
-import useLayoutStore from '@store/useLayoutStore';
 import { useAuthStore } from '@store/useAuthStore';
 import { useAuth } from '@hooks/useAuth';
+import NavItem from '@components/layout/NavItem';
 
-interface NavLinkProps {
-  isActive: boolean;
+interface NavbarProps {
+  isNavbarExpanded: boolean;
+  onToggle: () => void;
 }
 
-export default function Navbar(): JSX.Element {
-  const { toggleNavbar } = useLayoutStore();
+export default function Navbar({ isNavbarExpanded, onToggle }: NavbarProps) {
+  const [showLogoutTooltip, setShowLogoutTooltip] = useState(false);
   const user = useAuthStore(state => state.user);
   const { logout } = useAuth();
-
-  const linkClass = ({ isActive }: NavLinkProps): string =>
-    `flex items-center rounded-lg px-4 py-3 transition-colors hover:bg-lico-gray-3 text-lico-gray-1 hover:text-lico-orange-2 ${
-      isActive ? 'text-lico-orange-2' : ''
-    }`;
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -24,77 +21,93 @@ export default function Navbar(): JSX.Element {
   };
 
   return (
-    <nav className="fixed left-0 top-0 z-10 h-screen w-60 border-r border-lico-gray-3 bg-lico-gray-4">
+    <nav
+      className={`fixed left-0 top-0 z-10 h-screen border-r border-lico-gray-3 bg-lico-gray-4 transition-all duration-300 ${
+        isNavbarExpanded ? 'w-60' : 'w-[76px]'
+      }`}
+    >
       <div className="flex h-full flex-col px-3 py-5">
-        <div className="mb-4 flex">
+        <div className="mb-4 flex items-center">
           <button
             type="button"
-            onClick={toggleNavbar}
-            className="justify-centerfont-bold flex items-center px-4 pb-4 text-3xl text-lico-orange-2"
+            onClick={onToggle}
+            className="flex h-12 w-12 items-center justify-center text-3xl text-lico-orange-2"
           >
             <LuMenu size={36} />
           </button>
-          <NavLink to="/" className="font-bold text-3xl text-lico-orange-2">
-            LICO
-          </NavLink>
+          <div
+            className={`overflow-hidden transition-all duration-300 ${isNavbarExpanded ? 'w-32 opacity-100' : 'w-0 opacity-0'} `}
+          >
+            <NavLink to="/" className="ml-1 whitespace-nowrap font-bold text-3xl text-lico-orange-2">
+              LICO
+            </NavLink>
+          </div>
         </div>
+
         <div className="flex flex-col">
-          <NavLink to="/lives" className={linkClass}>
-            <div className="flex items-center">
-              <LuMonitor className="h-5 w-5" />
-              <span className="ml-4 font-bold text-base">전체 방송</span>
-            </div>
-          </NavLink>
-          <NavLink to="/category" className={linkClass}>
-            <div className="flex items-center">
-              <LuLayoutGrid className="h-5 w-5" />
-              <span className="ml-4 font-bold text-base">카테고리</span>
-            </div>
-          </NavLink>
-          <NavLink to="/following" className={linkClass}>
-            <div className="flex items-center">
-              <LuHeart className="h-5 w-5" />
-              <span className="ml-4 font-bold text-base">팔로잉</span>
-            </div>
-          </NavLink>
+          <NavItem
+            to="/lives"
+            icon={<LuMonitor className="h-5 w-5" />}
+            label="전체 방송"
+            isExpanded={isNavbarExpanded}
+          />
+          <NavItem
+            to="/category"
+            icon={<LuLayoutGrid className="h-5 w-5" />}
+            label="카테고리"
+            isExpanded={isNavbarExpanded}
+          />
+          <NavItem
+            to="/following"
+            icon={<LuHeart className="h-5 w-5" />}
+            label="팔로잉"
+            isExpanded={isNavbarExpanded}
+          />
 
           <div className="my-2 h-px bg-lico-gray-3" />
 
-          <NavLink to={`/studio/${user?.channelId}`} className={linkClass}>
-            <div className="flex items-center">
-              <LuVideo className="h-5 w-5" />
-              <span className="ml-4 font-bold text-base">스튜디오</span>
-            </div>
-          </NavLink>
+          <NavItem
+            to={`/studio/${user?.channelId}`}
+            icon={<LuVideo className="h-5 w-5" />}
+            label="스튜디오"
+            isExpanded={isNavbarExpanded}
+          />
         </div>
 
         <div className="flex-grow" />
 
         {user ? (
           <>
-            <NavLink to={`/mypage/${user.id}`} className={linkClass}>
-              <div className="flex items-center">
-                <LuUser className="h-5 w-5" />
-                <span className="ml-4 font-bold text-base">마이페이지</span>
-              </div>
-            </NavLink>
+            <NavItem
+              to={`/mypage/${user.id}`}
+              icon={<LuUser className="h-5 w-5" />}
+              label="마이페이지"
+              isExpanded={isNavbarExpanded}
+            />
             <button
+              type="button"
               onClick={handleLogout}
-              className="flex w-full items-center rounded-lg px-4 py-3 text-lico-gray-1 transition-colors hover:bg-lico-gray-3 hover:text-lico-orange-2"
+              onMouseEnter={() => !isNavbarExpanded && setShowLogoutTooltip(true)}
+              onMouseLeave={() => setShowLogoutTooltip(false)}
+              className="relative flex h-12 items-center rounded-lg px-4 text-left text-lico-gray-1 hover:bg-lico-gray-3 hover:text-lico-orange-2"
             >
-              <div className="flex items-center">
+              <div className="flex w-5 items-center">
                 <LuLogOut className="h-5 w-5" />
-                <span className="ml-4 font-bold text-base">로그아웃</span>
               </div>
+              <div
+                className={`overflow-hidden transition-all duration-300 ${isNavbarExpanded ? 'ml-4 w-32 opacity-100' : 'w-0 opacity-0'} `}
+              >
+                <span className="whitespace-nowrap font-bold text-base">로그아웃</span>
+              </div>
+              {!isNavbarExpanded && showLogoutTooltip && (
+                <div className="absolute left-[calc(100%+8px)] z-50 whitespace-nowrap rounded bg-lico-gray-5 px-2 py-1 font-bold text-sm text-lico-orange-1">
+                  로그아웃
+                </div>
+              )}
             </button>
           </>
         ) : (
-          <NavLink to="/login" className={linkClass}>
-            <div className="flex items-center">
-              <LuLogIn className="h-5 w-5" />
-              <span className="ml-4 font-bold text-base">로그인</span>
-            </div>
-          </NavLink>
+          <NavItem to="/login" icon={<LuLogIn className="h-5 w-5" />} label="로그인" isExpanded={isNavbarExpanded} />
         )}
       </div>
     </nav>

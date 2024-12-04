@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import useLayoutStore from '@store/useLayoutStore';
 import useHls from '@hooks/useHls';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import Badge from '@components/common/Badges/Badge';
 import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
+import useViewMode from '@store/useViewMode';
 import Controls from './Control/index';
 
 interface VideoPlayerProps {
@@ -18,7 +18,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [showCursor, setShowCursor] = useState(true);
-  const { videoPlayerState, toggleVideoPlayer } = useLayoutStore();
+  const { isTheaterMode, toggleTheaterMode } = useViewMode();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -162,7 +162,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
       <Controls
         isPlaying={isPlaying}
         isFullScreen={isFullScreen}
-        videoPlayerState={videoPlayerState}
+        isTheaterMode={isTheaterMode}
         showControls={showControls}
         volume={volume}
         isMuted={isMuted}
@@ -170,7 +170,7 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
         onVolumeChange={handleVolumeChange}
         onMuteToggle={toggleMute}
         onFullScreenToggle={toggleFullScreen}
-        onVideoPlayerToggle={toggleVideoPlayer}
+        onVideoPlayerToggle={toggleTheaterMode}
         onShowControls={handleShowControls}
         qualities={qualities}
         setQuality={setQuality}

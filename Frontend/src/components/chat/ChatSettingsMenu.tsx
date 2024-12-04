@@ -28,7 +28,7 @@ function ChatSettingsMenu({
 }: ChatSettingsMenuProps) {
   return (
     <>
-      <button aria-label="채팅세팅메뉴 닫기" type="button" className="z fixed inset-0" onClick={onClose} />
+      <button aria-label="채팅세팅메뉴 닫기" type="button" className="fixed inset-0" onClick={onClose} />
       <div
         className="absolute z-50 min-w-[252px] rounded-lg border border-lico-gray-3 bg-lico-gray-5 p-1 shadow-lg"
         style={{

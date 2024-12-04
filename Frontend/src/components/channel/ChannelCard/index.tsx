@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ChannelThumbnail from '@components/channel/ChannelCard/ChannelThumbnail';
 import HoverPreviewPlayer from '@components/channel/ChannelCard/HoverPreviewPlayer';
 import { useRef, useState } from 'react';
@@ -27,6 +27,7 @@ export default function ChannelCard({
 }: ChannelCardProps) {
   const [showPreview, setShowPreview] = useState(false);
   const timerRef = useRef<NodeJS.Timeout>();
+  const navigate = useNavigate();
 
   const handleMouseEnter = () => {
     timerRef.current = setTimeout(() => {
@@ -41,13 +42,20 @@ export default function ChannelCard({
     setShowPreview(false);
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('[data-category-badge]')) {
+      navigate(`/live/${id}`);
+    }
+  };
+
   return (
-    <Link
-      to={`/live/${id}`}
-      className="relative mb-4 block min-w-60"
+    <div
+      className="relative mb-4 block min-w-60 cursor-pointer"
       aria-label={`${streamerName}의 ${title} 스트림으로 이동`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={handleCardClick}
     >
       <div className="relative aspect-video">
         <ChannelThumbnail title={title} thumbnailUrl={thumbnailUrl} viewers={viewers} />
@@ -58,12 +66,13 @@ export default function ChannelCard({
         )}
       </div>
       <ChannelInfo
+        id={id}
         title={title}
         streamerName={streamerName}
         category={category}
         categoryId={categoryId}
         profileImgUrl={profileImgUrl}
       />
-    </Link>
+    </div>
   );
 }

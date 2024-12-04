@@ -41,7 +41,7 @@ export class UsersService {
 
   async findByOAuthUid(
     oauthUid: string,
-    oauthPlatform: 'naver' | 'github' | 'google',
+    oauthPlatform: 'naver' | 'github' | 'google'|'lico',
   ): Promise<UserEntity | null> {
     return this.usersRepository.findOne({
       where: { oauthUid, oauthPlatform },
@@ -59,10 +59,10 @@ export class UsersService {
   async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
     return this.connection.transaction(async manager => {
       const live = manager.create(LiveEntity, {
-        categoriesId: null,
+        categoriesId: 4,
         channelId: randomUUID(),
-        name: null,
-        description: null,
+        name: `${createUserDto.nickname}의 라이브 방송`,
+        description: `${createUserDto.nickname}의 라이브 방송입니다`,
         streamingKey: randomUUID(),
         onAir: false,
         startedAt: null,

@@ -68,7 +68,7 @@ export default function Palette({ isErasing }: PaletteConfig) {
   };
 
   return (
-    <div className="absolute left-0 top-full z-50 mt-1 space-y-4 rounded-lg bg-lico-gray-3 p-3 shadow-lg">
+    <div className="z-60 absolute left-0 top-full mt-1 space-y-4 rounded-lg bg-lico-gray-3 p-3 shadow-lg">
       {!isErasing && (
         <div className="space-y-2">
           <span className="block text-sm text-lico-gray-1">색상</span>

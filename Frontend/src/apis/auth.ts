@@ -19,4 +19,9 @@ export const authApi = {
     });
     return response.data;
   },
+
+  async guestLogin(): Promise<AuthResponse> {
+    const response = await api.get<AuthResponse>('/auth/lico/guest');
+    return response.data;
+  },
 };

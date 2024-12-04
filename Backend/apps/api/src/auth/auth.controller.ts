@@ -34,7 +34,7 @@ export class AuthController {
     return this.handleOAuthCallback(req, res);
   }
 
-  @Get('lico/callback')
+  @Get('lico/guest')
   @UseGuards(AuthGuard('lico'))
   async licoAuthCallback(@Req() req: Request & { user: any }, @Res() res: Response) {
     return this.handleOAuthCallback(req, res);

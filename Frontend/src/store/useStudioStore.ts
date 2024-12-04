@@ -28,7 +28,7 @@ interface StudioState {
   setScreenStream: (stream: MediaStream | null) => void;
   setMediaStream: (stream: MediaStream | null) => void;
   setIsStreaming: (streaming: boolean) => void;
-  setDrawingState: (state: DrawingState) => void;
+  setDrawingState: (state: Partial<DrawingState>) => void;
   setPaths: (paths: DrawingPath[]) => void;
   setCurrentPath: (path: DrawingPath | null) => void;
   setTexts: (texts: CanvasText[]) => void;
@@ -79,7 +79,23 @@ export const useStudioStore = create<StudioState>(set => ({
   setScreenStream: stream => set({ screenStream: stream }),
   setMediaStream: stream => set({ mediaStream: stream }),
   setIsStreaming: streaming => set({ isStreaming: streaming }),
-  setDrawingState: state => set({ drawingState: state }),
+  setDrawingState: newState =>
+    set(state => {
+      if (newState.isTexting && (newState.isDrawing || newState.isErasing)) {
+        newState.isDrawing = false;
+        newState.isErasing = false;
+      }
+      if ((newState.isDrawing || newState.isErasing) && newState.isTexting) {
+        newState.isTexting = false;
+      }
+
+      return {
+        drawingState: {
+          ...state.drawingState,
+          ...newState,
+        },
+      };
+    }),
   setPaths: paths => set({ paths }),
   setCurrentPath: path => set({ currentPath: path }),
   setTexts: texts => set({ texts }),
@@ -92,6 +108,7 @@ export const useStudioStore = create<StudioState>(set => ({
       texts: [],
       images: [],
       drawingState: initialDrawingState,
+      activeTool: null,
     }),
 
   deleteModal: {

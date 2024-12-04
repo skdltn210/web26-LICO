@@ -119,3 +119,16 @@ export const initialMediaSettings: MediaSettings = {
   isCamFlipped: false,
   volume: 75,
 };
+
+export interface CanvasProps {
+  drawingState: DrawingState;
+  isDrawingMode: boolean;
+  isTextingMode: boolean;
+  className?: string;
+}
+
+export interface InteractionCanvasProps {
+  isDrawingMode: boolean;
+  isTextingMode: boolean;
+  className?: string;
+}
