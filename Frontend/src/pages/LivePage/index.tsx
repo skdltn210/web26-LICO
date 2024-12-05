@@ -27,11 +27,10 @@ export default function LivePage() {
   const isMediumScreen = useMediaQuery(MEDIUM_BREAKPOINT);
   const isVerticalLayout = !isMediumScreen;
 
-  const isChatVisible = isChatExpanded;
   const shouldShowChatToggle = isMediumScreen && !isChatExpanded;
 
   const handleChatToggle = () => {
-    setIsChatLocked(isChatExpanded);
+    isChatExpanded ? setIsChatLocked(true) : setIsChatLocked(false);
     setIsChatExpanded(!isChatExpanded);
   };
 
@@ -85,9 +84,9 @@ export default function LivePage() {
         </div>
       </div>
 
-      {isChatVisible && (
+      {isChatExpanded && (
         <div
-          className={`transition-all duration-500 ease-in-out ${isChatVisible ? 'translate-x-0' : 'translate-x-full'} ${
+          className={`transition-all duration-500 ease-in-out ${isChatExpanded ? 'translate-x-0' : 'translate-x-full'} ${
             isTheaterMode && isVerticalLayout ? 'w-full overflow-hidden' : 'w-[360px]'
           } `}
         >
@@ -95,7 +94,7 @@ export default function LivePage() {
         </div>
       )}
 
-      {((isTheaterMode && !isChatVisible) || (!isTheaterMode && shouldShowChatToggle)) && (
+      {((isTheaterMode && !isChatExpanded) || (!isTheaterMode && shouldShowChatToggle)) && (
         <ChatOpenButton onClick={handleChatToggle} />
       )}
     </div>
