@@ -13,6 +13,7 @@ import LiveInfo from '@pages/LivePage/LiveInfo';
 import StreamerInfo from '@pages/LivePage/StreamerInfo';
 import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
 import useCheckStream from '@hooks/useCheckStream';
+import { useDelayedLoading } from '@hooks/useDelayedLoading.ts';
 
 const MEDIUM_BREAKPOINT = '(min-width: 700px)';
 
@@ -26,7 +27,8 @@ export default function LivePage() {
 
   const STREAM_URL = `${config.storageUrl}/${id}/index.m3u8`;
 
-  const { isStreamReady, checkStreamAvailability } = useCheckStream(STREAM_URL);
+  const { isStreamReady, isChecking, checkStreamAvailability } = useCheckStream(STREAM_URL);
+  const showStreamCheckLoading = useDelayedLoading(isChecking, { minLoadingTime: 500 });
 
   const isMediumScreen = useMediaQuery(MEDIUM_BREAKPOINT);
   const isVerticalLayout = !isMediumScreen;
@@ -70,12 +72,14 @@ export default function LivePage() {
             <OfflinePlayer />
           ) : isStreamReady ? (
             <VideoPlayer streamUrl={STREAM_URL} onAir={currentOnAir} />
-          ) : (
+          ) : showStreamCheckLoading ? (
             <div className="flex h-full w-full items-center justify-center bg-black text-center font-bold text-white">
               <p>
                 방송 준비 중입니다. <br /> 잠시만 기다려주세요!
               </p>
             </div>
+          ) : (
+            <div className="flex h-full w-full" />
           )}
 
           {!isTheaterMode && (

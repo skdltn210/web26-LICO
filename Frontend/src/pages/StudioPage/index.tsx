@@ -17,6 +17,7 @@ import { LuInfo } from 'react-icons/lu';
 import useMediaQuery from '@hooks/useMediaQuery';
 import useCheckStream from '@hooks/useCheckStream';
 import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
+import { useDelayedLoading } from '@hooks/useDelayedLoading.ts';
 import StreamGuide from './Modals/StreamGuide';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
@@ -46,8 +47,9 @@ export default function StudioPage() {
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
   const WEBRTC_URL = config.webrtcUrl;
 
-  const { isStreamReady, checkStreamAvailability } = useCheckStream(STREAM_URL);
+  const { isStreamReady, isChecking, checkStreamAvailability } = useCheckStream(STREAM_URL);
   const showLoading = useDelayedLoading(isLoading, { minLoadingTime: 300 });
+  const showStreamCheckLoading = useDelayedLoading(isChecking, { minLoadingTime: 500 });
 
   const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
 
@@ -95,12 +97,14 @@ export default function StudioPage() {
         <OfflinePlayer />
       ) : isStreamReady ? (
         <VideoPlayer streamUrl={STREAM_URL} onAir={currentOnAir} />
-      ) : (
+      ) : showStreamCheckLoading ? (
         <div className="flex h-full w-full items-center justify-center bg-black text-center font-bold text-white">
           <p>
             방송 준비 중입니다. <br /> 잠시만 기다려주세요!
           </p>
         </div>
+      ) : (
+        <div className="flex h-full w-full" />
       );
     }
 

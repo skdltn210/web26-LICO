@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 
 const RETRY_COUNT = 5;
-const RETRY_DELAY = 2000;
+const RETRY_DELAY = 1000;
 
 const fetchStream = async (url: string) => {
   try {
@@ -21,18 +21,23 @@ const delay = (ms: number): Promise<void> => {
 
 interface UseStreamCheckResult {
   isStreamReady: boolean;
+  isChecking: boolean;
   checkStreamAvailability: () => void;
 }
 
 const useStreamCheck = (streamUrl: string): UseStreamCheckResult => {
   const [isStreamReady, setIsStreamReady] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   const checkStreamAvailability = useCallback(async () => {
+    setIsChecking(true);
+
     for (let i = 0; i < RETRY_COUNT; i += 1) {
       const isAvailable = await fetchStream(streamUrl);
 
       if (isAvailable) {
         setIsStreamReady(true);
+        setIsChecking(false);
         return;
       }
 
@@ -42,10 +47,12 @@ const useStreamCheck = (streamUrl: string): UseStreamCheckResult => {
     }
 
     setIsStreamReady(false);
+    setIsChecking(false);
   }, [streamUrl]);
 
   return {
     isStreamReady,
+    isChecking,
     checkStreamAvailability,
   };
 };
