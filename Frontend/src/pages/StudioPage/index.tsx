@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import VideoPlayer from '@components/VideoPlayer';
 import StreamSettings from '@pages/StudioPage/StreamSettings';
@@ -14,10 +14,12 @@ import { useStreamingKey, useFinishLive } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 import { useStudioStore } from '@store/useStudioStore';
 import { LuInfo } from 'react-icons/lu';
+import useMediaQuery from '@hooks/useMediaQuery.ts';
 import StreamGuide from './Modals/StreamGuide';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
 type VideoMode = 'player' | 'container';
+const MEDIUM_BREAKPOINT = '(min-width: 800px)';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
@@ -25,6 +27,8 @@ export default function StudioPage() {
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isChatExpanded, setIsChatExpanded] = useState<boolean>(true);
+  const [isChatLocked, setIsChatLocked] = useState<boolean>(false);
+  const isMediumScreen = useMediaQuery(MEDIUM_BREAKPOINT);
 
   const screenStream = useStudioStore(state => state.screenStream);
   const mediaStream = useStudioStore(state => state.mediaStream);
@@ -40,6 +44,7 @@ export default function StudioPage() {
   const WEBRTC_URL = config.webrtcUrl;
 
   const handleChatToggle = () => {
+    isChatExpanded ? setIsChatLocked(true) : setIsChatLocked(false);
     setIsChatExpanded(!isChatExpanded);
   };
 
@@ -61,6 +66,12 @@ export default function StudioPage() {
       setVideoMode('container');
     }
   };
+
+  useEffect(() => {
+    if (!isChatLocked) {
+      setIsChatExpanded(isMediumScreen);
+    }
+  }, [isChatLocked, isMediumScreen]);
 
   const renderVideoContent = () => {
     function AspectRatioContainer({ children }: { children: React.ReactNode }) {
@@ -91,7 +102,7 @@ export default function StudioPage() {
   if (!channelId || !liveDetail) return <NotFound />;
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen min-w-[500px]">
       <main className="flex-1 overflow-y-auto p-6 scrollbar-hide" role="main">
         <h1 className="mb-4 font-bold text-2xl text-lico-gray-1">스튜디오</h1>
         <div className="space-y-4">
@@ -173,12 +184,12 @@ export default function StudioPage() {
         </div>
       </main>
 
-      {isChatExpanded && (
+      {isChatExpanded && isMediumScreen && (
         <aside className="min-w-[360px] overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
           <ChatWindow id={channelId} onAir={liveDetail.onAir} onToggleChat={handleChatToggle} />
         </aside>
       )}
-      {!isChatExpanded && <ChatOpenButton className="text-lico-gray-2" onClick={handleChatToggle} />}
+      {!isChatExpanded && isMediumScreen && <ChatOpenButton className="text-lico-gray-2" onClick={handleChatToggle} />}
       {isGuideOpen && <StreamGuide onClose={() => setIsGuideOpen(false)} />}
     </div>
   );
