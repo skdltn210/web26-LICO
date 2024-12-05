@@ -39,23 +39,20 @@ export default function StudioPage() {
   const setMediaStream = useStudioStore(state => state.setMediaStream);
   const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
+  const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
+  const WEBRTC_URL = config.webrtcUrl;
 
   const { data: liveDetail, isLoading, error: detailError } = useLiveDetail(channelId!);
   const { data: liveStatus, error: statusError } = useLiveStatus(channelId!);
   const { data: streamKey } = useStreamingKey();
   const { mutateAsync: finishLive } = useFinishLive();
 
-  if ((detailError && detailError.status === 404) || !liveDetail || !channelId) return <NotFound />;
-  if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
-
-  const currentOnAir = liveStatus?.onAir ?? liveDetail.onAir;
-
-  const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
-  const WEBRTC_URL = config.webrtcUrl;
-
   const { isStreamReady, isChecking, checkStreamAvailability } = useCheckStream(STREAM_URL);
   const showLoading = useDelayedLoading(isLoading, { minLoadingTime: 300 });
   const showStreamCheckLoading = useDelayedLoading(isChecking, { minLoadingTime: 500 });
+
+  if ((detailError && detailError.status === 404) || !liveDetail || !channelId) return <NotFound />;
+  if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
 
   const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
 
