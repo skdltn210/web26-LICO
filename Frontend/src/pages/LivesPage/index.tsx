@@ -3,6 +3,8 @@ import { LuClock, LuThumbsUp } from 'react-icons/lu';
 import ChannelGrid from '@components/channel/ChannelGrid';
 import SortButton from '@components/common/Buttons/SortButton';
 import { useLives } from '@hooks/useLive';
+import { useDelayedLoading } from '@hooks/useDelayedLoading';
+
 import { useSortStore } from '@store/useSortStore';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import { config } from '@config/env.ts';
@@ -18,6 +20,7 @@ export default function LivesPage() {
     sort: sortType,
     limit: ITEMS_PER_PAGE,
   });
+  const showLoading = useDelayedLoading(isLoading, { minLoadingTime: 300 });
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -36,7 +39,7 @@ export default function LivesPage() {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  if (isLoading)
+  if (showLoading)
     return (
       <div className="relative h-full w-full">
         <LoadingSpinner />

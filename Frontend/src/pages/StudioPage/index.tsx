@@ -14,7 +14,10 @@ import { useStreamingKey, useFinishLive } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 import { useStudioStore } from '@store/useStudioStore';
 import { LuInfo } from 'react-icons/lu';
-import useMediaQuery from '@hooks/useMediaQuery.ts';
+import useMediaQuery from '@hooks/useMediaQuery';
+import useCheckStream from '@hooks/useCheckStream';
+import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
+import { useDelayedLoading } from '@hooks/useDelayedLoading.ts';
 import StreamGuide from './Modals/StreamGuide';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
@@ -38,36 +41,24 @@ export default function StudioPage() {
   const setMediaStream = useStudioStore(state => state.setMediaStream);
   const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
-  const { data: liveDetail, isLoading, error: detailError } = useLiveDetail(channelId ?? '');
-  const { data: liveStatus, error: statusError } = useLiveStatus(channelId ?? '');
+
+  const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
+  const WEBRTC_URL = config.webrtcUrl;
+
+  const { data: liveDetail, isLoading, error: detailError } = useLiveDetail(channelId!);
+  const { data: liveStatus, error: statusError } = useLiveStatus(channelId!);
   const { data: streamKey } = useStreamingKey();
   const { mutateAsync: finishLive } = useFinishLive();
 
-  useEffect(() => {
-    if (!isChatLocked) {
-      setIsChatExpanded(isMediumScreen);
-    }
-  }, [isChatLocked, isMediumScreen]);
+  const { isStreamReady, isChecking, checkStreamAvailability } = useCheckStream(STREAM_URL);
+  const showLoading = useDelayedLoading(isLoading, { minLoadingTime: 300 });
+  const showStreamCheckLoading = useDelayedLoading(isChecking, { minLoadingTime: 500 });
 
-  if (isLoading) {
-    return (
-      <div className="relative h-full w-full">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  if ((detailError && detailError.status === 404) || !liveDetail || !channelId) return <NotFound />;
+  if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
 
-  if (!channelId || !liveDetail || (detailError && detailError.status === 404)) {
-    return <NotFound />;
-  }
+  const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
 
-  if (detailError || statusError) {
-    return <div>에러가 발생했습니다.</div>;
-  }
-
-  const currentOnAir = liveStatus?.onAir ?? liveDetail.onAir;
-  const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
-  const WEBRTC_URL = config.webrtcUrl;
 
   const handleChatToggle = () => {
     isChatExpanded ? setIsChatLocked(true) : setIsChatLocked(false);
@@ -93,13 +84,36 @@ export default function StudioPage() {
     }
   };
 
+  useEffect(() => {
+    if (!isChatLocked) {
+      setIsChatExpanded(isMediumScreen);
+    }
+  }, [isChatLocked, isMediumScreen]);
+
+  useEffect(() => {
+    checkStreamAvailability();
+  }, [checkStreamAvailability]);
+
+
   const renderVideoContent = () => {
     function AspectRatioContainer({ children }: { children: React.ReactNode }) {
       return <div className="relative h-full w-full bg-black">{children}</div>;
     }
 
     if (videoMode === 'player') {
-      return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
+      return !currentOnAir ? (
+        <OfflinePlayer />
+      ) : isStreamReady ? (
+        <VideoPlayer streamUrl={STREAM_URL} onAir={currentOnAir} />
+      ) : showStreamCheckLoading ? (
+        <div className="flex h-full w-full items-center justify-center bg-black text-center font-bold text-white">
+          <p>
+            방송 준비 중입니다. <br /> 잠시만 기다려주세요!
+          </p>
+        </div>
+      ) : (
+        <div className="flex h-full w-full" />
+      );
     }
 
     return (
@@ -108,6 +122,16 @@ export default function StudioPage() {
       </AspectRatioContainer>
     );
   };
+
+
+  if (showLoading)
+    return (
+      <div className="relative h-full w-full">
+        <LoadingSpinner />
+      </div>
+    );
+  if (!channelId || !liveDetail) return <NotFound />;
+
 
   return (
     <div className="flex h-screen min-w-[500px]">

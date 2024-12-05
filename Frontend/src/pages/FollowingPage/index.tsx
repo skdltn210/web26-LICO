@@ -1,10 +1,13 @@
 import ChannelGrid from '@components/channel/ChannelGrid';
 import { config } from '@config/env.ts';
 import { useFollow } from '@hooks/useFollow';
+import LoadingSpinner from '@components/common/LoadingSpinner';
+import { useDelayedLoading } from '@hooks/useDelayedLoading.ts';
 import OfflineGrid from './OfflineGrid';
 
 export default function FollowingPage() {
   const { follows, isLoadingFollows } = useFollow();
+  const showLoading = useDelayedLoading(isLoadingFollows, { minLoadingTime: 300 });
 
   const followedChannels =
     follows?.map(follow => ({
@@ -23,13 +26,10 @@ export default function FollowingPage() {
   const liveChannels = followedChannels.filter(channel => channel.isLive);
   const offlineChannels = followedChannels.filter(channel => !channel.isLive);
 
-  if (isLoadingFollows) {
+  if (showLoading) {
     return (
-      <div className="p-12">
-        <div className="mb-3 px-4 font-bold text-2xl text-lico-gray-1">팔로잉</div>
-        <div className="flex min-h-[300px] items-center justify-center">
-          <div className="font-bold text-lico-gray-2">로딩 중...</div>
-        </div>
+      <div className="relative h-full w-full">
+        <LoadingSpinner />
       </div>
     );
   }
