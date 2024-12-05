@@ -20,7 +20,7 @@ export default function Layout() {
   const { isTheaterMode } = useViewMode();
 
   const handleNavbarToggle = () => {
-    if (isNavbarExpanded) setIsNavbarLocked(!isNavbarExpanded);
+    isNavbarExpanded ? setIsNavbarLocked(true) : setIsNavbarLocked(false);
     setIsNavbarExpanded(!isNavbarExpanded);
   };
 
@@ -40,7 +40,7 @@ export default function Layout() {
       {!isTheaterMode && <Navbar isNavbarExpanded={isNavbarExpanded} onToggle={handleNavbarToggle} />}
 
       <main
-        className={` ${getMainMargin()} scrollbar-hider min-w-[700px] flex-1 overflow-auto bg-lico-gray-5 transition-all duration-300`}
+        className={` ${getMainMargin()} scrollbar-hider flex-1 overflow-auto bg-lico-gray-5 transition-all duration-300`}
       >
         <Outlet />
       </main>
