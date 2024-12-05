@@ -17,7 +17,7 @@ import { LuInfo } from 'react-icons/lu';
 import useMediaQuery from '@hooks/useMediaQuery';
 import useCheckStream from '@hooks/useCheckStream';
 import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
-import { useDelayedLoading } from '@hooks/useDelayedLoading.ts';
+import { useDelayedLoading } from '@hooks/useDelayedLoading';
 import StreamGuide from './Modals/StreamGuide';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
@@ -41,7 +41,6 @@ export default function StudioPage() {
   const setMediaStream = useStudioStore(state => state.setMediaStream);
   const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
-
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
   const WEBRTC_URL = config.webrtcUrl;
 
@@ -53,12 +52,6 @@ export default function StudioPage() {
   const { isStreamReady, isChecking, checkStreamAvailability } = useCheckStream(STREAM_URL);
   const showLoading = useDelayedLoading(isLoading, { minLoadingTime: 300 });
   const showStreamCheckLoading = useDelayedLoading(isChecking, { minLoadingTime: 500 });
-
-  if ((detailError && detailError.status === 404) || !liveDetail || !channelId) return <NotFound />;
-  if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
-
-  const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
-
 
   const handleChatToggle = () => {
     isChatExpanded ? setIsChatLocked(true) : setIsChatLocked(false);
@@ -84,6 +77,8 @@ export default function StudioPage() {
     }
   };
 
+  const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
+
   useEffect(() => {
     if (!isChatLocked) {
       setIsChatExpanded(isMediumScreen);
@@ -91,9 +86,8 @@ export default function StudioPage() {
   }, [isChatLocked, isMediumScreen]);
 
   useEffect(() => {
-    checkStreamAvailability();
-  }, [checkStreamAvailability]);
-
+    if (currentOnAir) checkStreamAvailability();
+  }, [checkStreamAvailability, currentOnAir]);
 
   const renderVideoContent = () => {
     function AspectRatioContainer({ children }: { children: React.ReactNode }) {
@@ -123,6 +117,8 @@ export default function StudioPage() {
     );
   };
 
+  if ((detailError && detailError.status === 404) || !liveDetail || !channelId) return <NotFound />;
+  if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
 
   if (showLoading)
     return (
@@ -131,7 +127,6 @@ export default function StudioPage() {
       </div>
     );
   if (!channelId || !liveDetail) return <NotFound />;
-
 
   return (
     <div className="flex h-screen min-w-[500px]">

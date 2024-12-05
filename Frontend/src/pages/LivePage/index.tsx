@@ -39,6 +39,8 @@ export default function LivePage() {
     setIsChatExpanded(!isChatExpanded);
   };
 
+  const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
+
   useEffect(() => {
     if (!isChatLocked && !isTheaterMode) {
       setIsChatExpanded(isMediumScreen);
@@ -46,8 +48,10 @@ export default function LivePage() {
   }, [isChatLocked, isMediumScreen, isTheaterMode]);
 
   useEffect(() => {
-    checkStreamAvailability();
-  }, [checkStreamAvailability]);
+    if (currentOnAir) {
+      checkStreamAvailability();
+    }
+  }, [checkStreamAvailability, currentOnAir]);
 
   if (isLoadingDetail)
     return (
@@ -61,7 +65,6 @@ export default function LivePage() {
   const currentTitle = liveStatus?.livesName ?? liveDetail.livesName;
   const currentCategoryId = liveStatus?.categoriesId ?? liveDetail.categoriesId;
   const currentCategoryName = liveStatus?.categoriesName ?? liveDetail.categoriesName;
-  const currentOnAir = liveStatus?.onAir || liveDetail.onAir;
   const currentDescription = liveStatus?.livesDescription ?? liveDetail.livesDescription;
 
   return (
@@ -79,7 +82,7 @@ export default function LivePage() {
               </p>
             </div>
           ) : (
-            <div className="flex h-full w-full" />
+            <div className="flex h-full w-full bg-black" />
           )}
 
           {!isTheaterMode && (
