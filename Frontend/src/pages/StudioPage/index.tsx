@@ -47,6 +47,7 @@ export default function StudioPage() {
   const WEBRTC_URL = config.webrtcUrl;
 
   const { isStreamReady, checkStreamAvailability } = useCheckStream(STREAM_URL);
+  const showLoading = useDelayedLoading(isLoading, { minLoadingTime: 300 });
 
   const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
 
@@ -110,7 +111,7 @@ export default function StudioPage() {
     );
   };
 
-  if (isLoading)
+  if (showLoading)
     return (
       <div className="relative h-full w-full">
         <LoadingSpinner />

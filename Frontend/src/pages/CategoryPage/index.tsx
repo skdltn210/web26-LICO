@@ -1,10 +1,18 @@
 import { useCategories } from '@hooks/useCategory';
 import CategoryGrid from '@components/category/CategoryGrid';
+import LoadingSpinner from '@components/common/LoadingSpinner';
+import { useDelayedLoading } from '@hooks/useDelayedLoading.ts';
 
 export default function CategoryPage() {
   const { data: categories, isLoading, error } = useCategories();
+  const showLoading = useDelayedLoading(isLoading, { minLoadingTime: 300 });
 
-  if (isLoading) return <div>로딩 중...</div>;
+  if (showLoading)
+    return (
+      <div className="relative h-full w-full">
+        <LoadingSpinner />
+      </div>
+    );
   if (error) return <div>에러가 발생했습니다</div>;
   if (!categories) return null;
 
