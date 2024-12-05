@@ -1,10 +1,18 @@
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useRef, useCallback } from 'react';
 import { useStudioStore } from '@store/useStudioStore';
 
 export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const mediaVideoRef = useRef<HTMLVideoElement>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const animationFrameRef = useRef<number>();
+  const lastDrawTimeRef = useRef<number>(0);
+
+  const streamStatusRef = useRef({
+    isScreenConnected: false,
+    isMediaConnected: false,
+    hasError: false,
+  });
 
   const screenStream = useStudioStore(state => state.screenStream);
   const mediaStream = useStudioStore(state => state.mediaStream);
@@ -19,96 +27,151 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
 
   useEffect(() => {
     if (screenVideoRef.current && screenStream) {
-      screenVideoRef.current.srcObject = screenStream;
+      const video = screenVideoRef.current;
 
-      screenVideoRef.current.onloadedmetadata = () => {
-        const video = screenVideoRef.current;
-        if (video) {
-          const videoAspectRatio = video.videoWidth / video.videoHeight;
-          const container = (ref as React.MutableRefObject<HTMLCanvasElement>).current?.parentElement?.parentElement;
+      try {
+        video.srcObject = screenStream;
 
-          if (container) {
-            let newWidth = screenPosition.width;
-            let newHeight = newWidth / videoAspectRatio;
+        video.onloadedmetadata = () => {
+          if (video) {
+            const videoAspectRatio = video.videoWidth / video.videoHeight;
+            const container = (ref as React.MutableRefObject<HTMLCanvasElement>).current?.parentElement?.parentElement;
 
-            if (newHeight > container.clientHeight) {
-              newHeight = container.clientHeight;
-              newWidth = newHeight * videoAspectRatio;
+            if (container) {
+              let newWidth = screenPosition.width;
+              let newHeight = newWidth / videoAspectRatio;
+
+              if (newHeight > container.clientHeight) {
+                newHeight = container.clientHeight;
+                newWidth = newHeight * videoAspectRatio;
+              }
+
+              const newX = (container.clientWidth - newWidth) / 2;
+              const newY = (container.clientHeight - newHeight) / 2;
+
+              setScreenPosition({
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight,
+              });
             }
-
-            const newX = (container.clientWidth - newWidth) / 2;
-            const newY = (container.clientHeight - newHeight) / 2;
-
-            setScreenPosition({
-              x: newX,
-              y: newY,
-              width: newWidth,
-              height: newHeight,
-            });
           }
-        }
-      };
+        };
+
+        streamStatusRef.current.isScreenConnected = true;
+      } catch (error) {
+        console.error('Screen stream connection failed:', error);
+        streamStatusRef.current.hasError = true;
+      }
     }
+
+    return () => {
+      if (screenVideoRef.current) {
+        screenVideoRef.current.srcObject = null;
+        streamStatusRef.current.isScreenConnected = false;
+      }
+    };
   }, [screenStream, setScreenPosition]);
 
   useEffect(() => {
     if (mediaVideoRef.current && mediaStream) {
-      mediaVideoRef.current.srcObject = mediaStream;
+      const video = mediaVideoRef.current;
+
+      try {
+        video.srcObject = mediaStream;
+        streamStatusRef.current.isMediaConnected = true;
+      } catch (error) {
+        console.error('Media stream connection failed:', error);
+        streamStatusRef.current.hasError = true;
+      }
     }
+
+    return () => {
+      if (mediaVideoRef.current) {
+        mediaVideoRef.current.srcObject = null;
+        streamStatusRef.current.isMediaConnected = false;
+      }
+    };
   }, [mediaStream]);
 
-  useEffect(() => {
-    const canvas = ref as React.MutableRefObject<HTMLCanvasElement>;
-    const ctx = canvas.current?.getContext('2d', { alpha: false });
-    const screenVideo = screenVideoRef.current;
-    const mediaVideo = mediaVideoRef.current;
+  const updateCanvas = useCallback(
+    (timestamp: number) => {
+      if (timestamp - lastDrawTimeRef.current < 33.3) {
+        animationFrameRef.current = requestAnimationFrame(updateCanvas);
+        return;
+      }
 
-    if (!canvas.current || !ctx) return;
+      const canvas = (ref as React.MutableRefObject<HTMLCanvasElement>).current;
+      const ctx = ctxRef.current;
+      if (!canvas || !ctx) return;
 
-    ctx.imageSmoothingEnabled = false;
-
-    const updateCanvas = () => {
-      const container = canvas.current?.parentElement?.parentElement;
+      const container = canvas.parentElement?.parentElement;
       if (!container) return;
 
       const scale = window.devicePixelRatio;
-      canvas.current.width = container.clientWidth * scale;
-      canvas.current.height = container.clientHeight * scale;
-      canvas.current.style.width = `${container.clientWidth}px`;
-      canvas.current.style.height = `${container.clientHeight}px`;
+      const needsResize =
+        canvas.width !== container.clientWidth * scale || canvas.height !== container.clientHeight * scale;
 
-      ctx.scale(scale, scale);
-      ctx.clearRect(0, 0, canvas.current.width / scale, canvas.current.height / scale);
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.current.width / scale, canvas.current.height / scale);
-
-      if (screenVideo && screenStream) {
-        ctx.drawImage(screenVideo, screenPosition.x, screenPosition.y, screenPosition.width, screenPosition.height);
+      if (needsResize) {
+        canvas.width = container.clientWidth * scale;
+        canvas.height = container.clientHeight * scale;
+        canvas.style.width = `${container.clientWidth}px`;
+        canvas.style.height = `${container.clientHeight}px`;
+        ctx.scale(scale, scale);
+        ctx.imageSmoothingEnabled = false;
       }
 
-      if (mediaVideo && mediaStream && mediaStream.getVideoTracks().length > 0) {
+      ctx.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
+
+      if (screenVideoRef.current && screenStream && streamStatusRef.current.isScreenConnected) {
+        ctx.drawImage(
+          screenVideoRef.current,
+          screenPosition.x,
+          screenPosition.y,
+          screenPosition.width,
+          screenPosition.height,
+        );
+      }
+
+      if (
+        mediaVideoRef.current &&
+        mediaStream &&
+        streamStatusRef.current.isMediaConnected &&
+        mediaStream.getVideoTracks().length > 0
+      ) {
         ctx.save();
         if (getIsCamFlipped()) {
           ctx.translate(camPosition.x + camPosition.width, camPosition.y);
           ctx.scale(-1, 1);
-          ctx.drawImage(mediaVideo, 0, 0, camPosition.width, camPosition.height);
+          ctx.drawImage(mediaVideoRef.current, 0, 0, camPosition.width, camPosition.height);
         } else {
-          ctx.drawImage(mediaVideo, camPosition.x, camPosition.y, camPosition.width, camPosition.height);
+          ctx.drawImage(mediaVideoRef.current, camPosition.x, camPosition.y, camPosition.width, camPosition.height);
         }
         ctx.restore();
       }
 
+      lastDrawTimeRef.current = timestamp;
       animationFrameRef.current = requestAnimationFrame(updateCanvas);
-    };
+    },
+    [screenStream, mediaStream, camPosition, screenPosition, ref],
+  );
 
-    animationFrameRef.current = requestAnimationFrame(updateCanvas);
+  useEffect(() => {
+    const canvas = (ref as React.MutableRefObject<HTMLCanvasElement>).current;
+    if (canvas) {
+      ctxRef.current = canvas.getContext('2d', { alpha: false });
+      animationFrameRef.current = requestAnimationFrame(updateCanvas);
+    }
 
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [screenStream, mediaStream, camPosition, screenPosition, getIsCamFlipped, ref]);
+  }, [updateCanvas]);
 
   return (
     <>

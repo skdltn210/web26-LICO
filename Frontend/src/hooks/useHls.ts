@@ -75,6 +75,12 @@ const useHls = (
           if (data.fatal) {
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
+                if (data.response?.code === 404) {
+                  setError(new Error('Stream not found (404)'));
+                  hlsInstance?.destroy();
+                  return;
+                }
+
                 hlsInstance?.startLoad();
                 setError(new Error('Network error occurred'));
                 break;

@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import useHls from '@hooks/useHls';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import Badge from '@components/common/Badges/Badge';
-import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
 import useViewMode from '@store/useViewMode';
 import Controls from './Control/index';
 
@@ -119,13 +118,20 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
     };
   }, []);
 
-  if (error) {
+  if (error?.message === 'Stream not found (404)') {
     return (
       <div className="flex h-full w-full items-center justify-center bg-black text-white">
-        <p>Error: {error.message}</p>
+        <p>방송이 종료되었습니다.</p>
       </div>
     );
   }
+
+  if (error)
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-black font-bold text-white">
+        <p>Error: {error.message}</p>
+      </div>
+    );
 
   return (
     <div
@@ -134,31 +140,24 @@ export default function VideoPlayer({ streamUrl, onAir }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      {onAir ? (
-        <video
-          ref={videoRef}
-          className="h-full w-full bg-black"
-          onPlay={handlePlay}
-          onPause={handlePause}
-          muted
-          autoPlay
-          playsInline
-        >
-          <track kind="captions" src="" />
-        </video>
-      ) : (
-        <OfflinePlayer />
-      )}
-
+      <video
+        ref={videoRef}
+        className="h-full w-full bg-black"
+        onPlay={handlePlay}
+        onPause={handlePause}
+        muted
+        autoPlay
+        playsInline
+      >
+        <track kind="captions" src="" />
+      </video>
       {isBuffering && isPlaying && <LoadingSpinner />}
-
       {onAir && (
         <Badge
           text="LIVE"
           className={`absolute right-4 top-4 bg-red-600 font-bold text-base text-lico-gray-1 transition-opacity duration-300 ${showControls ? 'opacity-90' : 'pointer-events-none opacity-0'}`}
         />
       )}
-
       <Controls
         isPlaying={isPlaying}
         isFullScreen={isFullScreen}
