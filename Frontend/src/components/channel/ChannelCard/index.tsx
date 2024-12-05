@@ -32,7 +32,7 @@ export default function ChannelCard({
   const handleMouseEnter = () => {
     timerRef.current = setTimeout(() => {
       setShowPreview(true);
-    }, 2000);
+    }, 1000);
   };
 
   const handleMouseLeave = () => {
