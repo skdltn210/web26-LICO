@@ -20,7 +20,7 @@ export default function Layout() {
   const { isTheaterMode } = useViewMode();
 
   const handleNavbarToggle = () => {
-    setIsNavbarLocked(!isNavbarExpanded);
+    if (isNavbarExpanded) setIsNavbarLocked(!isNavbarExpanded);
     setIsNavbarExpanded(!isNavbarExpanded);
   };
 
