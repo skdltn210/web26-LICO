@@ -36,7 +36,11 @@ export class ChatsService {
       filteringResult: true,
     };
     const chatString = JSON.stringify(chat);
-    await this.redisClient.multi().publish(`${channelId}:chat`, chatString).rpush('chatQueue', chatId).exec();
+    await this.redisClient
+      .multi()
+      .publish(`${channelId}:chat`, chatString)
+      .rpush(`${channelId}:chatQueue`, chatId)
+      .exec();
     this.clovaFiltering(chat);
   }
 
@@ -45,7 +49,12 @@ export class ChatsService {
   }
 
   async clearChat(channelId: UUID) {
-    this.redisClient.multi().del(`${channelId}:viewers`).del(`${channelId}:chats`).exec();
+    this.redisClient.del(
+      `${channelId}:viewers`,
+      `${channelId}:chats`,
+      `${channelId}:chatQueue`,
+      `${channelId}:chatCache`,
+    );
   }
 
   async clovaFiltering(chat) {
@@ -85,25 +94,27 @@ export class ChatsService {
         `${chat.channelId}:filter`,
         JSON.stringify({ chatId: chat.chatId, filteringResult: chat.filteringResult }),
       )
-      .hset('chatCache', chat.chatId, JSON.stringify(chat))
+      .hset(`${chat.channelId}:chatCache`, chat.chatId, JSON.stringify(chat))
       .exec();
-    this.flushChat();
+    this.flushChat(chat.channelId);
   }
 
-  async flushChat() {
-    const lockKey = 'chat:flush:lock';
+  async flushChat(channelId) {
+    const lockKey = `${channelId}:flush:lock`;
     const lock = await this.redisClient.set(lockKey, 'lock', 'NX');
+    const redisQueueKey = `${channelId}:chatQueue`;
+    const redisCacheKey = `${channelId}:chatCache`;
 
     try {
       if (lock) {
         while (true) {
-          const frontChatId = await this.redisClient.lindex('chatQueue', 0);
-          const chatString = await this.redisClient.hget('chatCache', frontChatId);
+          const frontChatId = await this.redisClient.lindex(redisQueueKey, 0);
+          const chatString = await this.redisClient.hget(redisCacheKey, frontChatId);
           if (!chatString) {
             break;
           } else {
             const chat = JSON.parse(chatString);
-            await this.redisClient.multi().rpush(`${chat.channelId}:chats`, chatString).lpop('chatQueue').exec();
+            await this.redisClient.multi().rpush(`${chat.channelId}:chats`, chatString).lpop(redisQueueKey).exec();
           }
         }
       }
