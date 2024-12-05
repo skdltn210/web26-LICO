@@ -6,7 +6,7 @@ import WebStreamControls from '@pages/StudioPage/WebStreamControls';
 import StreamInfo from '@pages/StudioPage/StreamInfo';
 import ChatWindow from '@components/chat/ChatWindow';
 import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
-import { useLiveDetail } from '@hooks/useLive.ts';
+import { useLiveDetail, useLiveStatus } from '@hooks/useLive.ts';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import NotFound from '@components/error/NotFound';
 import { config } from '@config/env';
@@ -32,9 +32,15 @@ export default function StudioPage() {
   const setMediaStream = useStudioStore(state => state.setMediaStream);
   const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
-  const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
+  const { data: liveDetail, isLoading, error: detailError } = useLiveDetail(channelId!);
+  const { data: liveStatus, error: statusError } = useLiveStatus(channelId!);
   const { data: streamKey } = useStreamingKey();
   const { mutateAsync: finishLive } = useFinishLive();
+
+  if ((detailError && detailError.status === 404) || !liveDetail || !channelId) return <NotFound />;
+  if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
+
+  const currentOnAir = liveStatus?.onAir ?? liveDetail.onAir;
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
   const WEBRTC_URL = config.webrtcUrl;
@@ -84,10 +90,6 @@ export default function StudioPage() {
         <LoadingSpinner />
       </div>
     );
-  if (error) {
-    if (error.status === 404) return <NotFound />;
-    return <div>에러가 발생했습니다.</div>;
-  }
   if (!channelId || !liveDetail) return <NotFound />;
 
   return (
@@ -175,7 +177,7 @@ export default function StudioPage() {
 
       {isChatExpanded && (
         <aside className="min-w-[360px] overflow-hidden border-x border-lico-gray-3 bg-lico-gray-4" aria-label="채팅">
-          <ChatWindow id={channelId} onAir={liveDetail.onAir} onToggleChat={handleChatToggle} />
+          <ChatWindow id={channelId} onAir={currentOnAir} onToggleChat={handleChatToggle} />
         </aside>
       )}
       {!isChatExpanded && <ChatOpenButton className="text-lico-gray-2" onClick={handleChatToggle} />}
