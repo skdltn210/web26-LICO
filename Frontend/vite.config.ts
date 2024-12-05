@@ -8,14 +8,30 @@ import type { PreRenderedAsset } from 'rollup';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// https://vite.dev/config/
 export default defineConfig({
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
+      },
+      format: {
+        comments: false,
+      },
+      mangle: {
+        toplevel: true,
+      },
+    },
     assetsInlineLimit: 0,
     rollupOptions: {
       output: {
+        manualChunks: {
+          vendor: ['/node_modules/'],
+        },
         assetFileNames: (assetInfo: PreRenderedAsset): string => {
           if (assetInfo.source && /\.(svg)$/.test(assetInfo.name || '')) {
             return 'assets/icons/[name][extname]';
