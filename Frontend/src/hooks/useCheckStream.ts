@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 
-const RETRY_COUNT = 5;
-const RETRY_DELAY = 1000;
+const RETRY_COUNT = 10;
+const RETRY_DELAY = 2000;
 
 const fetchStream = async (url: string) => {
   try {
