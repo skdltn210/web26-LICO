@@ -23,11 +23,13 @@ const MEDIUM_BREAKPOINT = '(min-width: 800px)';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
+
   const [activeTab, setActiveTab] = useState<TabType>('External');
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isChatExpanded, setIsChatExpanded] = useState<boolean>(true);
   const [isChatLocked, setIsChatLocked] = useState<boolean>(false);
+
   const isMediumScreen = useMediaQuery(MEDIUM_BREAKPOINT);
 
   const screenStream = useStudioStore(state => state.screenStream);
@@ -36,16 +38,34 @@ export default function StudioPage() {
   const setMediaStream = useStudioStore(state => state.setMediaStream);
   const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
-  const { data: liveDetail, isLoading, error: detailError } = useLiveDetail(channelId!);
-  const { data: liveStatus, error: statusError } = useLiveStatus(channelId!);
+  const { data: liveDetail, isLoading, error: detailError } = useLiveDetail(channelId ?? '');
+  const { data: liveStatus, error: statusError } = useLiveStatus(channelId ?? '');
   const { data: streamKey } = useStreamingKey();
   const { mutateAsync: finishLive } = useFinishLive();
 
-  if ((detailError && detailError.status === 404) || !liveDetail || !channelId) return <NotFound />;
-  if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
+  useEffect(() => {
+    if (!isChatLocked) {
+      setIsChatExpanded(isMediumScreen);
+    }
+  }, [isChatLocked, isMediumScreen]);
+
+  if (isLoading) {
+    return (
+      <div className="relative h-full w-full">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (!channelId || !liveDetail || (detailError && detailError.status === 404)) {
+    return <NotFound />;
+  }
+
+  if (detailError || statusError) {
+    return <div>에러가 발생했습니다.</div>;
+  }
 
   const currentOnAir = liveStatus?.onAir ?? liveDetail.onAir;
-
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
   const WEBRTC_URL = config.webrtcUrl;
 
@@ -73,12 +93,6 @@ export default function StudioPage() {
     }
   };
 
-  useEffect(() => {
-    if (!isChatLocked) {
-      setIsChatExpanded(isMediumScreen);
-    }
-  }, [isChatLocked, isMediumScreen]);
-
   const renderVideoContent = () => {
     function AspectRatioContainer({ children }: { children: React.ReactNode }) {
       return <div className="relative h-full w-full bg-black">{children}</div>;
@@ -94,14 +108,6 @@ export default function StudioPage() {
       </AspectRatioContainer>
     );
   };
-
-  if (isLoading)
-    return (
-      <div className="relative h-full w-full">
-        <LoadingSpinner />
-      </div>
-    );
-  if (!channelId || !liveDetail) return <NotFound />;
 
   return (
     <div className="flex h-screen min-w-[500px]">
