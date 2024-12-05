@@ -6,7 +6,7 @@ import WebStreamControls from '@pages/StudioPage/WebStreamControls';
 import StreamInfo from '@pages/StudioPage/StreamInfo';
 import ChatWindow from '@components/chat/ChatWindow';
 import ChatOpenButton from '@components/common/Buttons/ChatOpenButton';
-import { useLiveDetail } from '@hooks/useLive.ts';
+import { useLiveDetail, useLiveStatus } from '@hooks/useLive.ts';
 import LoadingSpinner from '@components/common/LoadingSpinner';
 import NotFound from '@components/error/NotFound';
 import { config } from '@config/env';
@@ -14,7 +14,9 @@ import { useStreamingKey, useFinishLive } from '@hooks/useLive';
 import StreamContainer from '@pages/StudioPage/StreamContainer';
 import { useStudioStore } from '@store/useStudioStore';
 import { LuInfo } from 'react-icons/lu';
-import useMediaQuery from '@hooks/useMediaQuery.ts';
+import useMediaQuery from '@hooks/useMediaQuery';
+import useCheckStream from '@hooks/useCheckStream';
+import OfflinePlayer from '@components/VideoPlayer/OfflinePlayer';
 import StreamGuide from './Modals/StreamGuide';
 
 type TabType = 'External' | 'WebStudio' | 'Info';
@@ -37,11 +39,16 @@ export default function StudioPage() {
   const setIsStreaming = useStudioStore(state => state.setIsStreaming);
 
   const { data: liveDetail, isLoading, error } = useLiveDetail(channelId!);
+  const { data: liveStatus } = useLiveStatus(channelId!);
   const { data: streamKey } = useStreamingKey();
   const { mutateAsync: finishLive } = useFinishLive();
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
   const WEBRTC_URL = config.webrtcUrl;
+
+  const { isStreamReady, checkStreamAvailability } = useCheckStream(STREAM_URL);
+
+  const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
 
   const handleChatToggle = () => {
     isChatExpanded ? setIsChatLocked(true) : setIsChatLocked(false);
@@ -73,13 +80,27 @@ export default function StudioPage() {
     }
   }, [isChatLocked, isMediumScreen]);
 
+  useEffect(() => {
+    checkStreamAvailability();
+  }, [checkStreamAvailability]);
+
   const renderVideoContent = () => {
     function AspectRatioContainer({ children }: { children: React.ReactNode }) {
       return <div className="relative h-full w-full bg-black">{children}</div>;
     }
 
     if (videoMode === 'player') {
-      return <VideoPlayer streamUrl={STREAM_URL} onAir={liveDetail?.onAir ?? false} />;
+      return !currentOnAir ? (
+        <OfflinePlayer />
+      ) : isStreamReady ? (
+        <VideoPlayer streamUrl={STREAM_URL} onAir={currentOnAir} />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-black text-center font-bold text-white">
+          <p>
+            방송 준비 중입니다. <br /> 잠시만 기다려주세요!
+          </p>
+        </div>
+      );
     }
 
     return (
