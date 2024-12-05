@@ -58,7 +58,7 @@ const initialDrawingState: DrawingState = {
   },
   textTool: {
     color: '#ffffff',
-    width: 10,
+    width: 20,
   },
 };
 

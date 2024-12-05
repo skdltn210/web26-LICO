@@ -26,11 +26,13 @@ const MEDIUM_BREAKPOINT = '(min-width: 800px)';
 
 export default function StudioPage() {
   const { channelId } = useParams<{ channelId: string }>();
+
   const [activeTab, setActiveTab] = useState<TabType>('External');
   const [videoMode, setVideoMode] = useState<VideoMode>('player');
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isChatExpanded, setIsChatExpanded] = useState<boolean>(true);
   const [isChatLocked, setIsChatLocked] = useState<boolean>(false);
+
   const isMediumScreen = useMediaQuery(MEDIUM_BREAKPOINT);
 
   const screenStream = useStudioStore(state => state.screenStream);
@@ -38,6 +40,7 @@ export default function StudioPage() {
   const setScreenStream = useStudioStore(state => state.setScreenStream);
   const setMediaStream = useStudioStore(state => state.setMediaStream);
   const setIsStreaming = useStudioStore(state => state.setIsStreaming);
+
 
   const STREAM_URL = `${config.storageUrl}/${channelId}/index.m3u8`;
   const WEBRTC_URL = config.webrtcUrl;
@@ -55,6 +58,7 @@ export default function StudioPage() {
   if (detailError || statusError) return <div>에러가 발생했습니다.</div>;
 
   const currentOnAir = liveStatus?.onAir || liveDetail?.onAir || false;
+
 
   const handleChatToggle = () => {
     isChatExpanded ? setIsChatLocked(true) : setIsChatLocked(false);
@@ -90,6 +94,7 @@ export default function StudioPage() {
     checkStreamAvailability();
   }, [checkStreamAvailability]);
 
+
   const renderVideoContent = () => {
     function AspectRatioContainer({ children }: { children: React.ReactNode }) {
       return <div className="relative h-full w-full bg-black">{children}</div>;
@@ -118,6 +123,7 @@ export default function StudioPage() {
     );
   };
 
+
   if (showLoading)
     return (
       <div className="relative h-full w-full">
@@ -125,6 +131,7 @@ export default function StudioPage() {
       </div>
     );
   if (!channelId || !liveDetail) return <NotFound />;
+
 
   return (
     <div className="flex h-screen min-w-[500px]">
