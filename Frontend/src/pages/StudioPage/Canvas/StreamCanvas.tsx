@@ -30,7 +30,9 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
       const video = screenVideoRef.current;
 
       try {
-        video.srcObject = screenStream;
+        if (video.srcObject !== screenStream) {
+          video.srcObject = screenStream;
+        }
 
         video.onloadedmetadata = () => {
           if (video) {
@@ -67,7 +69,7 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
     }
 
     return () => {
-      if (screenVideoRef.current) {
+      if (screenVideoRef.current && screenVideoRef.current.srcObject !== screenStream) {
         screenVideoRef.current.srcObject = null;
         streamStatusRef.current.isScreenConnected = false;
       }

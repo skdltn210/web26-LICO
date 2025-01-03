@@ -118,18 +118,22 @@ export default function StreamContainer({ webrtcUrl, streamKey, onStreamError }:
         try {
           validateAudioStreams();
 
-          await webrtcRef.current.start(
-            {
-              streamCanvas: streamCanvasRef.current,
-              imageTextCanvas: imageTextCanvasRef.current,
-              drawCanvas: drawCanvasRef.current,
-              interactionCanvas: interactionCanvasRef.current,
-              containerWidth: dimensionsRef.current.width,
-              containerHeight: dimensionsRef.current.height,
-            },
-            screenStream,
-            mediaStream,
-          );
+          if (webrtcRef.current.isStarted()) {
+            await webrtcRef.current.updateStreams(screenStream, mediaStream);
+          } else {
+            await webrtcRef.current.start(
+              {
+                streamCanvas: streamCanvasRef.current,
+                imageTextCanvas: imageTextCanvasRef.current,
+                drawCanvas: drawCanvasRef.current,
+                interactionCanvas: interactionCanvasRef.current,
+                containerWidth: dimensionsRef.current.width,
+                containerHeight: dimensionsRef.current.height,
+              },
+              screenStream,
+              mediaStream,
+            );
+          }
         } catch (error) {
           onStreamError?.(error as Error);
         }
