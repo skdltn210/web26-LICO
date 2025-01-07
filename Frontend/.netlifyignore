@@ -1,33 +1,26 @@
-# 소스 코드 및 개발 파일
-/src
+/dist
+
+/src/**
 /public
 /.vscode
 /.idea
 
-# 설정 파일들
 .gitignore
 .prettierrc
 .eslintrc
 vite.config.js
 postcss.config.js
 tailwind.config.js
-tsconfig.json
-tsconfig.app.json
-tsconfig.node.json
-README.md
+tsconfig.*
 
-# 패키지 관련
 /node_modules
 package.json
 package-lock.json
 yarn.lock
 
-# 환경 변수 파일
 .env*
 
-# 기타 개발 관련 파일
 *.log
 .DS_Store
 
-# 예외 처리 - 빌드 결과물은 포함
-!/dist
+!dist/**

@@ -1,5 +1,4 @@
 /// <reference types="node" />
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -8,24 +7,40 @@ import type { PreRenderedAsset } from 'rollup';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   build: {
     outDir: 'dist',
-    sourcemap: true,
+
+    sourcemap: mode === 'development',
+
     assetsInlineLimit: 0,
+
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+
     rollupOptions: {
       output: {
+        entryFileNames: mode === 'production' ? 'assets/[hash].js' : 'assets/[name].js',
+        chunkFileNames: mode === 'production' ? 'assets/[hash].js' : 'assets/[name].js',
         assetFileNames: (assetInfo: PreRenderedAsset): string => {
           if (assetInfo.source && /\.(svg)$/.test(assetInfo.name || '')) {
             return 'assets/icons/[name][extname]';
           }
-          return 'assets/[name]-[hash][extname]';
+          return mode === 'production' ? 'assets/[hash][extname]' : 'assets/[name]-[hash][extname]';
         },
       },
     },
   },
+
+  // Plugin configuration
   plugins: [react()],
+
+  // Path aliases for cleaner imports
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -45,8 +60,10 @@ export default defineConfig({
       '@config': path.resolve(__dirname, 'src/config'),
     },
   },
+
+  // Development server configuration
   server: {
     host: true,
     port: 3000,
   },
-});
+}));

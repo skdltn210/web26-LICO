@@ -12,19 +12,11 @@ function AppContent() {
   const cleanup = useStudioStore(state => state.cleanup);
 
   useEffect(() => {
-    const isLeavingStudioPage = (pathname: string) => {
-      return !pathname.includes('/studio');
-    };
+    const isLeavingStudioPage = !location.pathname.includes('/studio');
 
-    if (isLeavingStudioPage(location.pathname)) {
-      cleanup();
+    if (isLeavingStudioPage) {
+      return () => cleanup();
     }
-
-    return () => {
-      if (isLeavingStudioPage(location.pathname)) {
-        cleanup();
-      }
-    };
   }, [location.pathname, cleanup]);
 
   return <AppRoutes />;
