@@ -1,4 +1,4 @@
-import { useEffect, forwardRef, useCallback, useMemo } from 'react';
+import { useEffect, forwardRef, useCallback, useRef } from 'react';
 import { useDrawing } from '@hooks/canvas/useDrawing';
 import { Point, CanvasProps } from '@/types/canvas';
 import pencilCursor from '@assets/icons/pencilCursor.svg?url';
@@ -6,6 +6,8 @@ import eraserCursor from '@assets/icons/eraserCursor.svg?url';
 
 export const DrawCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
   ({ drawingState, isDrawingMode, className }, ref) => {
+    const animationFrameRef = useRef<number>();
+
     const getCanvasPoint = useCallback(
       (e: React.MouseEvent<HTMLCanvasElement>): Point => {
         const canvas = ref as React.RefObject<HTMLCanvasElement>;
@@ -23,53 +25,67 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
     const { paths, startDrawing, continueDrawing, endDrawing } = useDrawing();
 
     const updateCanvas = useCallback(() => {
-      const canvas = ref as React.RefObject<HTMLCanvasElement>;
-      const ctx = canvas.current?.getContext('2d', { alpha: true });
-      if (!canvas.current || !ctx) return;
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
 
-      const container = canvas.current.parentElement?.parentElement;
-      if (!container) return;
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const canvas = ref as React.RefObject<HTMLCanvasElement>;
+        const ctx = canvas.current?.getContext('2d', { alpha: true });
+        if (!canvas.current || !ctx) return;
 
-      const scale = window.devicePixelRatio;
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
+        const container = canvas.current.parentElement?.parentElement;
+        if (!container) return;
 
-      canvas.current.width = containerWidth * scale;
-      canvas.current.height = containerHeight * scale;
-      canvas.current.style.width = `${containerWidth}px`;
-      canvas.current.style.height = `${containerHeight}px`;
+        const scale = window.devicePixelRatio;
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
 
-      ctx.scale(scale, scale);
-      ctx.clearRect(0, 0, containerWidth, containerHeight);
+        canvas.current.width = containerWidth * scale;
+        canvas.current.height = containerHeight * scale;
+        canvas.current.style.width = `${containerWidth}px`;
+        canvas.current.style.height = `${containerHeight}px`;
 
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
+        ctx.scale(scale, scale);
+        ctx.clearRect(0, 0, containerWidth, containerHeight);
 
-      paths.forEach(path => {
-        if (path.points.length < 2) return;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
 
-        const isErasing = path.type === 'erase';
-        ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
-        ctx.strokeStyle = isErasing ? 'rgba(0,0,0,1)' : path.color;
-        ctx.lineWidth = path.width;
+        paths.forEach(path => {
+          if (path.points.length < 2) return;
 
-        ctx.beginPath();
-        ctx.moveTo(path.points[0].x, path.points[0].y);
+          const isErasing = path.type === 'erase';
+          ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
+          ctx.strokeStyle = isErasing ? 'rgba(0,0,0,1)' : path.color;
+          ctx.lineWidth = path.width;
 
-        for (let i = 1; i < path.points.length; i += 2) {
-          const nextPoint = path.points[i + 1] || path.points[i];
-          const midPoint = {
-            x: (path.points[i].x + nextPoint.x) / 2,
-            y: (path.points[i].y + nextPoint.y) / 2,
-          };
-          ctx.quadraticCurveTo(path.points[i].x, path.points[i].y, midPoint.x, midPoint.y);
-        }
+          ctx.beginPath();
+          ctx.moveTo(path.points[0].x, path.points[0].y);
 
-        ctx.stroke();
+          for (let i = 1; i < path.points.length; i += 2) {
+            const nextPoint = path.points[i + 1] || path.points[i];
+            const midPoint = {
+              x: (path.points[i].x + nextPoint.x) / 2,
+              y: (path.points[i].y + nextPoint.y) / 2,
+            };
+            ctx.quadraticCurveTo(path.points[i].x, path.points[i].y, midPoint.x, midPoint.y);
+          }
+
+          ctx.stroke();
+        });
+
+        ctx.globalCompositeOperation = 'source-over';
       });
-
-      ctx.globalCompositeOperation = 'source-over';
     }, [ref, paths]);
+
+    useEffect(() => {
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    }, []);
 
     useEffect(() => {
       const canvas = ref as React.RefObject<HTMLCanvasElement>;
@@ -113,12 +129,13 @@ export const DrawCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
       [ref, getCanvasPoint, continueDrawing],
     );
 
-    const cursor = useMemo(() => {
-      if (drawingState.isTexting) return 'text';
-      if (drawingState.isDrawing) return `url(${pencilCursor}) 0 24, crosshair`;
-      if (drawingState.isErasing) return `url(${eraserCursor}) 8 24, cell`;
-      return 'default';
-    }, [drawingState.isTexting, drawingState.isDrawing, drawingState.isErasing]);
+    const cursor = drawingState.isTexting
+      ? 'text'
+      : drawingState.isDrawing
+        ? `url(${pencilCursor}) 0 24, crosshair`
+        : drawingState.isErasing
+          ? `url(${eraserCursor}) 8 24, cell`
+          : 'default';
 
     return (
       <canvas
