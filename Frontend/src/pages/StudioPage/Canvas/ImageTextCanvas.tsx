@@ -1,10 +1,12 @@
-import { useEffect, useCallback, useMemo, forwardRef, CSSProperties } from 'react';
+import { useEffect, useCallback, forwardRef, CSSProperties, useRef } from 'react';
 import { useText } from '@hooks/canvas/useText';
 import { useImage } from '@hooks/canvas/useImage';
 import { Point, CanvasProps } from '@/types/canvas';
 
 export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
   ({ drawingState, isTextingMode, className }, ref) => {
+    const animationFrameRef = useRef<number>();
+
     const { textInput, startTextInput, updateText, completeText, cancelText, drawTexts } = useText({
       color: drawingState.textTool.color,
       fontSize: drawingState.textTool.width,
@@ -61,27 +63,40 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
     );
 
     const updateCanvas = useCallback(() => {
-      const canvas = ref as React.RefObject<HTMLCanvasElement>;
-      const ctx = canvas.current?.getContext('2d', { alpha: true });
-      if (!canvas.current || !ctx) return;
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = requestAnimationFrame(() => {
+        const canvas = ref as React.RefObject<HTMLCanvasElement>;
+        const ctx = canvas.current?.getContext('2d', { alpha: true });
+        if (!canvas.current || !ctx) return;
 
-      const container = canvas.current?.parentElement?.parentElement;
-      if (!container) return;
+        const container = canvas.current?.parentElement?.parentElement;
+        if (!container) return;
 
-      const scale = window.devicePixelRatio;
-      const containerWidth = container.clientWidth;
-      const containerHeight = container.clientHeight;
+        const scale = window.devicePixelRatio;
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
 
-      canvas.current.width = containerWidth * scale;
-      canvas.current.height = containerHeight * scale;
-      canvas.current.style.width = `${containerWidth}px`;
-      canvas.current.style.height = `${containerHeight}px`;
+        canvas.current.width = containerWidth * scale;
+        canvas.current.height = containerHeight * scale;
+        canvas.current.style.width = `${containerWidth}px`;
+        canvas.current.style.height = `${containerHeight}px`;
 
-      ctx.scale(scale, scale);
-      ctx.clearRect(0, 0, containerWidth, containerHeight);
-      drawImages(ctx);
-      drawTexts(ctx);
+        ctx.scale(scale, scale);
+        ctx.clearRect(0, 0, containerWidth, containerHeight);
+        drawImages(ctx);
+        drawTexts(ctx);
+      });
     }, [ref, drawImages, drawTexts]);
+
+    useEffect(() => {
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    }, []);
 
     useEffect(() => {
       if (!isTextingMode && textInput.isVisible) {
@@ -122,31 +137,22 @@ export const ImageTextCanvas = forwardRef<HTMLCanvasElement, CanvasProps>(
       return () => window.removeEventListener('keydown', handleKeyDown);
     }, [textInput.isVisible, cancelText]);
 
-    const canvasStyle = useMemo(
-      (): CSSProperties => ({
-        cursor: drawingState.isTexting ? 'text' : 'default',
-        pointerEvents: isTextingMode ? 'auto' : 'none',
-      }),
-      [drawingState.isTexting, isTextingMode],
-    );
+    const canvasStyle: CSSProperties = {
+      cursor: drawingState.isTexting ? 'text' : 'default',
+      pointerEvents: isTextingMode ? 'auto' : 'none',
+    };
 
-    const inputContainerStyle = useMemo(
-      (): CSSProperties => ({
-        left: textInput.position.x,
-        top: textInput.position.y - drawingState.textTool.width * 0.5,
-        zIndex: 100,
-      }),
-      [textInput.position.x, textInput.position.y, drawingState.textTool.width],
-    );
+    const inputContainerStyle: CSSProperties = {
+      left: textInput.position.x,
+      top: textInput.position.y - drawingState.textTool.width * 0.5,
+      zIndex: 100,
+    };
 
-    const inputStyle = useMemo(
-      (): CSSProperties => ({
-        color: drawingState.textTool.color,
-        fontSize: `${drawingState.textTool.width}px`,
-        lineHeight: '1',
-      }),
-      [drawingState.textTool.color, drawingState.textTool.width],
-    );
+    const inputStyle: CSSProperties = {
+      color: drawingState.textTool.color,
+      fontSize: `${drawingState.textTool.width}px`,
+      lineHeight: '1',
+    };
 
     return (
       <>

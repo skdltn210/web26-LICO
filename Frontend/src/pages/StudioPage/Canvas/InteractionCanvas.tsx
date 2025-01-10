@@ -3,6 +3,7 @@ import { useCanvasElement } from '@hooks/canvas/useCanvasElement';
 import { Position, Point, CanvasImage, CanvasText, InteractionCanvasProps } from '@/types/canvas';
 import { CanvasElementDeleteModal } from '../Modals/CanvasElementDeleteModal';
 import { useStudioStore } from '@/store/useStudioStore';
+import { throttle } from 'lodash';
 
 type SelectedElement = 'screen' | 'camera' | 'text' | 'image' | null;
 
@@ -345,7 +346,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       setSelectedId(null);
     };
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const handleMouseMoveCore = (e: React.MouseEvent<HTMLCanvasElement>) => {
       if (isDrawingMode) return;
 
       const point = getCanvasPoint(e);
@@ -380,6 +381,11 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       }
     };
 
+    const handleMouseMove = throttle(handleMouseMoveCore, 16, {
+      leading: true,
+      trailing: true,
+    });
+
     useEffect(() => {
       const handleGlobalClick = (e: MouseEvent) => {
         const canvas = getCanvasElement();
@@ -403,7 +409,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
     }, []);
 
     useEffect(() => {
-      const handleGlobalMouseMove = (e: MouseEvent) => {
+      const handleGlobalMouseMoveCore = (e: MouseEvent) => {
         if (isDrawingMode || (!isDragging && !isResizing)) return;
 
         const canvas = getCanvasElement();
@@ -459,6 +465,11 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
         }
       };
 
+      const handleGlobalMouseMove = throttle(handleGlobalMouseMoveCore, 16, {
+        leading: true,
+        trailing: true,
+      });
+
       const handleGlobalMouseUp = () => {
         if (isDrawingMode || isTextingMode) return;
         setIsDragging(false);
@@ -469,6 +480,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       window.addEventListener('mouseup', handleGlobalMouseUp);
 
       return () => {
+        handleGlobalMouseMove.cancel();
         window.removeEventListener('mousemove', handleGlobalMouseMove);
         window.removeEventListener('mouseup', handleGlobalMouseUp);
       };
@@ -484,7 +496,6 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       maintainAspectRatio,
       getCurrentPosition,
     ]);
-
     useEffect(() => {
       const canvas = getCanvasElement();
       const ctx = canvas?.getContext('2d');
