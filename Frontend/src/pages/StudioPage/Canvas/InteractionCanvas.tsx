@@ -496,6 +496,7 @@ export const InteractionCanvas = forwardRef<HTMLCanvasElement, InteractionCanvas
       maintainAspectRatio,
       getCurrentPosition,
     ]);
+
     useEffect(() => {
       const canvas = getCanvasElement();
       const ctx = canvas?.getContext('2d');

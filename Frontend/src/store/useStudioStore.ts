@@ -42,6 +42,12 @@ interface StudioState {
   setMediaSettings: (settings: MediaSettings | null) => void;
   activeTool: 'text' | 'draw' | 'erase' | null;
   setActiveTool: (tool: 'text' | 'draw' | 'erase' | null) => void;
+
+  audioContext: AudioContext | null;
+  initializeAudio: () => Promise<void>;
+  clearAudio: () => void;
+  getAudioContext: () => AudioContext | null;
+
   cleanup: () => void;
 }
 
@@ -62,7 +68,7 @@ const initialDrawingState: DrawingState = {
   },
 };
 
-export const useStudioStore = create<StudioState>(set => ({
+export const useStudioStore = create<StudioState>((set, get) => ({
   screenStream: null,
   mediaStream: null,
   isStreaming: false,
@@ -74,6 +80,8 @@ export const useStudioStore = create<StudioState>(set => ({
   currentPath: null,
   texts: [],
   images: [],
+
+  audioContext: null,
 
   setScreenPosition: position => set({ screenPosition: position }),
   setCamPosition: position => set({ camPosition: position }),
@@ -125,14 +133,58 @@ export const useStudioStore = create<StudioState>(set => ({
   setMediaSettings: settings => set({ mediaSettings: settings }),
   activeTool: null,
   setActiveTool: tool => set({ activeTool: tool }),
+
+  initializeAudio: async () => {
+    const state = get();
+
+    if (state.audioContext && state.audioContext.state !== 'closed') {
+      if (state.audioContext.state === 'suspended') {
+        try {
+          await state.audioContext.resume();
+        } catch (error) {
+          console.error('Failed to resume AudioContext:', error);
+          throw error;
+        }
+      }
+      return;
+    }
+
+    try {
+      const newContext = new AudioContext();
+      set({ audioContext: newContext });
+
+      if (newContext.state === 'suspended') {
+        await newContext.resume();
+      }
+    } catch (error) {
+      console.error('Failed to initialize AudioContext:', error);
+      throw error;
+    }
+  },
+
+  clearAudio: () => {
+    const state = get();
+    if (state.audioContext && state.audioContext.state !== 'closed') {
+      state.audioContext.close();
+    }
+    set({ audioContext: null });
+  },
+
+  getAudioContext: () => {
+    return get().audioContext;
+  },
+
   cleanup: () =>
     set(state => {
       if (state.screenStream) {
         state.screenStream.getTracks().forEach(track => track.stop());
       }
-
       if (state.mediaStream) {
         state.mediaStream.getTracks().forEach(track => track.stop());
+      }
+
+      if (state.audioContext && state.audioContext.state !== 'closed') {
+        state.audioContext.close();
       }
 
       return {
@@ -146,6 +198,7 @@ export const useStudioStore = create<StudioState>(set => ({
         drawingState: initialDrawingState,
         activeTool: null,
         mediaSettings: null,
+        audioContext: null,
         deleteModal: {
           show: false,
           x: 0,

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LuMonitor, LuSettings, LuImage, LuType, LuPencil, LuEraser, LuPlay, LuSparkles } from 'react-icons/lu';
 import { FaSquare } from 'react-icons/fa';
 import { useFinishLive, useIsOnAir } from '@hooks/useLive';
@@ -28,6 +28,8 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
     setMediaSettings,
     setActiveTool,
     clearAll,
+    initializeAudio,
+    clearAudio,
   } = useStudioStore();
 
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -90,29 +92,53 @@ export default function WebStreamControls({ streamKey }: WebStreamControlsProps)
     }
   };
 
-  const handleStreaming = async () => {
-    if (isStreaming) {
-      try {
-        await finishLive(streamKey);
-        showToastMessage('방송이 종료되었습니다');
-      } catch (error) {
-        console.error('Error ending the live stream:', error);
-      }
+  const handleStopStreaming = async () => {
+    try {
+      await finishLive(streamKey);
+      clearAudio();
       setIsStreaming(false);
-    } else {
-      if (!validateStreams()) {
-        return;
-      }
-
-      if (!isOnAir) {
-        showToastMessage('이미 같은 스트림키로 방송중입니다');
-        return;
-      }
-
-      setIsStreaming(true);
-      showToastMessage('방송이 시작되었습니다');
+      showToastMessage('방송이 종료되었습니다');
+    } catch (error) {
+      console.error('Error ending the live stream:', error);
+      showToastMessage('방송 종료 중 오류가 발생했습니다');
     }
   };
+
+  const handleStartStreaming = async () => {
+    if (!validateStreams()) {
+      return;
+    }
+
+    if (!isOnAir) {
+      showToastMessage('이미 같은 스트림키로 방송중입니다');
+      return;
+    }
+
+    try {
+      await initializeAudio();
+      setIsStreaming(true);
+      showToastMessage('방송이 시작되었습니다');
+    } catch (error) {
+      console.error('Error initializing audio:', error);
+      showToastMessage('방송 시작에 실패했습니다');
+    }
+  };
+
+  const handleStreaming = async () => {
+    if (isStreaming) {
+      await handleStopStreaming();
+    } else {
+      await handleStartStreaming();
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (isStreaming) {
+        clearAudio();
+      }
+    };
+  }, [isStreaming, clearAudio]);
 
   const handleToolSelect = (tool: 'text' | 'draw' | 'erase' | null) => {
     const newTool = activeTool === tool ? null : tool;

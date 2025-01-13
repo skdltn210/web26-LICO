@@ -5,8 +5,10 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const mediaVideoRef = useRef<HTMLVideoElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>();
   const lastDrawTimeRef = useRef<number>(0);
+
+  const isBackgroundedRef = useRef<boolean>(false);
 
   const streamStatusRef = useRef({
     isScreenConnected: false,
@@ -19,88 +21,33 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
   const screenPosition = useStudioStore(state => state.screenPosition);
   const camPosition = useStudioStore(state => state.camPosition);
   const setScreenPosition = useStudioStore(state => state.setScreenPosition);
+  const getAudioContext = useStudioStore(state => state.getAudioContext);
 
   const getIsCamFlipped = () => {
     if (!mediaStream) return false;
     return (mediaStream as any).isCamFlipped || false;
   };
 
-  useEffect(() => {
-    if (screenVideoRef.current && screenStream) {
-      const video = screenVideoRef.current;
-
-      try {
-        if (video.srcObject !== screenStream) {
-          video.srcObject = screenStream;
-        }
-
-        video.onloadedmetadata = () => {
-          if (video) {
-            const videoAspectRatio = video.videoWidth / video.videoHeight;
-            const container = (ref as React.MutableRefObject<HTMLCanvasElement>).current?.parentElement?.parentElement;
-
-            if (container) {
-              let newWidth = screenPosition.width;
-              let newHeight = newWidth / videoAspectRatio;
-
-              if (newHeight > container.clientHeight) {
-                newHeight = container.clientHeight;
-                newWidth = newHeight * videoAspectRatio;
-              }
-
-              const newX = (container.clientWidth - newWidth) / 2;
-              const newY = (container.clientHeight - newHeight) / 2;
-
-              setScreenPosition({
-                x: newX,
-                y: newY,
-                width: newWidth,
-                height: newHeight,
-              });
-            }
-          }
-        };
-
-        streamStatusRef.current.isScreenConnected = true;
-      } catch (error) {
-        console.error('Screen stream connection failed:', error);
-        streamStatusRef.current.hasError = true;
-      }
-    }
-
-    return () => {
-      if (screenVideoRef.current && screenVideoRef.current.srcObject !== screenStream) {
-        screenVideoRef.current.srcObject = null;
-        streamStatusRef.current.isScreenConnected = false;
-      }
-    };
-  }, [screenStream, setScreenPosition]);
-
-  useEffect(() => {
-    if (mediaVideoRef.current && mediaStream) {
-      const video = mediaVideoRef.current;
-
-      try {
-        video.srcObject = mediaStream;
-        streamStatusRef.current.isMediaConnected = true;
-      } catch (error) {
-        console.error('Media stream connection failed:', error);
-        streamStatusRef.current.hasError = true;
-      }
-    }
-
-    return () => {
-      if (mediaVideoRef.current) {
-        mediaVideoRef.current.srcObject = null;
-        streamStatusRef.current.isMediaConnected = false;
-      }
-    };
-  }, [mediaStream]);
-
   const updateCanvas = useCallback(
     (timestamp: number) => {
+      if (Math.floor(timestamp / 1000) > Math.floor(lastDrawTimeRef.current / 1000)) {
+        console.log('[StreamCanvas Status]', {
+          mode: isBackgroundedRef.current ? 'Background' : 'Foreground',
+          streams: {
+            screen: screenVideoRef.current?.srcObject ? 'Connected' : 'Not Connected',
+            webcam: mediaVideoRef.current?.srcObject ? 'Connected' : 'Not Connected',
+          },
+          render: {
+            fps: Math.round(1000 / (timestamp - lastDrawTimeRef.current)),
+            using: isBackgroundedRef.current ? 'AudioTimer' : 'requestAnimationFrame',
+          },
+        });
+      }
+
       if (timestamp - lastDrawTimeRef.current < 33.3) {
-        animationFrameRef.current = requestAnimationFrame(updateCanvas);
+        if (!isBackgroundedRef.current) {
+          animationFrameRef.current = requestAnimationFrame(updateCanvas);
+        }
         return;
       }
 
@@ -156,24 +103,158 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
       }
 
       lastDrawTimeRef.current = timestamp;
-      animationFrameRef.current = requestAnimationFrame(updateCanvas);
+
+      if (!isBackgroundedRef.current) {
+        animationFrameRef.current = requestAnimationFrame(updateCanvas);
+      }
     },
     [screenStream, mediaStream, camPosition, screenPosition, ref],
   );
+
+  const clearCurrentTimer = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+  }, []);
+
+  const handleRenderingMode = useCallback(() => {
+    clearCurrentTimer();
+
+    const audioContext = getAudioContext();
+
+    console.log('[StreamCanvas Mode Switch]', {
+      newMode: isBackgroundedRef.current ? 'Background' : 'Foreground',
+      audioContext: audioContext?.state || 'Not Initialized',
+      timerType: isBackgroundedRef.current ? 'AudioTimer' : 'requestAnimationFrame',
+    });
+
+    if (isBackgroundedRef.current && audioContext?.state === 'running') {
+      const silence = audioContext.createGain();
+      silence.gain.value = 0;
+      silence.connect(audioContext.destination);
+
+      let stopped = false;
+      const createTimer = () => {
+        if (stopped || !audioContext) return;
+        const osc = audioContext.createOscillator();
+        osc.onended = () => {
+          if (!stopped) {
+            updateCanvas(performance.now());
+            createTimer();
+          }
+        };
+        osc.connect(silence);
+        osc.start(0);
+        osc.stop(audioContext.currentTime + 1 / 30);
+      };
+      createTimer();
+
+      return () => {
+        stopped = true;
+        silence.disconnect();
+      };
+    } else {
+      animationFrameRef.current = requestAnimationFrame(updateCanvas);
+    }
+  }, [updateCanvas, clearCurrentTimer, getAudioContext]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      isBackgroundedRef.current = document.hidden;
+      handleRenderingMode();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearCurrentTimer();
+    };
+  }, [handleRenderingMode, clearCurrentTimer]);
+
+  useEffect(() => {
+    if (screenVideoRef.current && screenStream) {
+      const video = screenVideoRef.current;
+
+      try {
+        if (video.srcObject !== screenStream) {
+          video.srcObject = screenStream;
+        }
+
+        video.onloadedmetadata = () => {
+          if (video) {
+            const videoAspectRatio = video.videoWidth / video.videoHeight;
+            const container = (ref as React.MutableRefObject<HTMLCanvasElement>).current?.parentElement?.parentElement;
+
+            if (container) {
+              let newWidth = screenPosition.width;
+              let newHeight = newWidth / videoAspectRatio;
+
+              if (newHeight > container.clientHeight) {
+                newHeight = container.clientHeight;
+                newWidth = newHeight * videoAspectRatio;
+              }
+
+              const newX = (container.clientWidth - newWidth) / 2;
+              const newY = (container.clientHeight - newHeight) / 2;
+
+              setScreenPosition({
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight,
+              });
+            }
+          }
+        };
+
+        streamStatusRef.current.isScreenConnected = true;
+      } catch (error) {
+        console.error('Screen stream connection failed:', error);
+        streamStatusRef.current.hasError = true;
+      }
+    }
+
+    return () => {
+      if (screenVideoRef.current && screenVideoRef.current.srcObject !== screenStream) {
+        screenVideoRef.current.srcObject = null;
+        streamStatusRef.current.isScreenConnected = false;
+      }
+    };
+  }, [screenStream, screenPosition.width, setScreenPosition]);
+
+  useEffect(() => {
+    if (mediaVideoRef.current && mediaStream) {
+      const video = mediaVideoRef.current;
+
+      try {
+        video.srcObject = mediaStream;
+        streamStatusRef.current.isMediaConnected = true;
+      } catch (error) {
+        console.error('Media stream connection failed:', error);
+        streamStatusRef.current.hasError = true;
+      }
+    }
+
+    return () => {
+      if (mediaVideoRef.current) {
+        mediaVideoRef.current.srcObject = null;
+        streamStatusRef.current.isMediaConnected = false;
+      }
+    };
+  }, [mediaStream]);
 
   useEffect(() => {
     const canvas = (ref as React.MutableRefObject<HTMLCanvasElement>).current;
     if (canvas) {
       ctxRef.current = canvas.getContext('2d', { alpha: false });
-      animationFrameRef.current = requestAnimationFrame(updateCanvas);
+      handleRenderingMode();
     }
 
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      clearCurrentTimer();
     };
-  }, [updateCanvas]);
+  }, [updateCanvas, handleRenderingMode, clearCurrentTimer]);
 
   return (
     <>
