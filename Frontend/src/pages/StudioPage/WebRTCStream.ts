@@ -1,4 +1,5 @@
 import { config } from '@config/env';
+import { useStudioStore } from '@store/useStudioStore';
 
 interface CanvasInputs {
   streamCanvas: HTMLCanvasElement;
@@ -15,19 +16,22 @@ export class WebRTCStream {
   private webrtcUrl: string;
   private streamKey: string;
   private compositeCanvas: HTMLCanvasElement;
-  private animationFrameId: number | null;
   private canvasInputs: CanvasInputs | null;
   private isConnecting: boolean = false;
   private _isStarted: boolean = false;
+
+  private animationFrameId: number | null = null;
+  private isBackgrounded: boolean = false;
 
   constructor(url: string, streamKey: string) {
     this.webrtcUrl = url;
     this.streamKey = streamKey;
     this.pc = null;
     this.trackSenders = new Map();
-    this.animationFrameId = null;
     this.canvasInputs = null;
     this.compositeCanvas = document.createElement('canvas');
+
+    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
   }
 
   async updateStreams(screenStream: MediaStream | null, mediaStream: MediaStream | null) {
@@ -85,10 +89,6 @@ export class WebRTCStream {
     }
   }
 
-  public isStarted(): boolean {
-    return this._isStarted;
-  }
-
   async start(canvasInputs: CanvasInputs, screenStream: MediaStream | null, mediaStream: MediaStream | null) {
     if (this.isConnecting) return;
 
@@ -97,7 +97,7 @@ export class WebRTCStream {
       await this.cleanup();
 
       this.canvasInputs = canvasInputs;
-      this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+      this.startRenderingMode();
 
       await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -134,6 +134,94 @@ export class WebRTCStream {
       this.isConnecting = false;
     }
   }
+
+  private handleVisibilityChange = () => {
+    this.isBackgrounded = document.hidden;
+    if (this._isStarted) {
+      this.switchRenderingMode();
+    }
+  };
+
+  private async switchRenderingMode() {
+    this.clearCurrentTimer();
+
+    const audioContext = useStudioStore.getState().getAudioContext();
+
+    if (this.isBackgrounded) {
+      if (audioContext?.state === 'running') {
+        const silence = audioContext.createGain();
+        silence.gain.value = 0;
+        silence.connect(audioContext.destination);
+
+        let stopped = false;
+        const createTimer = () => {
+          const osc = audioContext.createOscillator();
+          osc.onended = () => {
+            if (!stopped) {
+              this.updateCompositeCanvas();
+              createTimer();
+            }
+          };
+          osc.connect(silence);
+          osc.start(0);
+          osc.stop(audioContext.currentTime + 1 / 30);
+        };
+        createTimer();
+      }
+    } else {
+      this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+    }
+  }
+
+  private startRenderingMode() {
+    if (this.isBackgrounded) {
+      this.switchRenderingMode();
+    } else {
+      this.startForegroundRendering();
+    }
+  }
+
+  private startForegroundRendering() {
+    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+  }
+
+  private clearCurrentTimer() {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+  }
+
+  private updateCompositeCanvas = () => {
+    if (!this.canvasInputs) return;
+
+    const { streamCanvas, imageTextCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } =
+      this.canvasInputs;
+    const ctx = this.compositeCanvas.getContext('2d');
+    if (!ctx) return;
+
+    const scale = window.devicePixelRatio;
+    this.compositeCanvas.width = Math.floor(containerWidth * scale);
+    this.compositeCanvas.height = Math.floor(containerHeight * scale);
+
+    ctx.scale(scale, scale);
+    ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, containerWidth, containerHeight);
+
+    try {
+      ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(imageTextCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
+      ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
+    } catch (error) {
+      console.error('Error drawing on composite canvas:', error);
+    }
+
+    if (!this.isBackgrounded) {
+      this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
+    }
+  };
 
   private async connectWHIP() {
     if (!this.pc) {
@@ -181,40 +269,8 @@ export class WebRTCStream {
     }
   }
 
-  private updateCompositeCanvas = () => {
-    if (!this.canvasInputs) return;
-
-    const { streamCanvas, imageTextCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } =
-      this.canvasInputs;
-    const ctx = this.compositeCanvas.getContext('2d');
-    if (!ctx) return;
-
-    const scale = window.devicePixelRatio;
-    this.compositeCanvas.width = Math.floor(containerWidth * scale);
-    this.compositeCanvas.height = Math.floor(containerHeight * scale);
-
-    ctx.scale(scale, scale);
-    ctx.clearRect(0, 0, this.compositeCanvas.width, this.compositeCanvas.height);
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, containerWidth, containerHeight);
-
-    try {
-      ctx.drawImage(streamCanvas, 0, 0, containerWidth, containerHeight);
-      ctx.drawImage(imageTextCanvas, 0, 0, containerWidth, containerHeight);
-      ctx.drawImage(drawCanvas, 0, 0, containerWidth, containerHeight);
-      ctx.drawImage(interactionCanvas, 0, 0, containerWidth, containerHeight);
-    } catch (error) {
-      console.error('Error drawing on composite canvas:', error);
-    }
-
-    this.animationFrameId = requestAnimationFrame(this.updateCompositeCanvas);
-  };
-
   private async cleanup() {
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
-    }
+    this.clearCurrentTimer();
 
     if (this.pc) {
       this.trackSenders.clear();
@@ -225,6 +281,10 @@ export class WebRTCStream {
     this._isStarted = false;
     await new Promise(resolve => setTimeout(resolve, 100));
     this.canvasInputs = null;
+  }
+
+  public isStarted(): boolean {
+    return this._isStarted;
   }
 
   stop() {
