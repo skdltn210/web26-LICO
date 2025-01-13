@@ -31,17 +31,6 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
   const updateCanvas = useCallback(
     (timestamp: number) => {
       if (Math.floor(timestamp / 1000) > Math.floor(lastDrawTimeRef.current / 1000)) {
-        console.log('[StreamCanvas Status]', {
-          mode: isBackgroundedRef.current ? 'Background' : 'Foreground',
-          streams: {
-            screen: screenVideoRef.current?.srcObject ? 'Connected' : 'Not Connected',
-            webcam: mediaVideoRef.current?.srcObject ? 'Connected' : 'Not Connected',
-          },
-          render: {
-            fps: Math.round(1000 / (timestamp - lastDrawTimeRef.current)),
-            using: isBackgroundedRef.current ? 'AudioTimer' : 'requestAnimationFrame',
-          },
-        });
       }
 
       if (timestamp - lastDrawTimeRef.current < 33.3) {
@@ -122,12 +111,6 @@ export const StreamCanvas = forwardRef<HTMLCanvasElement>((_, ref) => {
     clearCurrentTimer();
 
     const audioContext = getAudioContext();
-
-    console.log('[StreamCanvas Mode Switch]', {
-      newMode: isBackgroundedRef.current ? 'Background' : 'Foreground',
-      audioContext: audioContext?.state || 'Not Initialized',
-      timerType: isBackgroundedRef.current ? 'AudioTimer' : 'requestAnimationFrame',
-    });
 
     if (isBackgroundedRef.current && audioContext?.state === 'running') {
       const silence = audioContext.createGain();

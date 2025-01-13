@@ -23,8 +23,6 @@ export class WebRTCStream {
   private animationFrameId: number | null = null;
   private isBackgrounded: boolean = false;
 
-  private _lastLogTime = 0;
-
   constructor(url: string, streamKey: string) {
     this.webrtcUrl = url;
     this.streamKey = streamKey;
@@ -149,12 +147,6 @@ export class WebRTCStream {
 
     const audioContext = useStudioStore.getState().getAudioContext();
 
-    console.log('[WebRTC Mode Switch]', {
-      newMode: this.isBackgrounded ? 'Background' : 'Foreground',
-      audioContext: audioContext?.state || 'Not Initialized',
-      timerType: this.isBackgrounded ? 'AudioTimer' : 'requestAnimationFrame',
-    });
-
     if (this.isBackgrounded) {
       if (audioContext?.state === 'running') {
         const silence = audioContext.createGain();
@@ -201,24 +193,6 @@ export class WebRTCStream {
   }
 
   private updateCompositeCanvas = () => {
-    const now = Date.now();
-    if (now - this._lastLogTime >= 1000) {
-      console.log('[WebRTC Status]', {
-        mode: {
-          isBackgrounded: this.isBackgrounded,
-          renderMethod: this.isBackgrounded ? 'AudioTimer' : 'requestAnimationFrame',
-        },
-        connection: {
-          state: this.pc?.connectionState || 'Not Connected',
-          iceState: this.pc?.iceConnectionState || 'None',
-        },
-        canvas: {
-          isCapturing: !!this.trackSenders.get('composite-video'),
-          hasAllInputs: this.canvasInputs ? 'Yes' : 'No',
-        },
-      });
-      this._lastLogTime = now;
-    }
     if (!this.canvasInputs) return;
 
     const { streamCanvas, imageTextCanvas, drawCanvas, interactionCanvas, containerWidth, containerHeight } =
@@ -250,13 +224,6 @@ export class WebRTCStream {
   };
 
   private async connectWHIP() {
-    this.pc!.onconnectionstatechange = () => {
-      console.log('[WebRTC Connection]', {
-        state: this.pc?.connectionState,
-        iceState: this.pc?.iceConnectionState,
-        timestamp: new Date().toISOString(),
-      });
-    };
     if (!this.pc) {
       throw new Error('No PeerConnection available');
     }
