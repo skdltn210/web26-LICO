@@ -3,7 +3,7 @@ import { useCanvasElement } from '@hooks/canvas/useCanvasElement';
 import { Position, Point, CanvasImage, CanvasText, InteractionCanvasProps } from '@/types/canvas';
 import { CanvasElementDeleteModal } from '../Modals/CanvasElementDeleteModal';
 import { useStudioStore } from '@/store/useStudioStore';
-import { throttle } from 'lodash';
+import throttle from 'lodash/throttle';
 
 type SelectedElement = 'screen' | 'camera' | 'text' | 'image' | null;
 
