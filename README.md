@@ -107,6 +107,9 @@ OBS등 인터넷 방송 보조 프로그램을 통해 방송 송출이 가능합
 ![웹스튜디오](https://github.com/user-attachments/assets/b1f88508-f5ea-4dff-b5a4-2e408de3c2a6)
 웹스튜디오를 이용해 별도의 프로그램 설치 없이도 방송 송출이 가능합니다.
 
+### 시연 영상
+https://play-tv.kakao.com/embed/player/cliplink/452196909?service=player_share
+
 ## 프로젝트 발표 영상
 
 
